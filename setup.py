@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="clloader-arthurdouillard",  # Replace with your own username
+    name="clloader",
     version="0.0.1",
     author="Arthur DOuillard",
     author_email="ar.douillard@gmail.com",
