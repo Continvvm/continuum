@@ -41,6 +41,7 @@ for task_id, (train_dataset, test_dataset) in enumerate(clloader):
 - ImageNet1000
 - MNIST Fellowship (MNIST + FashionMNIST + EMNIST)
 - CIFAR Fellowship (CIFAR10 + CIFAR100)
+- PermutedMNIST
 
 Furthermore some "Meta"-datasets are available:
 - InMemoryDataset: for in-memory numpy array
