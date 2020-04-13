@@ -1,5 +1,7 @@
 # Continual Loader (CLLoader)
 
+[![PyPI version](https://badge.fury.io/py/clloader.svg)](https://badge.fury.io/py/clloader) [![Build Status](https://travis-ci.com/arthurdouillard/continual_loader.svg?branch=master)](https://travis-ci.com/arthurdouillard/continual_loader)
+
 ## A library for PyTorch's loading of datasets in the field of Continual Learning
 
 Aka Continual Learning, Lifelong-Learning, Incremental Learning, etc.
