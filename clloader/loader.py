@@ -1,4 +1,3 @@
-import warnings
 from typing import Callable, List, Tuple, Union
 
 import numpy as np
@@ -11,6 +10,13 @@ from torchvision import transforms
 
 
 class Dataset(torch.utils.data.Dataset):
+    """A task dataset returned by the CLLoader.
+
+    :param x: The data, either image-arrays or paths to images saved on disk.
+    :param y: The targets, not one-hot encoded.
+    :param trsf: The transformations to apply on the images.
+    :param open_image: Whether to open image from disk, or index in-memory.
+    """
 
     def __init__(
         self, x: np.ndarray, y: np.ndarray, trsf: transforms.Compose, open_image: bool = False
@@ -21,19 +27,37 @@ class Dataset(torch.utils.data.Dataset):
 
     @property
     def nb_classes(self):
+        """The number of classes contained in the current task."""
         return len(np.unique(self.y))
 
     def add_memory(self, x_memory: np.ndarray, y_memory: np.ndarray):
+        """Add memory for rehearsal.
+
+        :param x_memory: Sampled data chosen for rehearsal.
+        :param y_memory: The associated targets of `x_memory`.
+        """
         self.x = np.concatenate((self.x, x_memory))
         self.y = np.concatenate((self.y, y_memory))
 
     def plot(self, path=None, figsize=None, nb_per_class=5):
+        """Plot samples of the current task, useful to check if everything is ok.
+
+        :param path: If not None, save on disk at this path.
+        :param figsize: The size of the figure.
+        :param nb_per_class: Amount to sample per class.
+        """
         plot(self, figsize=figsize, path=path, nb_per_class=nb_per_class)
 
     def __len__(self):
+        """The amount of images in the current task."""
         return self.x.shape[0]
 
     def get_image(self, index):
+        """Returns a Pillow image corresponding to the given `index`.
+
+        :param index: Index to query the image.
+        :return: A Pillow image.
+        """
         x = self.x[index]
         if self.open_image:
             img = Image.open(x).convert("RGB")
@@ -42,6 +66,7 @@ class Dataset(torch.utils.data.Dataset):
         return img
 
     def __getitem__(self, index):
+        """Method used by PyTorch's DataLoaders to query a sample and its target."""
         img = self.get_image(index)
         y = self.y[index]
         img = self.trsf(img)
@@ -49,6 +74,19 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class CLLoader:
+    """Continual Loader, generating datasets for the consecutive tasks.
+
+    :param increment: Either number of classes per task, or a list specifying for
+                      every task the amount of new classes.
+    :param initial_increment: A different task size applied only for the first task.
+                              Desactivated if `increment` is a list.
+    :param train_transformations: A list of data augmentation applied to the train set.
+    :param common_transformations: A list of transformations applied to both the
+                                   the train set and the test set. i.e. normalization,
+                                   resizing, etc.
+    :param evaluate_on: How to evaluate on val/test, either on all `seen` classes,
+                        on the `current` classes, or on `all` classes.
+    """
 
     def __init__(
         self,
@@ -74,10 +112,10 @@ class CLLoader:
 
         self._setup()
 
-        self.increments = self.define_increments(increment, initial_increment)
+        self.increments = self._define_increments(increment, initial_increment)
 
-    def define_increments(self, increment: Union[List[int], int],
-                          initial_increment: int) -> List[int]:
+    def _define_increments(self, increment: Union[List[int], int],
+                           initial_increment: int) -> List[int]:
         if isinstance(increment, list):
             return increment
         increments = []
@@ -102,10 +140,12 @@ class CLLoader:
 
     @property
     def nb_classes(self) -> int:
+        """Total number of classes in the whole continual setting."""
         return len(np.unique(self.train_data[1]))
 
     @property
     def nb_tasks(self) -> int:
+        """Number of tasks in the whole continual setting."""
         return len(self)
 
     def __len__(self) -> int:
@@ -116,10 +156,12 @@ class CLLoader:
         return len(self.increments)
 
     def __iter__(self):
+        """Used for iterating through all tasks with the CLLoader in a for loop."""
         self._counter = 0
         return self
 
     def __next__(self) -> Tuple[Dataset, Dataset]:
+        """An iteration/task in the for loop."""
         if self._counter >= len(self):
             raise StopIteration
         task = self[self._counter]
@@ -127,6 +169,11 @@ class CLLoader:
         return task
 
     def __getitem__(self, task_index):
+        """Returns a task by its unique index.
+
+        :param task_index: The unique index of a task, between 0 and len(loader) - 1.
+        :return: A train and test PyTorch's Datasets.
+        """
         max_class = sum(self.increments[:task_index + 1])
         min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
@@ -146,6 +193,15 @@ class CLLoader:
         return train_dataset, test_dataset
 
     def _select_data(self, min_class, max_class, split="train"):
+        """Selects a subset of the whole data for a given task.
+
+        :param min_class: The minimum class id.
+        :param max_class: The maximum class id.
+        :param split: Either sample from the `train` set, the `val` set, or the
+                      `test` set.
+        :return: A tuple of numpy array, the first item being the data and the
+                 second the associated targets.
+        """
         if split == "train":
             x, y = self.train_data
         elif split == "val":
