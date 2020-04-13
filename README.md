@@ -30,7 +30,13 @@ for task_id, (train_dataset, test_dataset) in enumerate(clloader):
 
 ### Supported Datasets:
 
-- MNIST
+MNIST
+
+|<img src="images/mnist_0.jpg" width="150">|<img src="images/mnist_1.jpg" width="150">|<img src="images/mnist_2.jpg" width="150">|<img src="images/mnist_3.jpg" width="150">|<img src="images/mnist_4.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+
+
 - FashionMNIST
 - KMNIST
 - EMNIST
