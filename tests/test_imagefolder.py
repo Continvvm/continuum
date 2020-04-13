@@ -39,12 +39,26 @@ def test_increments(increment, initial_increment, nb_tasks):
 
         assert clloader.nb_tasks == nb_tasks
         seen_tasks = 0
-        for train_dataset, test_dataset in clloader:
+        for task_id, (train_dataset, test_dataset) in enumerate(clloader):
             seen_tasks += 1
+
+            if isinstance(increment, list):
+                max_class = sum(increment[:task_id + 1])
+                min_class = sum(increment[:task_id])
+            elif initial_increment:
+                max_class = initial_increment + increment * task_id
+                min_class = initial_increment + increment * (task_id -1) if task_id > 0 else 0
+            else:
+                max_class = increment * (task_id + 1)
+                min_class = increment * task_id
 
             for _ in DataLoader(train_dataset):
                 pass
             for _ in DataLoader(test_dataset):
                 pass
 
-        assert seen_tasks == nb_tasks
+            assert np.max(train_dataset.y) == max_class - 1
+            assert np.min(train_dataset.y) == min_class
+            assert np.max(test_dataset.y) == max_class - 1
+            assert np.min(test_dataset.y) == 0
+    assert seen_tasks == nb_tasks
