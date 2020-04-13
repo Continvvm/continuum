@@ -1,9 +1,17 @@
-from clloader.datasets.base import BaseDataset, PyTorchDataset
-from clloader.datasets.cifar import CIFAR10, CIFAR100
+from clloader.datasets.base import (BaseDataset, ImageFolderDataset,
+                                    InMemoryDataset, PyTorchDataset)
+from clloader.datasets.imagenet import ImageNet100, ImageNet1000
+from clloader.datasets.pytorch import CIFAR10, CIFAR100, MNIST, FashionMNIST
 
 __all__ = [
     BaseDataset,
     PyTorchDataset,
+    InMemoryDataset,
+    ImageFolderDataset,
     CIFAR10,
-    CIFAR100
+    CIFAR100,
+    MNIST,
+    FashionMNIST,
+    ImageNet100,
+    ImageNet1000
 ]
