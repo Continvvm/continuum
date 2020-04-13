@@ -28,24 +28,32 @@ for task_id, (train_dataset, test_dataset) in enumerate(clloader):
     # Do your cool stuff here
 ```
 
+### Supported Scenarios
+
+|Name | Acronym | Supported |
+|:----|:---|:---:|
+| **New Instances** | NI | :x: |
+| **New Classes** | NC | :white_check_mark: |
+| **New Instances & Classes** | NIC | :x: |
+
 ### Supported Datasets:
 
 Note that the task sizes are fully customizable.
 
-|Name | Nb classes | Image Size |
-|:----|:---:|:----:|
-| MNIST | 10 | 28x28x1 |
-| Fashion MNIST | 10 | 28x28x1 |
-| KMNIST | 10 | 28x28x1 |
-| EMNIST | 10 | 28x28x1 |
-| QMNIST | 10 | 28x28x1 |
-| MNIST Fellowship | 30 | 28x28x1 |
-| CIFAR10 | 10 | 32x32x3 |
-| CIFAR100 | 100 | 32x32x3 |
-| CIFAR Fellowship | 110 | 32x32x3 |
-| ImageNet100 | 100 | 224x224x3 |
-| ImageNet1000 | 1000 | 224x224x3 |
-| Permuted MNIST | 10 + X * 10 | 224x224x3 |
+|Name | Nb classes | Image Size | Automatic Download |
+|:----|:---:|:----:|:---:|
+| **MNIST** | 10 | 28x28x1 | :white_check_mark: |
+| **Fashion MNIST** | 10 | 28x28x1 | :white_check_mark: |
+| **KMNIST** | 10 | 28x28x1 | :white_check_mark: |
+| **EMNIST** | 10 | 28x28x1 | :white_check_mark: |
+| **QMNIST** | 10 | 28x28x1 | :white_check_mark: |
+| **MNIST Fellowship** | 30 | 28x28x1 | :white_check_mark: |
+| **CIFAR10** | 10 | 32x32x3 | :white_check_mark: |
+| **CIFAR100** | 100 | 32x32x3 | :white_check_mark: |
+| **CIFAR Fellowship** | 110 | 32x32x3 | :white_check_mark: |
+| **ImageNet100** | 100 | 224x224x3 | :x: |
+| **ImageNet1000** | 1000 | 224x224x3 | :x: |
+| **Permuted MNIST** | 10 + X * 10 | 224x224x3 | :white_check_mark: |
 
 Furthermore some "Meta"-datasets are available:
 - **InMemoryDataset**: for in-memory numpy array
