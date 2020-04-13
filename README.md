@@ -30,24 +30,49 @@ for task_id, (train_dataset, test_dataset) in enumerate(clloader):
 
 ### Supported Datasets:
 
-MNIST
+Note that the task sizes are fully customizable.
+
+**MNIST**:
 
 |<img src="images/mnist_0.jpg" width="150">|<img src="images/mnist_1.jpg" width="150">|<img src="images/mnist_2.jpg" width="150">|<img src="images/mnist_3.jpg" width="150">|<img src="images/mnist_4.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
 
+**FashionMNIST**:
 
-- FashionMNIST
+|<img src="images/fashion_mnist_0.jpg" width="150">|<img src="images/fashion_mnist_1.jpg" width="150">|<img src="images/fashion_mnist_2.jpg" width="150">|<img src="images/fashion_mnist_3.jpg" width="150">|<img src="images/fashion_mnist_4.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+
 - KMNIST
 - EMNIST
 - QMNIST
-- CIFAR10
+
+**CIFAR10**:
+
+|<img src="images/cifar10_0.jpg" width="150">|<img src="images/cifar10_1.jpg" width="150">|<img src="images/cifar10_2.jpg" width="150">|<img src="images/cifar10_3.jpg" width="150">|<img src="images/cifar10_4.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+
 - CIFAR100
 - ImageNet100
 - ImageNet1000
-- MNIST Fellowship (MNIST + FashionMNIST + EMNIST)
+
+**MNIST Fellowship (MNIST + FashionMNIST + KMNIST)**:
+
+|<img src="images/mnist_fellowship_0.jpg" width="150">|<img src="images/mnist_fellowship_1.jpg" width="150">|<img src="images/mnist_fellowship_2.jpg" width="150">|<img src="images/mnist_fellowship_3.jpg" width="150">|<img src="images/mnist_fellowship_4.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+
+
 - CIFAR Fellowship (CIFAR10 + CIFAR100)
-- PermutedMNIST
+
+**PermutedMNIST**:
+
+|<img src="images/mnist_permuted_0.jpg" width="150">|<img src="images/mnist_permuted_1.jpg" width="150">|<img src="images/mnist_permuted_2.jpg" width="150">|<img src="images/mnist_permuted_3.jpg" width="150">|<img src="images/mnist_permuted_4.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+
 
 Furthermore some "Meta"-datasets are available:
 - InMemoryDataset: for in-memory numpy array
