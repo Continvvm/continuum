@@ -36,3 +36,15 @@ class MNIST(PyTorchDataset):
 
 class FashionMNIST(PyTorchDataset):
     dataset_type = torchdata.FashionMNIST
+
+
+class KMNIST(PyTorchDataset):
+    dataset_type = torchdata.KMNIST
+
+
+class EMNIST(PyTorchDataset):
+    dataset_type = torchdata.EMNIST
+
+
+class QMNIST(PyTorchDataset):
+    dataset_type = torchdata.QMNIST
