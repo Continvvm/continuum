@@ -18,7 +18,10 @@ clloader = CLLoader(
     initial_increment=5
 )
 
-for train_dataset, test_dataset in clloader:
+print(f"Number of classes: {clloader.nb_classes}.")
+print(f"Number of tasks: {clloader.nb_tasks}.")
+
+for task_id, (train_dataset, test_dataset) in enumerate(clloader):
     train_loader = DataLoader(train_dataset)
     test_loader = DataLoader(test_dataset)
 
