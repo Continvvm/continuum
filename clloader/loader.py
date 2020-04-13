@@ -54,7 +54,7 @@ class CLLoader:
         if train_transformations is None:
             train_transformations = []
         if common_transformations is None:
-            common_transformations = []
+            common_transformations = self.cl_dataset.transformations
         self.train_trsf = transforms.Compose(train_transformations + common_transformations)
         self.test_trsf = transforms.Compose(common_transformations)
 
