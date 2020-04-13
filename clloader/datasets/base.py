@@ -20,7 +20,7 @@ class BaseDataset(abc.ABC):
 
     @property
     def class_order(self) -> List[int]:
-        return [0]
+        return None
 
     @property
     def in_memory(self):
@@ -36,9 +36,9 @@ class PyTorchDataset(BaseDataset):
 
     def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
         train_dataset = self.dataset_type(self.data_path, download=self.download, train=True)
-        x_train, y_train = train_dataset.data, np.array(train_dataset.targets)
+        x_train, y_train = np.array(train_dataset.data), np.array(train_dataset.targets)
         test_dataset = self.dataset_type(self.data_path, download=self.download, train=False)
-        x_test, y_test = test_dataset.data, np.array(test_dataset.targets)
+        x_test, y_test = np.array(test_dataset.data), np.array(test_dataset.targets)
 
         return (x_train, y_train), (x_test, y_test)
 

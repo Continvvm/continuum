@@ -25,7 +25,7 @@ class ImageNet100(ImageNet1000):
         self, *args, train_subset: Union[Tuple[np.array, np.array], str],
         test_subset: Union[Tuple[np.array, np.array], str], **kwargs
     ):
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.train_subset = train_subset
         self.test_subset = test_subset
@@ -43,14 +43,13 @@ class ImageNet100(ImageNet1000):
             x, y = [], []
             folder = self.train_folder if train else self.test_folder
 
-            with open(subset) as f:
+            with open(subset, "r") as f:
                 for line in f:
                     split_line = line.split(" ")
-                    path = "/".joint(split_line[0].strip().split("/")[1:])
+                    path = "/".join(split_line[0].strip().split("/")[1:])
                     x.append(os.path.join(folder, path))
                     y.append(int(split_line[1].strip()))
-
-            x = np.concatenate(x)
-            y = np.concatenate(y)
+            x = np.array(x)
+            y = np.array(y)
             return x, y
         return subset

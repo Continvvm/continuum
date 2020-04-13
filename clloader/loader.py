@@ -6,6 +6,7 @@ from PIL import Image
 
 import torch
 from clloader.datasets import BaseDataset
+from clloader.viz import plot
 from torchvision import transforms
 
 
@@ -18,23 +19,32 @@ class Dataset(torch.utils.data.Dataset):
         self.trsf = trsf
         self.open_image = open_image
 
+    @property
+    def nb_classes(self):
+        return len(np.unique(self.y))
+
     def add_memory(self, x_memory: np.ndarray, y_memory: np.ndarray):
         self.x = np.concatenate((self.x, x_memory))
         self.y = np.concatenate((self.y, y_memory))
 
+    def plot(self, path=None, figsize=None, nb_per_class=5):
+        plot(self, figsize=figsize, path=path, nb_per_class=nb_per_class)
+
     def __len__(self):
         return self.x.shape[0]
 
-    def __getitem__(self, idx):
-        x, y = self.x[idx], self.y[idx]
-
+    def get_image(self, index):
+        x = self.x[index]
         if self.open_image:
             img = Image.open(x).convert("RGB")
         else:
             img = Image.fromarray(x.astype("uint8"))
+        return img
 
+    def __getitem__(self, index):
+        img = self.get_image(index)
+        y = self.y[index]
         img = self.trsf(img)
-
         return img, y
 
 

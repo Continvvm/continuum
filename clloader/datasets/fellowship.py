@@ -3,8 +3,8 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-from clloader.datasets import (CIFAR10, CIFAR100, KMNIST, MNIST, BaseDataset,
-                               FashionMNIST, PyTorchDataset)
+from clloader.datasets.base import BaseDataset, PyTorchDataset
+from clloader.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST)
 from torchvision import datasets as torchdata
 from torchvision import transforms
 
@@ -32,12 +32,12 @@ class Fellowship(BaseDataset):
             y_train.append(train[1] + class_counter)
             y_test.append(test[1] + class_counter)
 
-            class_counter += len(np.unique(train[y]))
+            class_counter += len(np.unique(train[1]))
 
         x_train = np.concatenate(x_train)
         x_test = np.concatenate(x_test)
         y_train = np.concatenate(y_train)
-        y_test = np.concatenate(y_train)
+        y_test = np.concatenate(y_test)
 
         return (x_train, y_train), (x_test, y_test)
 

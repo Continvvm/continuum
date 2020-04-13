@@ -1,4 +1,3 @@
-import abc
 from typing import List, Tuple, Union
 
 import numpy as np
@@ -10,8 +9,8 @@ from torchvision import transforms
 
 class PermutedMNIST(MNIST):
 
-    def __init__(self, nb_permutations=4, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, nb_permutations=4, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.nb_permutations = nb_permutations
 
@@ -21,9 +20,10 @@ class PermutedMNIST(MNIST):
         x_train, y_train = [base_train[0]], [base_train[1]]
         x_test, y_test = [base_test[0]], [base_test[1]]
 
-        class_counter = np.max(base_train[1])
+        class_counter = np.max(base_train[1]) + 1
         nb_base_class = class_counter
-        for i in range(self.nb_permuations):
+
+        for i in range(self.nb_permutations):
             permuted_train, permuted_test = self._permut(base_train[0], base_test[0], i)
 
             x_train.append(permuted_train)
@@ -32,7 +32,7 @@ class PermutedMNIST(MNIST):
             y_train.append(base_train[1] + class_counter)
             y_test.append(base_test[1] + class_counter)
 
-            class_counter += nb_base_class
+            class_counter += nb_base_class + 1
 
         x_train = np.concatenate(x_train)
         y_train = np.concatenate(y_train)
@@ -42,7 +42,7 @@ class PermutedMNIST(MNIST):
         return (x_train, y_train), (x_test, y_test)
 
     def _permut(self, x_train, x_test, i):
-        random_state = np.random.random_state(seed=i)
+        random_state = np.random.RandomState(seed=i)
         permutations = random_state.permutation(x_train.shape[1] * x_train.shape[2])
 
         train_shape = x_train.shape
