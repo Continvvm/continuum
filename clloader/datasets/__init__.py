@@ -1,8 +1,10 @@
-from clloader.datasets.base import (
-    BaseDataset, ImageFolderDataset, InMemoryDataset, PyTorchDataset
-)
+from clloader.datasets.base import (BaseDataset, ImageFolderDataset,
+                                    InMemoryDataset, PyTorchDataset)
+from clloader.datasets.fellowship import (CIFARFellowship, Fellowship,
+                                          MNISTFellowship)
 from clloader.datasets.imagenet import ImageNet100, ImageNet1000
-from clloader.datasets.pytorch import CIFAR10, CIFAR100, MNIST, FashionMNIST
+from clloader.datasets.pytorch import (CIFAR10, CIFAR100, EMNIST, KMNIST,
+                                       MNIST, QMNIST, FashionMNIST)
 from clloader.datasets.transformed import PermutedMNIST
 
 # yapf: disable
@@ -15,7 +17,13 @@ __all__ = [
     CIFAR100,
     MNIST,
     FashionMNIST,
+    KMNIST,
+    EMNIST,
+    QMNIST,
     ImageNet100,
     ImageNet1000,
-    PermutedMNIST
+    PermutedMNIST,
+    Fellowship,
+    MNISTFellowship,
+    CIFARFellowship
 ]
