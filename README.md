@@ -32,6 +32,29 @@ for task_id, (train_dataset, test_dataset) in enumerate(clloader):
 
 Note that the task sizes are fully customizable.
 
+|Name | Nb classes | Image Size |
+|:----|:---:|:----:|
+| MNIST | 10 | 28x28x1 |
+| Fashion MNIST | 10 | 28x28x1 |
+| KMNIST | 10 | 28x28x1 |
+| EMNIST | 10 | 28x28x1 |
+| QMNIST | 10 | 28x28x1 |
+| MNIST Fellowship | 30 | 28x28x1 |
+| CIFAR10 | 10 | 32x32x3 |
+| CIFAR100 | 100 | 32x32x3 |
+| CIFAR Fellowship | 110 | 32x32x3 |
+| ImageNet100 | 100 | 224x224x3 |
+| ImageNet1000 | 1000 | 224x224x3 |
+| Permuted MNIST | 10 + X * 10 | 224x224x3 |
+
+Furthermore some "Meta"-datasets are available:
+- **InMemoryDataset**: for in-memory numpy array
+- **PyTorchDataset**: for any dataset defined in torchvision
+- **ImageFolderDataset**: for datasets having a tree-like structure, with one folder per class
+- **Fellowship**: to combine several datasets
+
+### Sample Images
+
 **MNIST**:
 
 |<img src="images/mnist_0.jpg" width="150">|<img src="images/mnist_1.jpg" width="150">|<img src="images/mnist_2.jpg" width="150">|<img src="images/mnist_3.jpg" width="150">|<img src="images/mnist_4.jpg" width="150">|
@@ -44,38 +67,21 @@ Note that the task sizes are fully customizable.
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
 
-- KMNIST
-- EMNIST
-- QMNIST
-
 **CIFAR10**:
 
 |<img src="images/cifar10_0.jpg" width="150">|<img src="images/cifar10_1.jpg" width="150">|<img src="images/cifar10_2.jpg" width="150">|<img src="images/cifar10_3.jpg" width="150">|<img src="images/cifar10_4.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
 
-- CIFAR100
-- ImageNet100
-- ImageNet1000
-
 **MNIST Fellowship (MNIST + FashionMNIST + KMNIST)**:
 
-|<img src="images/mnist_fellowship_0.jpg" width="150">|<img src="images/mnist_fellowship_1.jpg" width="150">|<img src="images/mnist_fellowship_2.jpg" width="150">|<img src="images/mnist_fellowship_3.jpg" width="150">|<img src="images/mnist_fellowship_4.jpg" width="150">|
-|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
-|Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+|<img src="images/mnist_fellowship_0.jpg" width="150">|<img src="images/mnist_fellowship_1.jpg" width="150">|<img src="images/mnist_fellowship_2.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 |
 
-
-- CIFAR Fellowship (CIFAR10 + CIFAR100)
 
 **PermutedMNIST**:
 
 |<img src="images/mnist_permuted_0.jpg" width="150">|<img src="images/mnist_permuted_1.jpg" width="150">|<img src="images/mnist_permuted_2.jpg" width="150">|<img src="images/mnist_permuted_3.jpg" width="150">|<img src="images/mnist_permuted_4.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
-
-
-Furthermore some "Meta"-datasets are available:
-- InMemoryDataset: for in-memory numpy array
-- PyTorchDataset: for datasets defined in torchvision
-- ImageFolderDataset: for datasets having a tree-like structure, with one folder per class
-- Fellowship: to combine several datasets
