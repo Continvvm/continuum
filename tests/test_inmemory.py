@@ -2,22 +2,21 @@ import numpy as np
 import pytest
 
 from clloader import CLLoader
-from clloader.datasets import BaseDataset
+from clloader.datasets import InMemoryDataset
+from torch.utils.data import DataLoader
 
 
-class DummyHandler(BaseDataset):
+def gen_data():
+    x_train = np.random.randint(0, 255, size=(20, 32, 32, 3))
+    y_train = []
+    for i in range(10):
+        y_train.append(np.ones(2) * i)
+    y_train = np.concatenate(y_train)
 
-    def init(self):
-        x_train = np.random.randn(20, 3, 32, 32)
-        y_train = []
-        for i in range(10):
-            y_train.append(np.ones(2) * i)
-        y_train = np.concatenate(y_train)
+    x_test = np.random.randint(0, 255, size=(20, 32, 32, 3))
+    y_test = np.copy(y_train)
 
-        x_test = np.random.randn(20, 3, 32, 32)
-        y_test = np.copy(y_train)
-
-        return (x_train, y_train), (x_test, y_test)
+    return (x_train, y_train), (x_test, y_test)
 
 
 # yapf: disable
@@ -30,11 +29,18 @@ class DummyHandler(BaseDataset):
     ([5, 1, 1, 3], 0, 4)
 ])
 def test_increments(increment, initial_increment, nb_tasks):
-    dummy = DummyHandler()
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train, *test)
     clloader = CLLoader(dummy, increment, initial_increment)
 
     assert clloader.nb_tasks == nb_tasks
     seen_tasks = 0
-    for _ in clloader:
+    for train_dataset, test_dataset in clloader:
         seen_tasks += 1
+
+        for _ in DataLoader(train_dataset):
+            pass
+        for _ in DataLoader(test_dataset):
+            pass
+
     assert seen_tasks == nb_tasks
