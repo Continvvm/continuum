@@ -23,6 +23,21 @@ class BaseDataset(abc.ABC):
         return None
 
     @property
+    def need_class_remapping(self) -> bool:
+        """Flag for method `class_remapping`."""
+        return False
+
+    def class_remapping(self, class_ids: np.ndarray) -> np.ndarray:
+        """Optional class remapping.
+
+        Used for example in PermutedMNIST, cf transformed.py;
+
+        :param class_ids: Original class_ids.
+        :return: A remapping of the class ids.
+        """
+        return None
+
+    @property
     def in_memory(self):
         return True
 

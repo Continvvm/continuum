@@ -210,4 +210,12 @@ class CLLoader:
             x, y = self.test_data
 
         indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
-        return x[indexes], y[indexes]
+        selected_x = x[indexes]
+        selected_y = y[indexes]
+
+        if self.cl_dataset.need_class_remapping:
+            # A remapping of the class ids is done to handle some special cases
+            # like PermutedMNIST or RotatedMNIST.
+            selected_y = self.cl_dataset.class_remapping(selected_y)
+
+        return selected_x, selected_y
