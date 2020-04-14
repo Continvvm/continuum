@@ -2,11 +2,10 @@ from typing import Callable, List, Tuple, Union
 
 import numpy as np
 import torch
-from PIL import Image
-from torchvision import transforms
-
 from clloader.datasets import BaseDataset
 from clloader.viz import plot
+from PIL import Image
+from torchvision import transforms
 
 
 class Dataset(torch.utils.data.Dataset):

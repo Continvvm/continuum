@@ -1,7 +1,6 @@
 import numpy as np
-from scipy import ndimage
-
 from clloader.datasets import MNIST
+from scipy import ndimage
 
 
 class PermutedMNIST(MNIST):
@@ -21,7 +20,7 @@ class PermutedMNIST(MNIST):
     """
 
     def __init__(self, *args, nb_permutations=4, **kwargs):
-        super(MNIST, self).__init__(*args, **kwargs)
+        MNIST.__init__(self, *args, **kwargs)
 
         self._transformations = list(range(nb_permutations))
         self._mapping = None
@@ -52,7 +51,7 @@ class PermutedMNIST(MNIST):
         return self._mapping[class_ids]
 
     def init(self):
-        base_train, base_test = super(MNIST, self).init()
+        base_train, base_test = MNIST.init(self)
 
         x_train, y_train = [base_train[0]], [base_train[1]]
         x_test, y_test = [base_test[0]], [base_test[1]]
@@ -104,7 +103,7 @@ class RotatedMNIST(PermutedMNIST):
     """
 
     def __init__(self, *args, angles=[45, 90, 135, 180], **kwargs):
-        super(MNIST, self).__init__(*args, **kwargs)
+        MNIST.__init__(self, *args, **kwargs)
 
         self._transformations = angles
         self._mapping = None
