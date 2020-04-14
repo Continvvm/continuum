@@ -6,8 +6,15 @@
 
 Aka Continual Learning, Lifelong-Learning, Incremental Learning, etc.
 
+
 ### Example:
 
+Install from and PyPi:
+```bash
+pip3 install clloader
+```
+
+And run!
 ```python
 from torch.utils.data import DataLoader
 
