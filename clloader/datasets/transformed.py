@@ -1,9 +1,5 @@
-from typing import List, Tuple, Union
-
 import numpy as np
 from scipy import ndimage
-from torchvision import datasets as torchdata
-from torchvision import transforms
 
 from clloader.datasets import MNIST
 

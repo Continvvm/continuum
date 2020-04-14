@@ -1,12 +1,12 @@
 from typing import Callable, List, Tuple, Union
 
 import numpy as np
-from PIL import Image
-
 import torch
+from PIL import Image
+from torchvision import transforms
+
 from clloader.datasets import BaseDataset
 from clloader.viz import plot
-from torchvision import transforms
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -76,6 +76,7 @@ class Dataset(torch.utils.data.Dataset):
 class CLLoader:
     """Continual Loader, generating datasets for the consecutive tasks.
 
+    :param cl_dataset: A continual dataset.
     :param increment: Either number of classes per task, or a list specifying for
                       every task the amount of new classes.
     :param initial_increment: A different task size applied only for the first task.

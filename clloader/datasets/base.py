@@ -3,7 +3,6 @@ import os
 from typing import List, Tuple, Union
 
 import numpy as np
-
 from torchvision import datasets as torchdata
 from torchvision import transforms
 
@@ -47,7 +46,10 @@ class BaseDataset(abc.ABC):
 
 
 class PyTorchDataset(BaseDataset):
-    dataset_type = None
+    # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
+    def __init__(self, *args, dataset_type, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataset_type = dataset_type
 
     def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
         train_dataset = self.dataset_type(self.data_path, download=self.download, train=True)

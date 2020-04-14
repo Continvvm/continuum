@@ -2,14 +2,16 @@ import abc
 from typing import List, Tuple, Union
 
 import numpy as np
-
-from clloader.datasets import PyTorchDataset
 from torchvision import datasets as torchdata
 from torchvision import transforms
 
+from clloader.datasets import PyTorchDataset
+
 
 class CIFAR10(PyTorchDataset):
-    dataset_type = torchdata.cifar.CIFAR10
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.cifar.CIFAR10, **kwargs)
 
     @property
     def transformations(self):
@@ -20,7 +22,9 @@ class CIFAR10(PyTorchDataset):
 
 
 class CIFAR100(PyTorchDataset):
-    dataset_type = torchdata.cifar.CIFAR100
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, **kwargs)
 
     @property
     def transformations(self):
@@ -31,20 +35,30 @@ class CIFAR100(PyTorchDataset):
 
 
 class MNIST(PyTorchDataset):
-    dataset_type = torchdata.MNIST
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.MNIST, **kwargs)
 
 
 class FashionMNIST(PyTorchDataset):
-    dataset_type = torchdata.FashionMNIST
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.FashionMNIST, **kwargs)
 
 
 class KMNIST(PyTorchDataset):
-    dataset_type = torchdata.KMNIST
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.KMNIST, **kwargs)
 
 
 class EMNIST(PyTorchDataset):
-    dataset_type = torchdata.EMNIST
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.EMNIST, **kwargs)
 
 
 class QMNIST(PyTorchDataset):
-    dataset_type = torchdata.QMNIST
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.QMNIST, **kwargs)
