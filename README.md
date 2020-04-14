@@ -55,13 +55,96 @@ Note that the task sizes are fully customizable.
 | **CIFAR Fellowship** | 110 | 32x32x3 | :white_check_mark: |
 | **ImageNet100** | 100 | 224x224x3 | :x: |
 | **ImageNet1000** | 1000 | 224x224x3 | :x: |
-| **Permuted MNIST** | 10 + X * 10 | 224x224x3 | :white_check_mark: |
+| **Permuted MNIST** | 10 | 28x28x1 | :white_check_mark: |
+| **Rotated MNIST** | 10 | 28x28x1 | :white_check_mark: |
 
 Furthermore some "Meta"-datasets are available:
-- **InMemoryDataset**: for in-memory numpy array
-- **PyTorchDataset**: for any dataset defined in torchvision
-- **ImageFolderDataset**: for datasets having a tree-like structure, with one folder per class
-- **Fellowship**: to combine several datasets
+
+**InMemoryDataset**, for in-memory numpy array:
+```python
+x_train, y_train = gen_numpy_array()
+x_test, y_test = gen_numpy_array()
+
+clloader = CLLoader(
+    InMemoryDataset(x_train, y_train, x_test, y_test),
+    increment=10,
+)
+```
+
+**PyTorchDataset**,for any dataset defined in torchvision:
+```python
+clloader = CLLoader(
+    PyTorchDataset("/my/data/path", dataset_type=torchvision.datasets.CIFAR10),
+    increment=10,
+)
+```
+
+**ImageFolderDataset**, for datasets having a tree-like structure, with one folder per class:
+```python
+clloader = CLLoader(
+    ImageFolderDataset("/my/train/folder", "/my/test/folder"),
+    increment=10,
+)
+```
+
+**Fellowship**, to combine several datasets:
+```python
+clloader = CLLoader(
+    Fellowship("/my/data/path", dataset_list=[torchvision.datasets.CIFAR10, torchvision.datasets.CIFAR100]),
+    increment=10,
+)
+```
+
+Some datasets cannot provide an automatic download of the data for miscealleneous reasons. For example for ImageNet, you'll need to download the data from the [official page](http://www.image-net.org/challenges/LSVRC/2012/downloads). Then load it likewise:
+```python
+clloader = CLLoader(
+    ImageNet1000("/my/train/folder", "/my/test/folder"),
+    increment=10,
+)
+```
+
+Some papers use a subset, called ImageNet100 or ImageNetSubset. You'll need to get the subset ids. It's either a file in the following format:
+```
+my/path/to/image0.JPEG target0
+my/path/to/image1.JPEG target1
+```
+Or a list of tuple `[("my/path/to/image0.JPEG", target0), ...]`. Then loading the continual loader is very simple:
+```python
+clloader = CLLoader(
+    ImageNet100(
+        "/my/train/folder",
+        "/my/test/folder",
+        train_subset=... # My subset ids
+        test_subset=... # My subset ids
+    ),
+    increment=10,
+)
+```
+
+### Continual Loader
+
+The Continual Loader `CLLoader` loads the data and batch it in several tasks. See there some example arguments:
+
+```python
+clloader = CLLoader(
+    my_continual_dataset,
+    increment=10,
+    initial_increment=2,
+    train_transformations=[transforms.RandomHorizontalFlip()],
+    common_transformations=[
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+    ],
+    evaluate_on="seen"
+)
+```
+
+Here the first task is made of 2 classes, then all following tasks of 10 classes. You can have a more finegrained increment by providing a list of ìncrement=[2, 10, 5, 10]`.
+
+The `train_transformations` is applied only on the training data, while the `common_transformations` on both the training and testing data.
+
+By default, we evaluate our model after each task on `seen` classes. But you can evalute only on `current` classes, or even on `all` classes.
+
 
 ### Sample Images
 
