@@ -87,10 +87,10 @@ clloader = CLLoader(
 )
 ```
 
-**Fellowship**, to combine several datasets:
+**Fellowship**, to combine several continual datasets.:
 ```python
 clloader = CLLoader(
-    Fellowship("/my/data/path", dataset_list=[torchvision.datasets.CIFAR10, torchvision.datasets.CIFAR100]),
+    Fellowship("/my/data/path", dataset_list=[CIFAR10, CIFAR100]),
     increment=10,
 )
 ```
