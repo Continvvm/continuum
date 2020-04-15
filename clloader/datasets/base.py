@@ -63,16 +63,26 @@ class PyTorchDataset(BaseDataset):
 class InMemoryDataset(BaseDataset):
 
     def __init__(
-        self, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray, y_test: np.ndarray,
+        self,
+        x_train: np.ndarray,
+        y_train: np.ndarray,
+        x_test: np.ndarray,
+        y_test: np.ndarray,
+        is_path: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
 
         self.train = (x_train, y_train)
         self.test = (x_test, y_test)
+        self.is_path = is_path
 
     def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
         return self.train, self.test
+
+    @property
+    def in_memory(self) -> bool:
+        return not self.is_path
 
 
 class ImageFolderDataset(BaseDataset):
