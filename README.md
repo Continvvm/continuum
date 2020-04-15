@@ -146,7 +146,7 @@ clloader = CLLoader(
 )
 ```
 
-Here the first task is made of 2 classes, then all following tasks of 10 classes. You can have a more finegrained increment by providing a list of ìncrement=[2, 10, 5, 10]`.
+Here the first task is made of 2 classes, then all following tasks of 10 classes. You can have a more finegrained increment by providing a list of `increment=[2, 10, 5, 10]`.
 
 The `train_transformations` is applied only on the training data, while the `common_transformations` on both the training and testing data.
 
