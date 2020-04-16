@@ -185,3 +185,17 @@ By default, we evaluate our model after each task on `seen` classes. But you can
 |<img src="images/mnist_permuted_0.jpg" width="150">|<img src="images/mnist_permuted_1.jpg" width="150">|<img src="images/mnist_permuted_2.jpg" width="150">|<img src="images/mnist_permuted_3.jpg" width="150">|<img src="images/mnist_permuted_4.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+
+**RotatedMNIST**:
+
+|<img src="images/mnist_rotated_0.jpg" width="150">|<img src="images/mnist_rotated_1.jpg" width="150">|<img src="images/mnist_rotated_2.jpg" width="150">|<img src="images/mnist_rotated_3.jpg" width="150">|<img src="images/mnist_rotated_4.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
+
+
+**ImageNet100**:
+
+|<img src="images/imagenet100_0.jpg" width="150">|<img src="images/imagenet100_1.jpg" width="150">|<img src="images/imagenet100_2.jpg" width="150">|<img src="images/imagenet100_3.jpg" width="150">| ... |
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 | ... |
+
