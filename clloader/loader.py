@@ -39,14 +39,15 @@ class Dataset(TorchDataset):
         self.x = np.concatenate((self.x, x_memory))
         self.y = np.concatenate((self.y, y_memory))
 
-    def plot(self, path=None, figsize=None, nb_per_class=5):
+    def plot(self, path=None, title="", nb_per_class=5, shape=None):
         """Plot samples of the current task, useful to check if everything is ok.
 
         :param path: If not None, save on disk at this path.
-        :param figsize: The size of the figure.
+        :param title: The title of the figure.
         :param nb_per_class: Amount to sample per class.
+        :param shape: Shape to resize the image before plotting.
         """
-        plot(self, figsize=figsize, path=path, nb_per_class=nb_per_class)
+        plot(self, title=title, path=path, nb_per_class=nb_per_class, shape=shape)
 
     def __len__(self):
         """The amount of images in the current task."""

@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+from skimage.transform import resize
+
 
 def sample(x, y, nb_per_class=5):
     sampled_x, sampled_y = [], []
@@ -15,28 +17,55 @@ def sample(x, y, nb_per_class=5):
     return sampled_x, sampled_y
 
 
-def plot(dataset, figsize=None, path=None, nb_per_class=5):
+def plot(dataset, title="", path=None, nb_per_class=5, shape=None):
     x, y = sample(dataset.x, dataset.y, nb_per_class=nb_per_class)
     if not dataset.open_image and x.shape[1] == 1:
         x = x.squeeze(1)
 
-    c = 1
+    big_image = None
+    cmap = None
     for class_id in range(dataset.nb_classes):
         for sample_id in range(nb_per_class):
-            ax = plt.subplot(dataset.nb_classes, nb_per_class, c)
             if dataset.open_image:
                 img = dataset.get_image(class_id * nb_per_class + sample_id)
-                ax.imshow(np.asarray(img))
+                img = np.asarray(img)
             elif len(x.shape) == 3:  # Grayscale, no channel dimension
-                ax.imshow(x[class_id * nb_per_class + sample_id], cmap="gray")
+                img = x[class_id * nb_per_class + sample_id]
+                cmap = "gray"
             else:
-                ax.imshow(x[class_id * nb_per_class + sample_id])
+                img = x[class_id * nb_per_class + sample_id]
 
-            ax.set_xticks([])
-            ax.set_yticks([])
-            c += 1
+            if big_image is None:
+                if shape is None:
+                    h = img.shape[0]
+                    w = img.shape[1]
+                else:
+                    h, w = shape
 
-    plt.subplots_adjust(bottom=0.01, top=0.5, wspace=0.00, hspace=0.0001)
+                if cmap == "gray":
+                    big_image = np.empty(
+                        (dataset.nb_classes * h, nb_per_class * w), dtype=img.dtype
+                    )
+                else:
+                    big_image = np.empty(
+                        (dataset.nb_classes * h, nb_per_class * w, 3), dtype="uint8"
+                    )
+
+            h_lo = class_id * w
+            h_hi = (class_id + 1) * w
+            w_lo = sample_id * h
+            w_hi = (sample_id + 1) * h
+
+            if shape is not None:
+                img = (255 * resize(img, shape)).astype("uint8")
+
+            big_image[h_lo:h_hi, w_lo:w_hi] = img
+
+    plt.imshow(big_image, cmap=cmap)
+    plt.xticks([])
+    plt.yticks([])
+    plt.title(title)
+
     if path is None:
         plt.show()
     else:
