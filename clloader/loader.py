@@ -88,6 +88,7 @@ class CLLoader:
                                    resizing, etc.
     :param evaluate_on: How to evaluate on val/test, either on all `seen` classes,
                         on the `current` classes, or on `all` classes.
+    :param class_order: An optional custom class order, used for NC.
     """
 
     def __init__(
@@ -97,7 +98,8 @@ class CLLoader:
         initial_increment: int = 0,
         train_transformations: List[Callable] = None,
         common_transformations: List[Callable] = None,
-        evaluate_on="seen"
+        evaluate_on="seen",
+        class_order=None
     ) -> None:
         self.cl_dataset = cl_dataset
 
@@ -112,7 +114,7 @@ class CLLoader:
             raise NotImplementedError(f"Evaluate mode {evaluate_on} is not supported.")
         self.evaluate_on = evaluate_on
 
-        self._setup()
+        self._setup(class_order)
 
         self.increments = self._define_increments(increment, initial_increment)
 
@@ -134,11 +136,31 @@ class CLLoader:
 
         return increments
 
-    def _setup(self) -> None:
-        self.train_data, self.test_data = self.cl_dataset.init()
-        unique_classes = np.unique(self.train_data[1])
+    def _setup(self, class_order: Union[None, List[int]] = None) -> None:
+        (train_x, train_y), (test_x, test_y) = self.cl_dataset.init()
+        unique_classes = np.unique(train_y)
 
-        self.class_order = self.cl_dataset.class_order or list(range(len(unique_classes)))
+        self.class_order = class_order or self.cl_dataset.class_order or list(
+            range(len(unique_classes))
+        )
+        if len(np.unique(self.class_order)) != len(self.class_order):
+            raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
+
+        mapper = np.vectorize(lambda x: self.class_order.index(x))
+        train_y = mapper(train_y)
+        test_y = mapper(test_y)
+
+        self.train_data = (train_x, train_y)
+        self.test_data = (test_x, test_y)
+        self.class_order = np.array(self.class_order)
+
+    def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
+        """Returns the original targets not changed by the custom class order.
+
+        :param targets: An array of targets, as provided by the task datasets.
+        :return: An array of targets, with their original values.
+        """
+        return self.class_order[targets]
 
     @property
     def nb_classes(self) -> int:
