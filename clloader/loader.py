@@ -1,6 +1,7 @@
 from typing import Callable, List, Tuple, Union
 
 import numpy as np
+import torch
 from clloader.datasets import BaseDataset, ContinuumDataset
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
@@ -173,25 +174,3 @@ class CLLoader:
 
         return selected_x, selected_y
 
-
-def split_train_val(dataset: TorchDataset,
-                    val_split: float = 0.1) -> Tuple[TorchDataset, TorchDataset]:
-    """Split train dataset into two datasets, one for training and one for validation.
-
-    :param dataset: A torch dataset, with .x and .y attributes.
-    :param val_split: Percentage to allocate for validation, between [0, 1[.
-    :return: A tuple a dataset, respectively for train and validation.
-    """
-    random_state = np.random.RandomState(seed=1)
-
-    indexes = np.arange(len(dataset.x))
-    random_state.shuffle(indexes)
-
-    train_indexes = indexes[int(val_split * len(indexes)):]
-    val_indexes = indexes[:int(val_split * len(indexes))]
-
-    x, y = dataset.x, dataset.y
-    train_dataset = ContinuumDataset(x[train_indexes], y[train_indexes], dataset.trsf, dataset.open_image)
-    val_dataset = ContinuumDataset(x[val_indexes], y[val_indexes], dataset.trsf, dataset.open_image)
-
-    return train_dataset, val_dataset
