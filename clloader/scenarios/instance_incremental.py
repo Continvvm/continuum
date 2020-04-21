@@ -1,6 +1,7 @@
 
 
 from clloader import CLLoader
+from numpy as np
 
 
 class InstanceIncremental(CLLoader):
@@ -22,3 +23,7 @@ class InstanceIncremental(CLLoader):
     """
     # TODO
 
+
+    # Vanilla NI: data are given randomly, each task has all classes and each task has different instances
+    def _set_task_labels(self, y, increments):
+        return np.random.randint(self.nb_tasks, size=len(y))
