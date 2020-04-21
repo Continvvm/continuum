@@ -90,7 +90,7 @@ def split_train_val(dataset: TorchDataset,
     val_indexes = indexes[:int(val_split * len(indexes))]
 
     x, y = dataset.x, dataset.y
-    train_dataset = ContinuumDataset(x[train_indexes], y[train_indexes], dataset.trsf, dataset.open_image)
-    val_dataset = ContinuumDataset(x[val_indexes], y[val_indexes], dataset.trsf, dataset.open_image)
+    train_dataset = TaskSet(x[train_indexes], y[train_indexes], dataset.trsf, dataset.open_image)
+    val_dataset = TaskSet(x[val_indexes], y[val_indexes], dataset.trsf, dataset.open_image)
 
     return train_dataset, val_dataset

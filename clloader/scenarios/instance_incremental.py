@@ -1,6 +1,6 @@
 
 
-from loader import CLLoader
+from clloader import CLLoader
 
 
 class InstanceIncremental(CLLoader):

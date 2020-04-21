@@ -1,18 +1,7 @@
 
 
-
-from typing import Callable, List, Tuple, Union
-
-import numpy as np
-import torch
-from clloader.datasets import BaseDataset
-from clloader import TaskSet
-from torch.utils.data import Dataset as TorchDataset
-from torchvision import transforms
 from clloader import CLLoader
 
-############
-# IDEE: Avoir une classe CLLoader de base et plusieur autres spécifiques au scenarii
 
 class ClassIncremental(CLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
