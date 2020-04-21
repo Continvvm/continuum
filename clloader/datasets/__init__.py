@@ -6,7 +6,6 @@ from clloader.datasets.imagenet import ImageNet100, ImageNet1000
 from clloader.datasets.pytorch import (CIFAR10, CIFAR100, EMNIST, KMNIST,
                                        MNIST, QMNIST, FashionMNIST)
 from clloader.datasets.transformed import PermutedMNIST, RotatedMNIST
-from clloader.datasets.continuumDataset import ContinuumDataset, split_train_val
 
 # yapf: disable
 __all__ = [
