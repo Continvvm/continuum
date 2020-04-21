@@ -56,7 +56,7 @@ class CLLoader:
         if isinstance(increment, list):
 
             # Check if the total number of classes is compatible between increment list and self.nb_classes
-            if not (np.array(increment).sum()== self.nb_classes()):
+            if not sum(increment)== self.nb_classes():
                 raise Exception(
                     "The increment list is not compatible with the number of classes"
                 )

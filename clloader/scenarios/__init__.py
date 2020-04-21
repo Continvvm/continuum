@@ -1,0 +1,4 @@
+from clloader.scenarios.class_incremental import Class_incremental
+from clloader.scenarios.data_incremental import Data_incremental
+from clloader.scenarios.instance_incremental import Instance_incremental
+

@@ -8,7 +8,7 @@ from torchvision import transforms
 from torch.utils.data import Dataset as TorchDataset
 
 
-class ContinuumDataset(TorchDataset):
+class TaskSet(TorchDataset):
     """A task dataset returned by the CLLoader.
 
     :param x: The data, either image-arrays or paths to images saved on disk.
