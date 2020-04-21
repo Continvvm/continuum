@@ -1,6 +1,6 @@
 # Continual Loader (CLLoader)
 
-[![PyPI version](https://badge.fury.io/py/clloader.svg)](https://badge.fury.io/py/clloader) [![Build Status](https://travis-ci.com/arthurdouillard/continual_loader.svg?branch=master)](https://travis-ci.com/arthurdouillard/continual_loader) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae156f65a9b84816b8e708101e546b61)](https://www.codacy.com/manual/arthurdouillard/continuum?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=arthurdouillard/continuum&amp;utm_campaign=Badge_Grade)
+[![PyPI version](https://badge.fury.io/py/clloader.svg)](https://badge.fury.io/py/clloader) [![Build Status](https://travis-ci.com/arthurdouillard/continual_loader.svg?branch=master)](https://travis-ci.com/arthurdouillard/continual_loader) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae156f65a9b84816b8e708101e546b61)](https://www.codacy.com/manual/arthurdouillard/continuum?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=arthurdouillard/continuum&amp;utm_campaign=Badge_Grade) [![DOI](https://zenodo.org/badge/254864913.svg)](https://zenodo.org/badge/latestdoi/254864913)
 
 ## A library for PyTorch's loading of datasets in the field of Continual Learning
 
@@ -199,3 +199,20 @@ By default, we evaluate our model after each task on `seen` classes. But you can
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | ... |
 
+
+### Citation
+
+If you find this library useful in your work, please consider citing it:
+
+```
+@software{douillard_lesort_continuum20,
+  author       = {Arthur Douillard, Timothée LESORT},
+  title        = {Continuum library},
+  month        = {April},
+  year         = {2020},
+  publisher    = {Zenodo},
+  version      = {v1.0},
+  doi          = {10.5281/zenodo.8475},
+  url          = {https://doi.org/10.5281/zenodo.8475}
+}
+```
