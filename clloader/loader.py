@@ -2,7 +2,8 @@ from typing import Callable, List, Tuple, Union
 
 import numpy as np
 import torch
-from clloader.datasets import BaseDataset, ContinuumDataset
+from clloader.datasets import BaseDataset
+from clloader import TaskSet
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
@@ -91,15 +92,12 @@ class CLLoader:
             raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
 
         mapper = np.vectorize(lambda x: self.class_order.index(x))
-        train_y = mapper(train_y)
-        test_y = mapper(test_y)
+        train_t = mapper(train_y)
+        test_t = mapper(test_y)
 
-        self.train_data = (train_x, train_y)
-        self.test_data = (test_x, test_y)
+        self.train_data = (train_x, train_y, train_t) # (data, class label, task label)
+        self.test_data = (test_x, test_y, test_t) # (data, class label, task label)
         self.class_order = np.array(self.class_order)
-
-
-        # Set index
 
 
     def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
@@ -132,7 +130,7 @@ class CLLoader:
         self._counter = 0
         return self
 
-    def __next__(self) -> Tuple[ContinuumDataset, ContinuumDataset]:
+    def __next__(self) -> Tuple[TaskSet, TaskSet]:
         """An iteration/task in the for loop."""
         if self._counter >= len(self):
             raise StopIteration
@@ -149,8 +147,8 @@ class CLLoader:
         max_class = sum(self.increments[:task_index + 1])
         min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
-        train = self._select_data_by_classes(min_class, max_class)
-        train_dataset = ContinuumDataset(*train, self.train_trsf, open_image=not self.cl_dataset.in_memory)
+        train = self._select_data_by_task(task_index, split="train")
+        train_dataset = TaskSet(*train, self.train_trsf, open_image=not self.cl_dataset.in_memory)
 
         # TODO: validation
         if self.evaluate_on == "seen":
@@ -160,12 +158,12 @@ class CLLoader:
         else:  # all
             test = self._select_data_by_classes(0, self.nb_classes, split="test")
 
-        test_dataset = ContinuumDataset(*test, self.test_trsf, open_image=not self.cl_dataset.in_memory)
+        test_dataset = TaskSet(*test, self.test_trsf, open_image=not self.cl_dataset.in_memory)
 
         return train_dataset, test_dataset
 
 
-    def _select_data_by_task(self, ind_task: int, split: str="train"):
+    def _select_data_by_task(self,ind_task: int, split: str="train"):
         """Selects a subset of the whole data for a given task.
 
         :param ind_task: task index
@@ -174,6 +172,21 @@ class CLLoader:
         :return: A tuple of numpy array, the first item being the data and the
                  second the associated targets.
         """
+        if split == "train":
+            x, y, t = self.train_data
+        else:
+            x, y, t = self.test_data
+
+        indexes = np.where(t == ind_task))[0]
+        selected_x = x[indexes]
+        selected_y = y[indexes]
+
+        if self.cl_dataset.need_class_remapping:
+            # A remapping of the class ids is done to handle some special cases
+            # like PermutedMNIST or RotatedMNIST.
+            selected_y = self.cl_dataset.class_remapping(selected_y)
+
+        return selected_x, selected_y
 
         selected_x, selected_y = None, None
 
