@@ -6,6 +6,7 @@ from clloader.datasets import BaseDataset
 from clloader import TaskSet
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
+from copy import copy
 
 class CLLoader:
     """Continual Loader, generating datasets for the consecutive tasks.
@@ -48,9 +49,45 @@ class CLLoader:
             raise NotImplementedError(f"Evaluate mode {evaluate_on} is not supported.")
         self.evaluate_on = evaluate_on
 
-        self._setup(class_order)
+        self._setup(increment, initial_increment, class_order)
+
+    def _setup(self,increment: Union[List[int], int],
+               initial_increment: int,
+               class_order: Union[None, List[int]] = None) -> None:
+
+        (train_x, train_y), (test_x, test_y) = self.cl_dataset.init()
+        unique_classes = np.unique(train_y)
+
+        self.class_order = class_order or self.cl_dataset.class_order or list(
+            range(len(unique_classes))
+        )
 
         self.increments = self._define_increments(increment, initial_increment)
+
+        if len(np.unique(self.class_order)) != len(self.class_order):
+            raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
+
+        mapper = np.vectorize(lambda x: self.class_order.index(x))
+        train_y = mapper(train_y)
+        test_y = mapper(test_y)
+
+        train_t = self._set_task_labels(train_y, self.increments)
+        test_t = self._set_task_labels(test_y, self.increments)
+
+        self.train_data = (train_x, train_y, train_t)  # (data, class label, task label)
+        self.test_data = (test_x, test_y, test_t)  # (data, class label, task label)
+        self.class_order = np.array(self.class_order)
+
+    def _set_task_labels(self, y, increments):
+
+        t = copy(y) # task label as same size as y
+        for task_index, increment in enumerate(increments):
+            max_class = sum(self.increments[:task_index + 1])
+            min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
+
+            indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
+            t[indexes] = task_index
+        return t
 
     def _define_increments(self, increment: Union[List[int], int],
                            initial_increment: int) -> List[int]:
@@ -79,25 +116,7 @@ class CLLoader:
         return increments
 
 
-    def _setup(self, class_order: Union[None, List[int]] = None) -> None:
 
-        # Set class order
-        (train_x, train_y), (test_x, test_y) = self.cl_dataset.init()
-        unique_classes = np.unique(train_y)
-
-        self.class_order = class_order or self.cl_dataset.class_order or list(
-            range(len(unique_classes))
-        )
-        if len(np.unique(self.class_order)) != len(self.class_order):
-            raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
-
-        mapper = np.vectorize(lambda x: self.class_order.index(x))
-        train_t = mapper(train_y)
-        test_t = mapper(test_y)
-
-        self.train_data = (train_x, train_y, train_t) # (data, class label, task label)
-        self.test_data = (test_x, test_y, test_t) # (data, class label, task label)
-        self.class_order = np.array(self.class_order)
 
 
     def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
@@ -177,7 +196,7 @@ class CLLoader:
         else:
             x, y, t = self.test_data
 
-        indexes = np.where(t == ind_task))[0]
+        indexes = np.where(t == ind_task)[0]
         selected_x = x[indexes]
         selected_y = y[indexes]
 
@@ -188,9 +207,6 @@ class CLLoader:
 
         return selected_x, selected_y
 
-        selected_x, selected_y = None, None
-
-        return selected_x, selected_y
 
     def _select_data_by_classes(self, min_class_id: int, max_class_id: int, split: str="train"):
         """Selects a subset of the whole data for a given set of classes.
