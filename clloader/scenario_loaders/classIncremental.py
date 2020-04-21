@@ -1,3 +1,6 @@
+
+
+
 from typing import Callable, List, Tuple, Union
 
 import numpy as np
@@ -5,8 +8,12 @@ import torch
 from clloader.datasets import BaseDataset, ContinuumDataset
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
+from loader import CLLoader
 
-class CLLoader:
+############
+# IDEE: Avoir une classe CLLoader de base et plusieur autres spécifiques au scenarii
+
+class ClassIncremental(CLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
 
     :param cl_dataset: A continual dataset.
@@ -164,20 +171,6 @@ class CLLoader:
 
         return train_dataset, test_dataset
 
-
-    def _select_data_by_task(self, ind_task: int, split: str="train"):
-        """Selects a subset of the whole data for a given task.
-
-        :param ind_task: task index
-        :param split: Either sample from the `train` set, the `val` set, or the
-                      `test` set.
-        :return: A tuple of numpy array, the first item being the data and the
-                 second the associated targets.
-        """
-
-        selected_x, selected_y = None, None
-
-        return selected_x, selected_y
 
     def _select_data_by_classes(self, min_class_id: int, max_class_id: int, split: str="train"):
         """Selects a subset of the whole data for a given set of classes.
