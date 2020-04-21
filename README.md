@@ -1,6 +1,6 @@
 # Continual Loader (CLLoader)
 
-[![PyPI version](https://badge.fury.io/py/clloader.svg)](https://badge.fury.io/py/clloader) [![Build Status](https://travis-ci.com/arthurdouillard/continual_loader.svg?branch=master)](https://travis-ci.com/arthurdouillard/continual_loader) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae156f65a9b84816b8e708101e546b61)](https://www.codacy.com/manual/arthurdouillard/continuum?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=arthurdouillard/continuum&amp;utm_campaign=Badge_Grade) [![DOI](https://zenodo.org/badge/254864913.svg)](https://zenodo.org/badge/latestdoi/254864913)
+[![PyPI version](https://badge.fury.io/py/clloader.svg)](https://badge.fury.io/py/clloader) [![Build Status](https://travis-ci.com/arthurdouillard/continual_loader.svg?branch=master)](https://travis-ci.com/arthurdouillard/continual_loader) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae156f65a9b84816b8e708101e546b61)](https://www.codacy.com/manual/arthurdouillard/continuum?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=arthurdouillard/continuum&amp;utm_campaign=Badge_Grade) [![DOI](https://zenodo.org/badge/254864913.svg)](https://zenodo.org/badge/latestdoi/254864913) [![Documentation Status](https://readthedocs.org/projects/continuum/badge/?version=latest)](https://continuum.readthedocs.io/en/latest/?badge=latest)
 
 ## A library for PyTorch's loading of datasets in the field of Continual Learning
 
