@@ -24,7 +24,8 @@ from clloader.datasets import MNIST
 clloader = ClassIncremental(
     MNIST("my/data/path", download=True),
     increment=1,
-    initial_increment=5
+    initial_increment=5,
+    train=True  # a different loader for test
 )
 
 print(f"Number of classes: {clloader.nb_classes}.")
