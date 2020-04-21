@@ -53,18 +53,25 @@ class CLLoader:
     def _define_increments(self, increment: Union[List[int], int],
                            initial_increment: int) -> List[int]:
         if isinstance(increment, list):
-            return increment
-        increments = []
-        if initial_increment:
-            increments.append(initial_increment)
 
-        nb_tasks = (self.nb_classes - initial_increment) / increment
-        if not nb_tasks.is_integer():
-            raise Exception(
-                "The tasks won't have an equal number of classes"
-                f" with {len(self.class_order)} and increment {increment}"
-            )
-        increments.extend([increment for _ in range(int(nb_tasks))])
+            if not (np.array(increment).sum()== self.nb_classes()):
+                raise Exception(
+                    "The increment list is not compatible with the number of classes"
+                )
+
+            increments=increment
+        else:
+            increments = []
+            if initial_increment:
+                increments.append(initial_increment)
+
+            nb_tasks = (self.nb_classes - initial_increment) / increment
+            if not nb_tasks.is_integer():
+                raise Exception(
+                    "The tasks won't have an equal number of classes"
+                    f" with {len(self.class_order)} and increment {increment}"
+                )
+            increments.extend([increment for _ in range(int(nb_tasks))])
 
         return increments
 
@@ -133,26 +140,41 @@ class CLLoader:
         max_class = sum(self.increments[:task_index + 1])
         min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
-        train = self._select_data(min_class, max_class)
+        train = self._select_data_by_classes(min_class, max_class)
         train_dataset = ContinuumDataset(*train, self.train_trsf, open_image=not self.cl_dataset.in_memory)
 
         # TODO: validation
         if self.evaluate_on == "seen":
-            test = self._select_data(0, max_class, split="test")
+            test = self._select_data_by_classes(0, max_class, split="test")
         elif self.evaluate_on == "current":
-            test = self._select_data(min_class, max_class, split="test")
+            test = self._select_data_by_classes(min_class, max_class, split="test")
         else:  # all
-            test = self._select_data(0, self.nb_classes, split="test")
+            test = self._select_data_by_classes(0, self.nb_classes, split="test")
 
         test_dataset = ContinuumDataset(*test, self.test_trsf, open_image=not self.cl_dataset.in_memory)
 
         return train_dataset, test_dataset
 
-    def _select_data(self, min_class, max_class, split="train"):
+
+    def _select_data_by_task(self, ind_task: int, split: str="train"):
         """Selects a subset of the whole data for a given task.
 
-        :param min_class: The minimum class id.
-        :param max_class: The maximum class id.
+        :param ind_task: task index
+        :param split: Either sample from the `train` set, the `val` set, or the
+                      `test` set.
+        :return: A tuple of numpy array, the first item being the data and the
+                 second the associated targets.
+        """
+
+        selected_x, selected_y = None, None
+
+        return selected_x, selected_y
+
+    def _select_data_by_classes(self, min_class_id: int, max_class_id: int, split: str="train"):
+        """Selects a subset of the whole data for a given set of classes.
+
+        :param min_class_id: The minimum class id.
+        :param max_class_id: The maximum class id.
         :param split: Either sample from the `train` set, the `val` set, or the
                       `test` set.
         :return: A tuple of numpy array, the first item being the data and the
@@ -163,7 +185,7 @@ class CLLoader:
         else:
             x, y = self.test_data
 
-        indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
+        indexes = np.where(np.logical_and(y >= min_class_id, y < max_class_id))[0]
         selected_x = x[indexes]
         selected_y = y[indexes]
 
