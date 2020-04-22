@@ -36,6 +36,7 @@ class CLLoader:
         evaluate_on="seen",
         class_order=None
     ) -> None:
+        print("INIT!!!!!!!!!!!!!!!!!!!!!")
 
         self.cl_dataset = cl_dataset
 
@@ -63,7 +64,6 @@ class CLLoader:
             range(len(unique_classes))
         )
 
-        self.increments = self._define_increments(increment, initial_increment)
 
         if len(np.unique(self.class_order)) != len(self.class_order):
             raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
@@ -72,14 +72,30 @@ class CLLoader:
         train_y = mapper(train_y)
         test_y = mapper(test_y)
 
+        # Dataset without task label (necessary for self._define_increments())
+        self.train_data = (train_x, train_y)  # (data, class label, task label)
+        self.test_data = (test_x, test_y)  # (data, class label, task label)
+        self.class_order = np.array(self.class_order)
+
+        # Increments setup
+        self.increments = self._define_increments(increment, initial_increment)
+
+        # compute task label
         train_t = self._set_task_labels(train_y, self.increments)
         test_t = self._set_task_labels(test_y, self.increments)
 
+        # Dataset with task label
         self.train_data = (train_x, train_y, train_t)  # (data, class label, task label)
         self.test_data = (test_x, test_y, test_t)  # (data, class label, task label)
-        self.class_order = np.array(self.class_order)
 
-    def _set_task_labels(self, y, increments):
+
+    def _set_task_labels(self, y: np.ndarray, increments: List[int])-> np.ndarray:
+        """
+        For each data point, defines a task associated with the data
+        :param y: label tensor
+        :param increments: increments contains information about classes per tasks
+        :return: tensor of task label
+        """
 
         t = copy(y) # task label as same size as y
         for task_index, increment in enumerate(increments):
@@ -95,7 +111,7 @@ class CLLoader:
         if isinstance(increment, list):
 
             # Check if the total number of classes is compatible between increment list and self.nb_classes
-            if not sum(increment)== self.nb_classes():
+            if not sum(increment)== self.nb_classes:
                 raise Exception(
                     "The increment list is not compatible with the number of classes"
                 )
@@ -115,9 +131,6 @@ class CLLoader:
             increments.extend([increment for _ in range(int(nb_tasks))])
 
         return increments
-
-
-
 
 
     def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
@@ -220,9 +233,9 @@ class CLLoader:
                  second the associated targets.
         """
         if split == "train":
-            x, y = self.train_data
+            x, y, t = self.train_data
         else:
-            x, y = self.test_data
+            x, y, t = self.test_data
 
         indexes = np.where(np.logical_and(y >= min_class_id, y < max_class_id))[0]
         selected_x = x[indexes]
