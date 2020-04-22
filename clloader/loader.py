@@ -1,12 +1,13 @@
 from typing import Callable, List, Tuple, Union
+from copy import copy
 
 import numpy as np
 import torch
+
 from clloader.datasets import BaseDataset
 from clloader import TaskSet
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
-from copy import copy
 
 class CLLoader:
     """Continual Loader, generating datasets for the consecutive tasks.
