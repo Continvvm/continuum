@@ -1,7 +1,6 @@
-
+import numpy as np
 
 from clloader import CLLoader
-from numpy as np
 
 
 class InstanceIncremental(CLLoader):
