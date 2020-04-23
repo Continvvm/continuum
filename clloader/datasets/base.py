@@ -1,6 +1,5 @@
 import abc
-import os
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import numpy as np
 from torchvision import datasets as torchdata
@@ -14,7 +13,7 @@ class BaseDataset(abc.ABC):
         self.download = download
 
     @abc.abstractmethod
-    def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
         pass
 
     @property
@@ -51,13 +50,11 @@ class PyTorchDataset(BaseDataset):
         super().__init__(*args, **kwargs)
         self.dataset_type = dataset_type
 
-    def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
-        train_dataset = self.dataset_type(self.data_path, download=self.download, train=True)
-        x_train, y_train = np.array(train_dataset.data), np.array(train_dataset.targets)
-        test_dataset = self.dataset_type(self.data_path, download=self.download, train=False)
-        x_test, y_test = np.array(test_dataset.data), np.array(test_dataset.targets)
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+        dataset = self.dataset_type(self.data_path, download=self.download, train=train)
+        x, y = np.array(dataset.data), np.array(dataset.targets)
 
-        return (x_train, y_train), (x_test, y_test)
+        return x, y
 
 
 class InMemoryDataset(BaseDataset):
@@ -77,8 +74,10 @@ class InMemoryDataset(BaseDataset):
         self.test = (x_test, y_test)
         self.is_path = is_path
 
-    def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
-        return self.train, self.test
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+        if train:
+            return self.train
+        return self.test
 
     @property
     def in_memory(self) -> bool:
@@ -103,14 +102,14 @@ class ImageFolderDataset(BaseDataset):
     def _download(self):
         pass
 
-    def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
-        train_dataset = torchdata.ImageFolder(self.train_folder)
-        train_data = self._format(train_dataset.imgs)
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+        if train:
+            folder = self.train_folder
+        else:
+            folder = self.test_folder
 
-        test_dataset = torchdata.ImageFolder(self.test_folder)
-        test_data = self._format(test_dataset.imgs)
-
-        return train_data, test_data
+        dataset = torchdata.ImageFolder(folder)
+        return self._format(dataset.imgs)
 
     @staticmethod
     def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray]:

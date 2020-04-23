@@ -1,11 +1,9 @@
-import abc
 import os
-from typing import List, Tuple, Union
+from typing import Tuple, Union
 
 import numpy as np
 
 from clloader.datasets import ImageFolderDataset
-from torchvision import datasets as torchdata
 
 
 class ImageNet1000(ImageFolderDataset):
