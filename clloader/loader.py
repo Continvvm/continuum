@@ -9,6 +9,7 @@ from clloader import TaskSet
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
+
 class CLLoader:
     """Continual Loader, generating datasets for the consecutive tasks.
 
@@ -27,16 +28,15 @@ class CLLoader:
     """
 
     def __init__(
-        self,
-        cl_dataset: BaseDataset,
-        increment: Union[List[int], int],
-        initial_increment: int = 0,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
-        evaluate_on="seen",
-        class_order=None
+            self,
+            cl_dataset: BaseDataset,
+            increment: Union[List[int], int],
+            initial_increment: int = 0,
+            train_transformations: List[Callable] = None,
+            common_transformations: List[Callable] = None,
+            evaluate_on="seen",
+            class_order=None
     ) -> None:
-        print("INIT!!!!!!!!!!!!!!!!!!!!!")
 
         self.cl_dataset = cl_dataset
 
@@ -53,7 +53,7 @@ class CLLoader:
 
         self._setup(increment, initial_increment, class_order)
 
-    def _setup(self,increment: Union[List[int], int],
+    def _setup(self, increment: Union[List[int], int],
                initial_increment: int,
                class_order: Union[None, List[int]] = None) -> None:
 
@@ -63,7 +63,6 @@ class CLLoader:
         self.class_order = class_order or self.cl_dataset.class_order or list(
             range(len(unique_classes))
         )
-
 
         if len(np.unique(self.class_order)) != len(self.class_order):
             raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
@@ -88,8 +87,7 @@ class CLLoader:
         self.train_data = (train_x, train_y, train_t)  # (data, class label, task label)
         self.test_data = (test_x, test_y, test_t)  # (data, class label, task label)
 
-
-    def _set_task_labels(self, y: np.ndarray, increments: List[int])-> np.ndarray:
+    def _set_task_labels(self, y: np.ndarray, increments: List[int]) -> np.ndarray:
         """
         For each data point, defines a task associated with the data
         :param y: label tensor
@@ -97,7 +95,7 @@ class CLLoader:
         :return: tensor of task label
         """
 
-        t = copy(y) # task label as same size as y
+        t = copy(y)  # task label as same size as y
         for task_index, increment in enumerate(increments):
             max_class = sum(self.increments[:task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
@@ -111,12 +109,12 @@ class CLLoader:
         if isinstance(increment, list):
 
             # Check if the total number of classes is compatible between increment list and self.nb_classes
-            if not sum(increment)== self.nb_classes:
+            if not sum(increment) == self.nb_classes:
                 raise Exception(
                     "The increment list is not compatible with the number of classes"
                 )
 
-            increments=increment
+            increments = increment
         else:
             increments = []
             if initial_increment:
@@ -131,7 +129,6 @@ class CLLoader:
             increments.extend([increment for _ in range(int(nb_tasks))])
 
         return increments
-
 
     def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
         """Returns the original targets not changed by the custom class order.
@@ -195,8 +192,7 @@ class CLLoader:
 
         return train_dataset, test_dataset
 
-
-    def _select_data_by_task(self,ind_task: int, split: str="train"):
+    def _select_data_by_task(self, ind_task: int, split: str = "train"):
         """Selects a subset of the whole data for a given task.
 
         :param ind_task: task index
@@ -221,8 +217,7 @@ class CLLoader:
 
         return selected_x, selected_y
 
-
-    def _select_data_by_classes(self, min_class_id: int, max_class_id: int, split: str="train"):
+    def _select_data_by_classes(self, min_class_id: int, max_class_id: int, split: str = "train"):
         """Selects a subset of the whole data for a given set of classes.
 
         :param min_class_id: The minimum class id.
@@ -247,4 +242,3 @@ class CLLoader:
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
         return selected_x, selected_y
-
