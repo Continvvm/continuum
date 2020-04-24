@@ -24,5 +24,5 @@ class InstanceIncremental(CLLoader):
 
 
     # Vanilla NI: data are given randomly, each task has all classes and each task has different instances
-    def _set_task_labels(self, y, increments):
-        return np.random.randint(self.nb_tasks, size=len(y))
+    def _set_task_labels(self, y_, increments):
+        return np.random.randint(self.nb_tasks, size=len(y_))
