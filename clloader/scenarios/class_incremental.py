@@ -40,8 +40,8 @@ class ClassIncremental(BaseCLLoader):
     def __init__(
             self,
             cl_dataset: BaseDataset,
-            nb_tasks: int,
-            increment: Union[List[int], int],
+            nb_tasks: int =0,
+            increment: Union[List[int], int]=0,
             initial_increment: int = 0,
             train_transformations: List[Callable] = None,
             common_transformations: List[Callable] = None,
@@ -60,10 +60,6 @@ class ClassIncremental(BaseCLLoader):
     def _setup_class_incremental(self, increment: Union[List[int], int],
                                  initial_increment: int,
                                  class_order: Union[None, List[int]] = None) -> None:
-        super()._setup()
-
-        # Dataset without task label (necessary for self._define_increments())
-        self.class_order = np.array(self.class_order)
 
         unique_classes = np.unique(self.dataset[1])  # search for unique classes
 
@@ -78,6 +74,7 @@ class ClassIncremental(BaseCLLoader):
         new_y = mapper(self.dataset[1])
 
         # Increments setup
+        self.class_order = np.array(self.class_order)
         self.increments = self._define_increments(increment, initial_increment)
 
         # compute task label

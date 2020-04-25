@@ -29,9 +29,9 @@ def numpy_data():
 def test_constant_class_number(numpy_data):
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train, *test)
-    clloader = InstanceIncremental(dummy, 2)
+    clloader = InstanceIncremental(dummy, nb_tasks=2)
 
     nb_classes = clloader.nb_classes
 
-    for task_id, (train_dataset, test_dataset) in enumerate(clloader):
+    for task_id, train_dataset in enumerate(clloader):
         assert nb_classes == len(np.unique(train_dataset.y))

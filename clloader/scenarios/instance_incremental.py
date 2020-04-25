@@ -26,3 +26,10 @@ class InstanceIncremental(BaseCLLoader):
     # Vanilla NI: data are given randomly, each task has all classes and each task has different instances
     def _set_task_labels(self, y_, increments):
         return np.random.randint(self.nb_tasks, size=len(y_))
+
+    def __len__(self) -> int:
+        """Returns the number of tasks.
+
+        :return: Number of tasks.
+        """
+        return self.nb_tasks

@@ -25,13 +25,16 @@ class BaseCLLoader(abc.ABC):
             train_transformations = []
         if common_transformations is None:
             common_transformations = self.cl_dataset.transformations
+
         self.train_trsf = transforms.Compose(train_transformations + common_transformations)
         self.test_trsf = transforms.Compose(common_transformations)
         self.train = train
 
+        self._setup()
+
     def _setup(self):
 
-        (x_, y_) = self.cl_dataset.init()
+        (x_, y_) = self.cl_dataset.init(train='train')
 
         # set task label
         t_ = np.random.randint(self.nb_tasks, size=len(y_))
@@ -41,12 +44,12 @@ class BaseCLLoader(abc.ABC):
     @property
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
-        return len(np.unique(self.train_data[1]))
+        return len(np.unique(self.dataset[1]))
 
-    @property
-    def nb_tasks(self) -> int:
-        """Number of tasks in the whole continual setting."""
-        return len(self)
+    # @property
+    # def nb_tasks(self) -> int:
+    #     """Number of tasks in the whole continual setting."""
+    #     return len(self)
 
     def __len__(self) -> int:
         """Returns the number of tasks.

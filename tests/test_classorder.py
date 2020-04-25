@@ -45,13 +45,11 @@ def numpy_data():
 def test_increments(numpy_data, classes, default_class_order, class_order):
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train, *test, class_order=default_class_order)
-    clloader = ClassIncremental(dummy, 5, class_order=class_order)
+    clloader = ClassIncremental(dummy, 2, 5, class_order=class_order)
 
     gt_new_targets = [np.arange(5), np.arange(5) + 5]
-    for task_id, (train_dataset, test_dataset) in enumerate(clloader):
+    for task_id, train_dataset in enumerate(clloader):
         for _ in DataLoader(train_dataset):
-            pass
-        for _ in DataLoader(test_dataset):
             pass
 
         unique_classes = np.sort(np.unique(train_dataset.x))

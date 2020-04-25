@@ -23,22 +23,18 @@ def test_permuted(tmp_path_factory, nb_permutations, nb_tasks):
         nb_permutations=nb_permutations
     )
 
-    clloader = ClassIncremental(dataset, increment=10)
+    clloader = ClassIncremental(dataset, nb_tasks=nb_tasks, increment=10)
 
     assert clloader.nb_tasks == nb_tasks
     seen_tasks = 0
-    for task_id, (train_dataset, test_dataset) in enumerate(clloader):
+    for task_id, train_dataset in enumerate(clloader):
         seen_tasks += 1
 
         for _ in DataLoader(train_dataset):
             pass
-        for _ in DataLoader(test_dataset):
-            pass
 
         assert np.max(train_dataset.y) == 9
         assert np.min(train_dataset.y) == 0
-        assert np.max(test_dataset.y) == 9
-        assert np.min(test_dataset.y) == 0
     assert seen_tasks == nb_tasks
 
 
@@ -54,20 +50,16 @@ def test_rotated(tmp_path_factory, angles, nb_tasks):
         angles=angles
     )
 
-    clloader = ClassIncremental(dataset, increment=10)
+    clloader = ClassIncremental(dataset, nb_tasks, increment=10)
 
     assert clloader.nb_tasks == nb_tasks
     seen_tasks = 0
-    for task_id, (train_dataset, test_dataset) in enumerate(clloader):
+    for task_id, train_dataset in enumerate(clloader):
         seen_tasks += 1
 
         for _ in DataLoader(train_dataset):
             pass
-        for _ in DataLoader(test_dataset):
-            pass
 
         assert np.max(train_dataset.y) == 9
         assert np.min(train_dataset.y) == 0
-        assert np.max(test_dataset.y) == 9
-        assert np.min(test_dataset.y) == 0
     assert seen_tasks == nb_tasks
