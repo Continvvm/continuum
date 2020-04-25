@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 from torch.utils.data import DataLoader
 
-from clloader import CLLoader
+from clloader.scenarios import ClassIncremental
 from clloader.datasets import PermutedMNIST, RotatedMNIST
 
 # yapf: disable
@@ -23,7 +23,7 @@ def test_permuted(tmp_path_factory, nb_permutations, nb_tasks):
         nb_permutations=nb_permutations
     )
 
-    clloader = CLLoader(dataset, increment=10)
+    clloader = ClassIncremental(dataset, increment=10)
 
     assert clloader.nb_tasks == nb_tasks
     seen_tasks = 0
@@ -54,7 +54,7 @@ def test_rotated(tmp_path_factory, angles, nb_tasks):
         angles=angles
     )
 
-    clloader = CLLoader(dataset, increment=10)
+    clloader = ClassIncremental(dataset, increment=10)
 
     assert clloader.nb_tasks == nb_tasks
     seen_tasks = 0

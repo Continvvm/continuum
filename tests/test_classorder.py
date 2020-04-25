@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from clloader import CLLoader
+from clloader.scenarios import ClassIncremental
 from clloader.datasets import InMemoryDataset
 from torch.utils.data import DataLoader
 
@@ -45,7 +45,7 @@ def numpy_data():
 def test_increments(numpy_data, classes, default_class_order, class_order):
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train, *test, class_order=default_class_order)
-    clloader = CLLoader(dummy, 5, class_order=class_order)
+    clloader = ClassIncremental(dummy, 5, class_order=class_order)
 
     gt_new_targets = [np.arange(5), np.arange(5) + 5]
     for task_id, (train_dataset, test_dataset) in enumerate(clloader):

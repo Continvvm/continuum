@@ -1,9 +1,9 @@
 import numpy as np
 
-from clloader import CLLoader
+from clloader import BaseCLLoader
 
 
-class InstanceIncremental(CLLoader):
+class InstanceIncremental(BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
     Scenario: Classes are always the same but instances change (NI scenario)
 
