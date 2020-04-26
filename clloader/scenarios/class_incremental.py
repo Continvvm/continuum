@@ -78,12 +78,12 @@ class ClassIncremental(BaseCLLoader):
         self.increments = self._define_increments(increment, initial_increment)
 
         # compute task label
-        t_ = self._set_task_labels(new_y, self.increments)
+        t_ = self._set_task_labels(new_y)
 
         # Dataset with task label
         self.dataset = (self.dataset[0], new_y, t_)  # (data, class label, task label)
 
-    def _set_task_labels(self, y: np.ndarray, increments: List[int]) -> np.ndarray:
+    def _set_task_labels(self, y: np.ndarray) -> np.ndarray:
         """
         For each data point, defines a task associated with the data
         :param y: label tensor
@@ -92,7 +92,7 @@ class ClassIncremental(BaseCLLoader):
         """
 
         t = copy(y)  # task label as same size as y
-        for task_index, increment in enumerate(increments):
+        for task_index, increment in enumerate(self.increments):
             max_class = sum(self.increments[:task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
