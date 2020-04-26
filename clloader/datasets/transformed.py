@@ -1,6 +1,9 @@
+from typing import Tuple
+
 import numpy as np
-from clloader.datasets import MNIST
 from scipy import ndimage
+
+from clloader.datasets import MNIST
 
 
 class PermutedMNIST(MNIST):
@@ -50,40 +53,35 @@ class PermutedMNIST(MNIST):
             )
         return self._mapping[class_ids]
 
-    def init(self):
-        base_train, base_test = MNIST.init(self)
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+        base_data = MNIST.init(self, train)
 
-        x_train, y_train = [base_train[0]], [base_train[1]]
-        x_test, y_test = [base_test[0]], [base_test[1]]
+        x, y = [base_data[0]], [base_data[1]]
+        class_increment = len(np.unique(base_data[1]))
 
-        class_increment = len(np.unique(base_train[1]))
         for i, value in enumerate(self._transformations, start=1):
-            trsf_train, trsf_test = self._transform(base_train[0], base_test[0], value)
+            x_transformed = self._transform(base_data[0], value)
 
-            x_train.append(trsf_train)
-            x_test.append(trsf_test)
+            x.append(x_transformed)
+            y.append(base_data[1] + i * class_increment)
 
-            y_train.append(base_train[1] + i * class_increment)
-            y_test.append(base_test[1] + i * class_increment)
+        x = np.concatenate(x)
+        y = np.concatenate(y)
 
-        x_train = np.concatenate(x_train)
-        y_train = np.concatenate(y_train)
-        x_test = np.concatenate(x_test)
-        y_test = np.concatenate(y_test)
+        return x, y, None
 
-        return (x_train, y_train), (x_test, y_test)
-
-    def _transform(self, x_train, x_test, seed):
+    def _transform(self, x: np.ndarray, seed: int) -> np.ndarray:
+        # It's important to generate a new random state with a given seed
+        # So that every run produces the same transformation,
+        # and also that train & test have the same transformation.
         random_state = np.random.RandomState(seed=seed)
-        permutations = random_state.permutation(x_train.shape[1] * x_train.shape[2])
+        permutations = random_state.permutation(x.shape[1] * x.shape[2])
 
-        train_shape = x_train.shape
-        test_shape = x_test.shape
+        shape = x.shape
 
-        x_train = x_train.reshape((train_shape[0], -1))[..., permutations].reshape(train_shape)
-        x_test = x_test.reshape((test_shape[0], -1))[..., permutations].reshape(test_shape)
+        x_transformed = x.reshape((shape[0], -1))[..., permutations].reshape(shape)
 
-        return x_train, x_test
+        return x_transformed
 
 
 class RotatedMNIST(PermutedMNIST):
@@ -108,8 +106,6 @@ class RotatedMNIST(PermutedMNIST):
         self._transformations = angles
         self._mapping = None
 
-    def _transform(self, x_train, x_test, angle):
-        x_train = ndimage.rotate(x_train, angle=angle, axes=(2, 1), reshape=False)
-        x_test = ndimage.rotate(x_test, angle=angle, axes=(2, 1), reshape=False)
-
-        return x_train, x_test
+    def _transform(self, x: np.ndarray, angle: int) -> np.ndarray:
+        x_transformed = ndimage.rotate(x, angle=angle, axes=(2, 1), reshape=False)
+        return x_transformed

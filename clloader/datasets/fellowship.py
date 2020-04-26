@@ -1,45 +1,39 @@
-import abc
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import numpy as np
 
-from clloader.datasets.base import BaseDataset, PyTorchDataset
+from clloader.datasets.base import _ContinuumDataset
 from clloader.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST)
-from torchvision import datasets as torchdata
-from torchvision import transforms
 
 
-class Fellowship(BaseDataset):
+class Fellowship(_ContinuumDataset):
 
     def __init__(
-        self, data_path: str = "", download: bool = True, dataset_list: List[BaseDataset] = None
+        self,
+        data_path: str = "",
+        download: bool = True,
+        dataset_list: List[_ContinuumDataset] = None
     ):
         super().__init__(data_path, download)
 
         self.datasets = [dataset(data_path, download) for dataset in dataset_list]
 
-    def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
-        x_train, y_train = [], []
-        x_test, y_test = [], []
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+        x, y = [], []
         class_counter = 0
 
         for dataset in self.datasets:
-            train, test = dataset.init()
+            data = dataset.init(train)
 
-            x_train.append(train[0])
-            x_test.append(test[0])
+            x.append(data[0])
+            y.append(data[1] + class_counter)
 
-            y_train.append(train[1] + class_counter)
-            y_test.append(test[1] + class_counter)
+            class_counter += len(np.unique(data[1]))
 
-            class_counter += len(np.unique(train[1]))
+        x = np.concatenate(x)
+        y = np.concatenate(y)
 
-        x_train = np.concatenate(x_train)
-        x_test = np.concatenate(x_test)
-        y_train = np.concatenate(y_train)
-        y_test = np.concatenate(y_test)
-
-        return (x_train, y_train), (x_test, y_test)
+        return x, y, None
 
 
 class MNISTFellowship(Fellowship):

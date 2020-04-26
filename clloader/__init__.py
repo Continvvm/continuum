@@ -1,3 +1,4 @@
 from clloader import datasets
-from clloader.loader import CLLoader
+from clloader.scenarios import *
+from clloader.task_set import TaskSet
 from clloader.viz import plot

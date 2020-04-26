@@ -18,21 +18,23 @@ And run!
 ```python
 from torch.utils.data import DataLoader
 
-from clloader import CLLoader
+from clloader import ClassIncremental
 from clloader.datasets import MNIST
 
-clloader = CLLoader(
+clloader = ClassIncremental(
     MNIST("my/data/path", download=True),
     increment=1,
-    initial_increment=5
+    initial_increment=5,
+    train=True  # a different loader for test
 )
 
 print(f"Number of classes: {clloader.nb_classes}.")
 print(f"Number of tasks: {clloader.nb_tasks}.")
 
-for task_id, (train_dataset, test_dataset) in enumerate(clloader):
+for task_id, train_dataset in enumerate(clloader):
+    train_dataset, val_dataset = split_train_val(train_dataset)
     train_loader = DataLoader(train_dataset)
-    test_loader = DataLoader(test_dataset)
+    val_loader = DataLoader(val_dataset)
 
     # Do your cool stuff here
 ```
@@ -41,7 +43,7 @@ for task_id, (train_dataset, test_dataset) in enumerate(clloader):
 
 |Name | Acronym | Supported |
 |:----|:---|:---:|
-| **New Instances** | NI | :x: |
+| **New Instances** | NI | :white_check_mark: |
 | **New Classes** | NC | :white_check_mark: |
 | **New Instances & Classes** | NIC | :x: |
 
