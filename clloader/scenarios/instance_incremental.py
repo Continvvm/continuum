@@ -1,6 +1,6 @@
 import numpy as np
 
-from clloader import BaseCLLoader
+from clloader.base import BaseCLLoader
 
 
 class InstanceIncremental(BaseCLLoader):
@@ -20,8 +20,8 @@ class InstanceIncremental(BaseCLLoader):
                         on the `current` classes, or on `all` classes.
     :param class_order: An optional custom class order, used for NC.
     """
-    # TODO
 
+    # TODO
 
     # Vanilla NI: data are given randomly, each task has all classes and each task has different instances
     def _set_task_labels(self, y_, increments):

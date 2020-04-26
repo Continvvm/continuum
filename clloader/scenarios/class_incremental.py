@@ -1,11 +1,10 @@
-from typing import Callable, List, Union
 from copy import copy
+from typing import Callable, List, Union
 
 import numpy as np
 
+from clloader.base import BaseCLLoader
 from clloader.datasets import BaseDataset
-
-from clloader import BaseCLLoader
 
 
 class ClassIncremental(BaseCLLoader):
@@ -38,28 +37,33 @@ class ClassIncremental(BaseCLLoader):
     """
 
     def __init__(
-            self,
-            cl_dataset: BaseDataset,
-            nb_tasks: int =0,
-            increment: Union[List[int], int]=0,
-            initial_increment: int = 0,
-            train_transformations: List[Callable] = None,
-            common_transformations: List[Callable] = None,
-            train=True,
-            class_order=None
+        self,
+        cl_dataset: BaseDataset,
+        nb_tasks: int = 0,
+        increment: Union[List[int], int] = 0,
+        initial_increment: int = 0,
+        train_transformations: List[Callable] = None,
+        common_transformations: List[Callable] = None,
+        train=True,
+        class_order=None
     ) -> None:
 
-        super().__init__(cl_dataset=cl_dataset,
-                         nb_tasks=nb_tasks,
-                         train_transformations=train_transformations,
-                         common_transformations=common_transformations,
-                         train=train)
+        super().__init__(
+            cl_dataset=cl_dataset,
+            nb_tasks=nb_tasks,
+            train_transformations=train_transformations,
+            common_transformations=common_transformations,
+            train=train
+        )
 
         self._setup_class_incremental(increment, initial_increment, class_order)
 
-    def _setup_class_incremental(self, increment: Union[List[int], int],
-                                 initial_increment: int,
-                                 class_order: Union[None, List[int]] = None) -> None:
+    def _setup_class_incremental(
+        self,
+        increment: Union[List[int], int],
+        initial_increment: int,
+        class_order: Union[None, List[int]] = None
+    ) -> None:
 
         unique_classes = np.unique(self.dataset[1])  # search for unique classes
 
@@ -106,9 +110,7 @@ class ClassIncremental(BaseCLLoader):
 
             # Check if the total number of classes is compatible between increment list and self.nb_classes
             if not sum(increment) == self.nb_classes:
-                raise Exception(
-                    "The increment list is not compatible with the number of classes"
-                )
+                raise Exception("The increment list is not compatible with the number of classes")
 
             increments = increment
         else:

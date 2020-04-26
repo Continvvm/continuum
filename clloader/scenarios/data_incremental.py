@@ -1,6 +1,4 @@
-
-
-from clloader import BaseCLLoader
+from clloader.base import BaseCLLoader
 
 
 class DataIncremental(BaseCLLoader):
@@ -21,4 +19,3 @@ class DataIncremental(BaseCLLoader):
     :param class_order: An optional custom class order, used for NC.
     """
     # TODO
-

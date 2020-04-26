@@ -1,22 +1,24 @@
 import abc
-from typing import Tuple, Callable, List
+from typing import Callable, List, Tuple
+
 import numpy as np
+from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
 from clloader import TaskSet
 from clloader.datasets import BaseDataset
-from torch.utils.data import Dataset as TorchDataset
 
 
 class BaseCLLoader(abc.ABC):
 
     def __init__(
-            self,
-            cl_dataset: BaseDataset,
-            nb_tasks: int,
-            train_transformations: List[Callable] = None,
-            common_transformations: List[Callable] = None,
-            train=True) -> None:
+        self,
+        cl_dataset: BaseDataset,
+        nb_tasks: int,
+        train_transformations: List[Callable] = None,
+        common_transformations: List[Callable] = None,
+        train=True
+    ) -> None:
 
         self.cl_dataset = cl_dataset
         self.nb_tasks = nb_tasks
@@ -46,10 +48,10 @@ class BaseCLLoader(abc.ABC):
         """Total number of classes in the whole continual setting."""
         return len(np.unique(self.dataset[1]))
 
-    # @property
-    # def nb_tasks(self) -> int:
-    #     """Number of tasks in the whole continual setting."""
-    #     return len(self)
+    @property
+    def nb_tasks(self) -> int:
+        """Number of tasks in the whole continual setting."""
+        return len(self)
 
     def __len__(self) -> int:
         """Returns the number of tasks.
