@@ -1,7 +1,7 @@
-from clloader.base import BaseCLLoader
+from clloader.scenarios import _BaseCLLoader
 
 
-class DataIncremental(BaseCLLoader):
+class DataIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
     Scenario: Classes and instances changes and may reappear (NIC scenario)
 

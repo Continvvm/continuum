@@ -1,9 +1,9 @@
 import numpy as np
 
-from clloader.base import BaseCLLoader
+from clloader.scenarios import _BaseCLLoader
 
 
-class InstanceIncremental(BaseCLLoader):
+class InstanceIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
     Scenario: Classes are always the same but instances change (NI scenario)
 
@@ -25,11 +25,11 @@ class InstanceIncremental(BaseCLLoader):
 
     # Vanilla NI: data are given randomly, each task has all classes and each task has different instances
     def _set_task_labels(self, y_, increments):
-        return np.random.randint(self.nb_tasks, size=len(y_))
+        return np.random.randint(self._nb_tasks, size=len(y_))
 
     def __len__(self) -> int:
         """Returns the number of tasks.
 
         :return: Number of tasks.
         """
-        return self.nb_tasks
+        return self._nb_tasks

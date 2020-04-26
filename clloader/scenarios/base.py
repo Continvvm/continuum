@@ -2,14 +2,13 @@ import abc
 from typing import Callable, List, Tuple
 
 import numpy as np
-from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
-from clloader import TaskSet
 from clloader.datasets import BaseDataset
+from clloader.task_set import TaskSet
 
 
-class BaseCLLoader(abc.ABC):
+class _BaseCLLoader(abc.ABC):
 
     def __init__(
         self,
@@ -21,7 +20,7 @@ class BaseCLLoader(abc.ABC):
     ) -> None:
 
         self.cl_dataset = cl_dataset
-        self.nb_tasks = nb_tasks
+        self._nb_tasks = nb_tasks
 
         if train_transformations is None:
             train_transformations = []
@@ -35,11 +34,10 @@ class BaseCLLoader(abc.ABC):
         self._setup()
 
     def _setup(self):
-
         (x_, y_) = self.cl_dataset.init(train='train')
 
         # set task label
-        t_ = np.random.randint(self.nb_tasks, size=len(y_))
+        t_ = np.random.randint(self._nb_tasks, size=len(y_))
 
         self.dataset = (x_, y_, t_)  # (data, label, task label)
 

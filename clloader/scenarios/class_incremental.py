@@ -3,11 +3,11 @@ from typing import Callable, List, Union
 
 import numpy as np
 
-from clloader.base import BaseCLLoader
 from clloader.datasets import BaseDataset
+from clloader.scenarios import _BaseCLLoader
 
 
-class ClassIncremental(BaseCLLoader):
+class ClassIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
 
     :param cl_dataset: A continual dataset.
