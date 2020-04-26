@@ -3,8 +3,7 @@ from typing import List, Tuple
 import numpy as np
 
 from clloader.datasets.base import BaseDataset
-from clloader.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST,
-                                       FashionMNIST)
+from clloader.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST)
 
 
 class Fellowship(BaseDataset):
@@ -31,7 +30,7 @@ class Fellowship(BaseDataset):
         x = np.concatenate(x)
         y = np.concatenate(y)
 
-        return x, y
+        return x, y, None
 
 
 class MNISTFellowship(Fellowship):

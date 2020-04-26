@@ -13,7 +13,7 @@ class BaseDataset(abc.ABC):
         self.download = download
 
     @abc.abstractmethod
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         pass
 
     @property
@@ -50,11 +50,11 @@ class PyTorchDataset(BaseDataset):
         super().__init__(*args, **kwargs)
         self.dataset_type = dataset_type
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         dataset = self.dataset_type(self.data_path, download=self.download, train=train)
         x, y = np.array(dataset.data), np.array(dataset.targets)
 
-        return x, y
+        return x, y, None
 
 
 class InMemoryDataset(BaseDataset):
@@ -70,11 +70,11 @@ class InMemoryDataset(BaseDataset):
     ):
         super().__init__(**kwargs)
 
-        self.train = (x_train, y_train)
-        self.test = (x_test, y_test)
+        self.train = (x_train, y_train, None)
+        self.test = (x_test, y_test, None)
         self.is_path = is_path
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if train:
             return self.train
         return self.test
@@ -102,7 +102,7 @@ class ImageFolderDataset(BaseDataset):
     def _download(self):
         pass
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if train:
             folder = self.train_folder
         else:
@@ -120,4 +120,4 @@ class ImageFolderDataset(BaseDataset):
             x[i] = path
             y[i] = target
 
-        return x, y
+        return x, y, None

@@ -43,7 +43,7 @@ class InstanceIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        x, y = self.cl_dataset.init(train=self.train)
+        x, y, _ = self.cl_dataset.init(train=self.train)
 
         # TODO: need to add seed + randomstate to ensure reproducibility
         task_ids = np.random.randint(nb_tasks, size=len(y))

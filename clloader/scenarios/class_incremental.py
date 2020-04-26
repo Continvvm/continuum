@@ -49,7 +49,7 @@ class ClassIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        x, y = self.cl_dataset.init(train=self.train)
+        x, y, _ = self.cl_dataset.init(train=self.train)
         unique_classes = np.unique(y)
 
         self.class_order = self.class_order or self.cl_dataset.class_order or list(

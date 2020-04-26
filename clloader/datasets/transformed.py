@@ -68,7 +68,7 @@ class PermutedMNIST(MNIST):
         x = np.concatenate(x)
         y = np.concatenate(y)
 
-        return x, y
+        return x, y, None
 
     def _transform(self, x: np.ndarray, seed: int) -> np.ndarray:
         # It's important to generate a new random state with a given seed

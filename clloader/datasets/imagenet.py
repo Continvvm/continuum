@@ -28,11 +28,9 @@ class ImageNet100(ImageNet1000):
         self.train_subset = train_subset
         self.test_subset = test_subset
 
-    def init(self) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
-        train = self._parse_subset(self.train_subset, train=True)
-        test = self._parse_subset(self.test_subset, train=False)
-
-        return train, test
+    def init(self, train) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        train = self._parse_subset(self.train_subset, train=train)
+        return *train, None
 
     def _parse_subset(self,
                       subset: Union[Tuple[np.array, np.array], str],
