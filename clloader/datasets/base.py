@@ -6,7 +6,7 @@ from torchvision import datasets as torchdata
 from torchvision import transforms
 
 
-class BaseDataset(abc.ABC):
+class _ContinuumDataset(abc.ABC):
 
     def __init__(self, data_path: str = "", download: bool = True) -> None:
         self.data_path = data_path
@@ -44,7 +44,7 @@ class BaseDataset(abc.ABC):
         return [transforms.ToTensor()]
 
 
-class PyTorchDataset(BaseDataset):
+class PyTorchDataset(_ContinuumDataset):
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(self, *args, dataset_type, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,7 +57,7 @@ class PyTorchDataset(BaseDataset):
         return x, y, None
 
 
-class InMemoryDataset(BaseDataset):
+class InMemoryDataset(_ContinuumDataset):
 
     def __init__(
         self,
@@ -84,7 +84,7 @@ class InMemoryDataset(BaseDataset):
         return not self.is_path
 
 
-class ImageFolderDataset(BaseDataset):
+class ImageFolderDataset(_ContinuumDataset):
 
     def __init__(self, train_folder: str, test_folder: str, download: bool = True, **kwargs):
         super().__init__(download=download, **kwargs)

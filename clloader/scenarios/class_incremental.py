@@ -3,7 +3,7 @@ from typing import Callable, List, Union
 
 import numpy as np
 
-from clloader.datasets import BaseDataset
+from clloader.datasets import _ContinuumDataset
 from clloader.scenarios import _BaseCLLoader
 
 
@@ -25,7 +25,7 @@ class ClassIncremental(_BaseCLLoader):
 
     def __init__(
         self,
-        cl_dataset: BaseDataset,
+        cl_dataset: _ContinuumDataset,
         nb_tasks: int = 0,
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,

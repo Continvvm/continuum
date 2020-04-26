@@ -2,14 +2,17 @@ from typing import List, Tuple
 
 import numpy as np
 
-from clloader.datasets.base import BaseDataset
+from clloader.datasets.base import _ContinuumDataset
 from clloader.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST)
 
 
-class Fellowship(BaseDataset):
+class Fellowship(_ContinuumDataset):
 
     def __init__(
-        self, data_path: str = "", download: bool = True, dataset_list: List[BaseDataset] = None
+        self,
+        data_path: str = "",
+        download: bool = True,
+        dataset_list: List[_ContinuumDataset] = None
     ):
         super().__init__(data_path, download)
 

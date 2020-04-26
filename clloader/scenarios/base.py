@@ -4,7 +4,7 @@ from typing import Callable, List, Tuple
 import numpy as np
 from torchvision import transforms
 
-from clloader.datasets import BaseDataset
+from clloader.datasets import _ContinuumDataset
 from clloader.task_set import TaskSet
 
 
@@ -12,7 +12,7 @@ class _BaseCLLoader(abc.ABC):
 
     def __init__(
         self,
-        cl_dataset: BaseDataset,
+        cl_dataset: _ContinuumDataset,
         nb_tasks: int,
         train_transformations: List[Callable] = None,
         common_transformations: List[Callable] = None,
