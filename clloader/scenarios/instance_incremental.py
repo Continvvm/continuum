@@ -1,3 +1,4 @@
+import warnings
 from typing import Callable, List
 
 import numpy as np
@@ -43,11 +44,21 @@ class InstanceIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        x, y, _ = self.cl_dataset.init(train=self.train)
+        x, y, t = self.cl_dataset.init(train=self.train)
 
-        # TODO: need to add seed + randomstate to ensure reproducibility
-        task_ids = np.random.randint(nb_tasks, size=len(y))
-
-        self.dataset = (x, y, task_ids)
-
+        if t is None:
+            # TODO: need to add seed + randomstate to ensure reproducibility
+            task_ids = np.random.randint(nb_tasks, size=len(y))
+            self.dataset = (x, y, task_ids)
+        else:
+            default_nb_tasks = len(np.unique(t))
+            if nb_tasks > 0 and default_nb_tasks > nb_tasks:
+                warnings.warn(f"The default number of task ({default_nb_tasks} is lower than"
+                              f" the one asked ({nb_tasks}), some tasks will be removed.")
+                indexes = np.where(t <= nb_tasks - 1)[0]
+                x, y, t = x[indexes], y[indexes], t[indexes]
+            elif nb_tasks > 0 and default_nb_tasks < nb_tasks:
+                raise ValueError(f"Cannot have {nb_tasks} tasks while this dataset"
+                                 f" at most {default_nb_tasks} tasks.")
+            self.dataset = (x, y, t)
         return nb_tasks
