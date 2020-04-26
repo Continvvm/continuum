@@ -31,15 +31,9 @@ class _BaseCLLoader(abc.ABC):
         self.test_trsf = transforms.Compose(common_transformations)
         self.train = train
 
-        self._setup()
-
-    def _setup(self):
-        (x_, y_) = self.cl_dataset.init(train='train')
-
-        # set task label
-        t_ = np.random.randint(self._nb_tasks, size=len(y_))
-
-        self.dataset = (x_, y_, t_)  # (data, label, task label)
+    @abc.abstractmethod
+    def _setup(self, nb_tasks: int) -> int:
+        raise NotImplementedError
 
     @property
     def nb_classes(self) -> int:
@@ -56,7 +50,7 @@ class _BaseCLLoader(abc.ABC):
 
         :return: Number of tasks.
         """
-        return len(self.increments)
+        return self._nb_tasks
 
     def __iter__(self):
         """Used for iterating through all tasks with the CLLoader in a for loop."""

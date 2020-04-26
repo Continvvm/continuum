@@ -47,7 +47,6 @@ class ClassIncremental(_BaseCLLoader):
         train=True,
         class_order=None
     ) -> None:
-
         super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
@@ -56,36 +55,46 @@ class ClassIncremental(_BaseCLLoader):
             train=train
         )
 
-        self._setup_class_incremental(increment, initial_increment, class_order)
+        self.increment = increment
+        self.initial_increment = initial_increment
+        self.class_order = class_order
 
-    def _setup_class_incremental(
-        self,
-        increment: Union[List[int], int],
-        initial_increment: int,
-        class_order: Union[None, List[int]] = None
-    ) -> None:
+        self._nb_tasks = self._setup(nb_tasks)
 
-        unique_classes = np.unique(self.dataset[1])  # search for unique classes
+    def _setup(self, nb_tasks: int) -> int:
+        x, y = self.cl_dataset.init(train=self.train)
+        unique_classes = np.unique(y)
 
-        self.class_order = class_order or self.cl_dataset.class_order or list(
+        self.class_order = self.class_order or self.cl_dataset.class_order or list(
             range(len(unique_classes))
         )
 
         if len(np.unique(self.class_order)) != len(self.class_order):
             raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
 
-        mapper = np.vectorize(lambda x: self.class_order.index(x))
-        new_y = mapper(self.dataset[1])
+        new_y = np.vectorize(self.class_order.index)(y)
 
         # Increments setup
         self.class_order = np.array(self.class_order)
-        self.increments = self._define_increments(increment, initial_increment)
+        if nb_tasks == 0:
+            self.increments = self._define_increments(
+                self.increment, self.initial_increment, unique_classes
+            )
+        else:
+            increment = len(unique_classes) / nb_tasks
+            if not increment.is_integer():
+                raise Exception(
+                    f"Invalid number of tasks ({nb_tasks}) for {len(unique_classes)} classes."
+                )
+            self.increments = [int(increment) for _ in range(nb_tasks)]
 
         # compute task label
-        t_ = self._set_task_labels(new_y, self.increments)
+        task_ids = self._set_task_labels(new_y, self.increments)
 
         # Dataset with task label
-        self.dataset = (self.dataset[0], new_y, t_)  # (data, class label, task label)
+        self.dataset = (x, new_y, task_ids)  # (data, class label, task label)
+
+        return len(np.unique(task_ids))
 
     def _set_task_labels(self, y: np.ndarray, increments: List[int]) -> np.ndarray:
         """
@@ -94,7 +103,6 @@ class ClassIncremental(_BaseCLLoader):
         :param increments: increments contains information about classes per tasks
         :return: tensor of task label
         """
-
         t = copy(y)  # task label as same size as y
         for task_index, increment in enumerate(increments):
             max_class = sum(self.increments[:task_index + 1])
@@ -104,12 +112,13 @@ class ClassIncremental(_BaseCLLoader):
             t[indexes] = task_index
         return t
 
-    def _define_increments(self, increment: Union[List[int], int],
-                           initial_increment: int) -> List[int]:
+    def _define_increments(
+        self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
+    ) -> List[int]:
         if isinstance(increment, list):
 
             # Check if the total number of classes is compatible between increment list and self.nb_classes
-            if not sum(increment) == self.nb_classes:
+            if not sum(increment) == len(unique_classes):
                 raise Exception("The increment list is not compatible with the number of classes")
 
             increments = increment
@@ -118,7 +127,7 @@ class ClassIncremental(_BaseCLLoader):
             if initial_increment:
                 increments.append(initial_increment)
 
-            nb_tasks = (self.nb_classes - initial_increment) / increment
+            nb_tasks = (len(unique_classes) - initial_increment) / increment
             if not nb_tasks.is_integer():
                 raise Exception(
                     "The tasks won't have an equal number of classes"
