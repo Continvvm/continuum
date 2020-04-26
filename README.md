@@ -18,7 +18,7 @@ And run!
 ```python
 from torch.utils.data import DataLoader
 
-from clloader import ClassIncremental, Permutation, Rotations
+from clloader import ClassIncremental
 from clloader.datasets import MNIST
 
 clloader = ClassIncremental(
@@ -43,7 +43,7 @@ for task_id, train_dataset in enumerate(clloader):
 
 |Name | Acronym | Supported |
 |:----|:---|:---:|
-| **New Instances** | NI | :x: |
+| **New Instances** | NI | :white_check_mark: |
 | **New Classes** | NC | :white_check_mark: |
 | **New Instances & Classes** | NIC | :x: |
 

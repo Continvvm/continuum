@@ -1,9 +1,12 @@
+from typing import Callable, List
+
 import numpy as np
 
-from clloader import BaseCLLoader
+from clloader.datasets import BaseDataset
+from clloader.scenarios import _BaseCLLoader
 
 
-class InstanceIncremental(BaseCLLoader):
+class InstanceIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
     Scenario: Classes are always the same but instances change (NI scenario)
 
@@ -20,16 +23,31 @@ class InstanceIncremental(BaseCLLoader):
                         on the `current` classes, or on `all` classes.
     :param class_order: An optional custom class order, used for NC.
     """
-    # TODO
 
+    def __init__(
+        self,
+        cl_dataset: BaseDataset,
+        nb_tasks: int,
+        train_transformations: List[Callable] = None,
+        common_transformations: List[Callable] = None,
+        train=True
+    ):
+        super().__init__(
+            cl_dataset=cl_dataset,
+            nb_tasks=nb_tasks,
+            train_transformations=train_transformations,
+            common_transformations=common_transformations,
+            train=train
+        )
 
-    # Vanilla NI: data are given randomly, each task has all classes and each task has different instances
-    def _set_task_labels(self, y_):
-        return np.random.randint(self.nb_tasks, size=len(y_))
+        self._nb_tasks = self._setup(nb_tasks)
 
-    def __len__(self) -> int:
-        """Returns the number of tasks.
+    def _setup(self, nb_tasks: int) -> int:
+        x, y = self.cl_dataset.init(train=self.train)
 
-        :return: Number of tasks.
-        """
-        return self.nb_tasks
+        # TODO: need to add seed + randomstate to ensure reproducibility
+        task_ids = np.random.randint(nb_tasks, size=len(y))
+
+        self.dataset = (x, y, task_ids)
+
+        return nb_tasks

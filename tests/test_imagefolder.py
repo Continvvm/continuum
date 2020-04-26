@@ -4,10 +4,10 @@ import tempfile
 import numpy as np
 import pytest
 from PIL import Image
-
-from clloader.scenarios import ClassIncremental
-from clloader.datasets import ImageFolderDataset
 from torch.utils.data import DataLoader
+
+from clloader.datasets import ImageFolderDataset
+from clloader.scenarios import ClassIncremental
 
 
 def gen_imagefolder(path, nb_classes=10, nb_samples=2):
@@ -35,7 +35,7 @@ def test_increments(increment, initial_increment, nb_tasks):
         gen_imagefolder(train_path)
         gen_imagefolder(test_path)
 
-        clloader = ClassIncremental(ImageFolderDataset(train_path, test_path), nb_tasks, increment, initial_increment)
+        clloader = ClassIncremental(ImageFolderDataset(train_path, test_path), increment=increment, initial_increment=initial_increment)
 
         assert clloader.nb_tasks == nb_tasks
         seen_tasks = 0

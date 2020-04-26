@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-
-from clloader.scenarios import ClassIncremental
-from clloader.datasets import InMemoryDataset
 from torch.utils.data import DataLoader
+
+from clloader.datasets import InMemoryDataset
+from clloader.scenarios import ClassIncremental
 
 
 def gen_data():
@@ -31,7 +31,7 @@ def gen_data():
 def test_increments(increment, initial_increment, nb_tasks):
     train, test = gen_data()
     dummy = InMemoryDataset(*train, *test)
-    clloader = ClassIncremental(dummy, nb_tasks, increment, initial_increment)
+    clloader = ClassIncremental(dummy, increment=increment, initial_increment=initial_increment)
 
     assert clloader.nb_tasks == nb_tasks
     seen_tasks = 0

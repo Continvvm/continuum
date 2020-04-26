@@ -1,25 +1,26 @@
 import abc
-from typing import Tuple, Callable, List
+from typing import Callable, List, Tuple
+
 import numpy as np
 from torchvision import transforms
 
-from clloader import TaskSet
 from clloader.datasets import BaseDataset
-from torch.utils.data import Dataset as TorchDataset
+from clloader.task_set import TaskSet
 
 
-class BaseCLLoader(abc.ABC):
+class _BaseCLLoader(abc.ABC):
 
     def __init__(
-            self,
-            cl_dataset: BaseDataset,
-            nb_tasks: int,
-            train_transformations: List[Callable] = None,
-            common_transformations: List[Callable] = None,
-            train=True) -> None:
+        self,
+        cl_dataset: BaseDataset,
+        nb_tasks: int,
+        train_transformations: List[Callable] = None,
+        common_transformations: List[Callable] = None,
+        train=True
+    ) -> None:
 
         self.cl_dataset = cl_dataset
-        self.nb_tasks = nb_tasks
+        self._nb_tasks = nb_tasks
 
         if train_transformations is None:
             train_transformations = []
@@ -30,33 +31,26 @@ class BaseCLLoader(abc.ABC):
         self.test_trsf = transforms.Compose(common_transformations)
         self.train = train
 
-        self._setup()
-
-    def _setup(self):
-
-        (x_, y_) = self.cl_dataset.init(train='train')
-
-        # set task label
-        t_ = np.random.randint(self.nb_tasks, size=len(y_))
-
-        self.dataset = (x_, y_, t_)  # (data, label, task label)
+    @abc.abstractmethod
+    def _setup(self, nb_tasks: int) -> int:
+        raise NotImplementedError
 
     @property
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
         return len(np.unique(self.dataset[1]))
 
-    # @property
-    # def nb_tasks(self) -> int:
-    #     """Number of tasks in the whole continual setting."""
-    #     return len(self)
+    @property
+    def nb_tasks(self) -> int:
+        """Number of tasks in the whole continual setting."""
+        return len(self)
 
     def __len__(self) -> int:
         """Returns the number of tasks.
 
         :return: Number of tasks.
         """
-        return len(self.increments)
+        return self._nb_tasks
 
     def __iter__(self):
         """Used for iterating through all tasks with the CLLoader in a for loop."""
