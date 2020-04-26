@@ -22,19 +22,6 @@ class ClassIncremental(_BaseCLLoader):
                                    resizing, etc.
     :param class_order: An optional custom class order, used for NC.
     """
-    """Continual Loader, generating datasets for the consecutive tasks.
-
-    :param cl_dataset: A continual dataset.
-    :param increment: Either number of classes per task, or a list specifying for
-                      every task the amount of new classes.
-    :param initial_increment: A different task size applied only for the first task.
-                              Desactivated if `increment` is a list.
-    :param train_transformations: A list of data augmentation applied to the train set.
-    :param common_transformations: A list of transformations applied to both the
-                                   the train set and the test set. i.e. normalization,
-                                   resizing, etc.
-    :param class_order: An optional custom class order, used for NC.
-    """
 
     def __init__(
         self,
