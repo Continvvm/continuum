@@ -1,7 +1,6 @@
-from typing import Callable, List, Tuple, Union
+from typing import Tuple, Union
 
 import numpy as np
-import torch
 from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
@@ -43,7 +42,13 @@ class TaskSet(TorchDataset):
         self.x = np.concatenate((self.x, x_memory))
         self.y = np.concatenate((self.y, y_memory))
 
-    def plot(self, path=None, title="", nb_per_class=5, shape=None):
+    def plot(
+        self,
+        path: Union[str, None] = None,
+        title: str = "",
+        nb_per_class: int = 5,
+        shape=None
+    ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
         :param path: If not None, save on disk at this path.
@@ -53,11 +58,11 @@ class TaskSet(TorchDataset):
         """
         plot(self, title=title, path=path, nb_per_class=nb_per_class, shape=shape)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """The amount of images in the current task."""
         return self.x.shape[0]
 
-    def get_sample(self, index):
+    def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
 
         :param index: Index to query the image.
@@ -74,7 +79,7 @@ class TaskSet(TorchDataset):
 
         return x
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Tuple[np.ndarray, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
         img = self.get_sample(index)
         y = self.y[index]
