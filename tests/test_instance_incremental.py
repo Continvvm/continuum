@@ -32,6 +32,8 @@ def numpy_data():
     (1, 1),
 ])
 def test_instance_auto_nb_tasks(numpy_data, nb_tasks, nb_tasks_gt):
+    """Test the InstanceIncremental loader when the dataset doesn't provide
+    any default number of tasks."""
     train, test = numpy_data
     dummy = InMemoryDataset(*train, *test)
     clloader = InstanceIncremental(dummy, nb_tasks=nb_tasks)
@@ -74,6 +76,8 @@ def numpy_data_per_task():
     (0, 3, False),
 ])
 def test_instance_default_nb_tasks(numpy_data_per_task, nb_tasks, nb_tasks_gt, catch):
+    """Test the InstanceIncremental loader when the dataset does provide
+    a default number of tasks."""
     train, test = numpy_data_per_task
 
     x_train, y_train, t_train = train
