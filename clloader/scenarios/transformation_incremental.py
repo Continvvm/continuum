@@ -8,7 +8,7 @@ from clloader.scenarios import InstanceIncremental
 
 from torchvision import transforms
 
-class ModeIncremental(InstanceIncremental):
+class TransformationIncremental(InstanceIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
     Scenario: Mode incremental scenario is a new instance scenario where we explore the distribution mode by mode.
               For example rotation mnist, is a exploration of the distribution by rotation angles, each angle can be
