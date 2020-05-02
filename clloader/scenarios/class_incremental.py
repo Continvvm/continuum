@@ -91,7 +91,7 @@ class ClassIncremental(_BaseCLLoader):
         :return: tensor of task label
         """
         t = copy(y)  # task label as same size as y
-        for task_index, increment in enumerate(self.increments):
+        for task_index in range(len(self.increments)):
             max_class = sum(self.increments[:task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
@@ -140,7 +140,7 @@ class ClassIncremental(_BaseCLLoader):
         :return: A tuple of numpy array, the first item being the data and the
                  second the associated targets.
         """
-        x_, y_, t_ = self.dataset
+        x_, y_, _ = self.dataset
 
         indexes = np.where(np.logical_and(y_ >= min_class_id, y_ < max_class_id))[0]
         selected_x = x_[indexes]

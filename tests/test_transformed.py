@@ -1,9 +1,7 @@
-import os
 import tempfile
 
 import numpy as np
 import pytest
-from PIL import Image
 from torch.utils.data import DataLoader
 
 from clloader.scenarios import ClassIncremental
