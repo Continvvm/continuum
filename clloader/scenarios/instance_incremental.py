@@ -28,15 +28,13 @@ class InstanceIncremental(_BaseCLLoader):
         self,
         cl_dataset: _ContinuumDataset,
         nb_tasks: int,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
+        base_transformations: List[Callable] = None,
         train=True
     ):
         super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
-            train_transformations=train_transformations,
-            common_transformations=common_transformations,
+            base_transformations=base_transformations,
             train=train
         )
 
