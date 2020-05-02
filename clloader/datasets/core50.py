@@ -7,7 +7,7 @@ import numpy as np
 from clloader.datasets.base import _ContinuumDataset
 
 
-class ImageFolderDataset(_ContinuumDataset):
+class CORe50(_ContinuumDataset):
 
     def __init__(
         self, folder: str, train_image_ids: Union[str, List[str]], download: bool = True, **kwargs
@@ -25,23 +25,26 @@ class ImageFolderDataset(_ContinuumDataset):
         return False
 
     def _download(self):
-        raise ValueError("bouh")
+        if os.path.exists(self.folder):
+            print("CORe50 already downloaded.")
+        else:
+            raise IOError("Download it yourself.")
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y, t = [], [], []
 
         train_images_ids = set()
-        if isinstance(self.train_paths, str):
-            with open(self.train_paths, "r") as f:
+        if isinstance(self.train_image_ids, str):
+            with open(self.train_image_ids, "r") as f:
                 next(f)
                 for line in f:
                     image_id = line.split(",")[0].split(".")[0]
                     train_images_ids.add(image_id)
         else:
-            train_images_ids = set(self.train_paths)
+            train_images_ids = set(self.train_image_ids)
 
         for domain_id in range(10):
-            domain_folder = os.path.join(self.train_folder, f"s{domain_id + 1}")
+            domain_folder = os.path.join(self.folder, "core50_128x128", f"s{domain_id + 1}")
 
             for object_id in range(50):
                 object_folder = os.path.join(domain_folder, f"o{object_id + 1}")
@@ -58,8 +61,10 @@ class ImageFolderDataset(_ContinuumDataset):
                     y.append(object_id)
                     t.append(domain_id)
 
-        x = np.concatenate(x)
-        y = np.concatenate(y)
-        t = np.concatenate(t)
+        x = np.array(x)
+        y = np.array(y)
+        t = np.array(t)
+
+        print(np.unique(t))
 
         return x, y, t

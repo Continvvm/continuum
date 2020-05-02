@@ -1,6 +1,7 @@
 from clloader.datasets.base import (
     ImageFolderDataset, InMemoryDataset, PyTorchDataset, _ContinuumDataset
 )
+from clloader.datasets.core50 import CORe50
 from clloader.datasets.fellowship import (CIFARFellowship, Fellowship, MNISTFellowship)
 from clloader.datasets.imagenet import ImageNet100, ImageNet1000
 from clloader.datasets.pytorch import (
@@ -27,5 +28,6 @@ __all__ = [
     RotatedMNIST,
     Fellowship,
     MNISTFellowship,
-    CIFARFellowship
+    CIFARFellowship,
+    CORe50
 ]
