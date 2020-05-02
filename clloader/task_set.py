@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple, Union
+from typing import Tuple
 
 import torch
 import numpy as np

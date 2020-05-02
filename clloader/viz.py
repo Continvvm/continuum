@@ -76,10 +76,8 @@ def plot_old(dataset, title="", path=None, nb_per_class=5, shape=None):
 
 
 def plot(dataset, title="", path=None, nb_per_class=5, shape=None):
-    x, y = sample(dataset, nb_per_class=nb_per_class)
 
-    print("HELLO")
-    print(x.shape)
+    x, _ = sample(dataset, nb_per_class=nb_per_class)
     if not dataset.open_image and x.shape[1] == 1:
         x = x.squeeze(1)
 
