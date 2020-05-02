@@ -1,5 +1,5 @@
 import abc
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 from torchvision import datasets as torchdata
@@ -66,12 +66,14 @@ class InMemoryDataset(_ContinuumDataset):
         x_test: np.ndarray,
         y_test: np.ndarray,
         is_path: bool = False,
+        t_train: Union[None, np.ndarray] = None,
+        t_test: Union[None, np.ndarray] = None,
         **kwargs
     ):
         super().__init__(**kwargs)
 
-        self.train = (x_train, y_train, None)
-        self.test = (x_test, y_test, None)
+        self.train = (x_train, y_train, t_train)
+        self.test = (x_test, y_test, t_test)
         self.is_path = is_path
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
