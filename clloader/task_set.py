@@ -20,23 +20,23 @@ class TaskSet(TorchDataset):
     def __init__(
         self, x: np.ndarray, y: np.ndarray, trsf: transforms.Compose, open_image: bool = False
     ):
-        self.x, self.y = x, y
+        self._x, self._y = x, y
         self.trsf = trsf
         self.open_image = open_image
 
     @property
     def nb_classes(self):
         """The number of classes contained in the current task."""
-        return len(np.unique(self.y))
+        return len(np.unique(self._y))
 
-    def add_memory(self, x_memory: np.ndarray, y_memory: np.ndarray):
-        """Add memory for rehearsal.
+    def add_set(self, x_memory: np.ndarray, y_memory: np.ndarray):
+        """Add set of images for rehearsal.
 
         :param x_memory: Sampled data chosen for rehearsal.
         :param y_memory: The associated targets of `x_memory`.
         """
-        self.x = np.concatenate((self.x, x_memory))
-        self.y = np.concatenate((self.y, y_memory))
+        self._x = np.concatenate((self._x, x_memory))
+        self._y = np.concatenate((self._y, y_memory))
 
     def plot(self, path=None, title="", nb_per_class=5, shape=None):
         """Plot samples of the current task, useful to check if everything is ok.
@@ -50,27 +50,60 @@ class TaskSet(TorchDataset):
 
     def __len__(self):
         """The amount of images in the current task."""
-        return self.x.shape[0]
+        return self._x.shape[0]
 
-    def get_image(self, index):
+    def get_batch(self, indexes):
         """Returns a Pillow image corresponding to the given `index`.
 
         :param index: Index to query the image.
         :return: A Pillow image.
         """
-        x = self.x[index]
+        x = self._x[indexes]
+        for single_x in x:
+            if self.open_image:
+                img = Image.open(single_x).convert("RGB")
+            else:
+                img = Image.fromarray(single_x.astype("uint8"))
+        img = self.trsf(img)
+        return img
+
+    def get_samples_from_ind(self, indices):
+        batch = None
+        labels = None
+
+        for i, ind in enumerate(indices):
+            # we need to use get item to have the transform used
+            img, y = self.__getitem__(ind)
+
+            if i == 0:
+                if len(list(img.shape)) == 2:
+                    size_image = [1] + list(img.shape)
+                else:
+                    size_image = list(img.shape)
+                batch = torch.zeros(([len(indices)] + size_image))
+                labels = np.zeros(len(indices))
+
+            batch[i] = img.clone()
+            labels[i] = y
+
+        return batch, labels
+
+    def __getitem__(self, index):
+        """Method used by PyTorch's DataLoaders to query a sample and its target.
+        :param index: Index to query the image.
+        :return: A Pillow image.
+        """
+        x = self._x[index]
+        y = self._y[index]
         if self.open_image:
             img = Image.open(x).convert("RGB")
         else:
             img = Image.fromarray(x.astype("uint8"))
-        return img
-
-    def __getitem__(self, index):
-        """Method used by PyTorch's DataLoaders to query a sample and its target."""
-        img = self.get_image(index)
-        y = self.y[index]
         img = self.trsf(img)
         return img, y
+
+    def get_image(self, index):
+        return self.__getitem__(index)
 
 
 def split_train_val(dataset: TorchDataset,
