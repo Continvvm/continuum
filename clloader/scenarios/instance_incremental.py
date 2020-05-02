@@ -9,20 +9,18 @@ from clloader.scenarios import _BaseCLLoader
 
 class InstanceIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
+
     Scenario: Classes are always the same but instances change (NI scenario)
 
     :param cl_dataset: A continual dataset.
-    :param increment: Either number of classes per task, or a list specifying for
-                      every task the amount of new classes.
-    :param initial_increment: A different task size applied only for the first task.
-                              Desactivated if `increment` is a list.
+    :param nb_tasks: The desired number of tasks. If left to 0, it will try to use
+                     the dataset's default number of tasks.
     :param train_transformations: A list of data augmentation applied to the train set.
     :param common_transformations: A list of transformations applied to both the
                                    the train set and the test set. i.e. normalization,
                                    resizing, etc.
-    :param evaluate_on: How to evaluate on val/test, either on all `seen` classes,
-                        on the `current` classes, or on `all` classes.
-    :param class_order: An optional custom class order, used for NC.
+    :param random_seed: A random seed which can be used if the task ids are randomly
+                        generated.
     """
 
     def __init__(
@@ -51,12 +49,15 @@ class InstanceIncremental(_BaseCLLoader):
 
         if t is None and nb_tasks <= 0:
             raise ValueError(f"You need to specify a number of tasks > 0, not {nb_tasks}.")
-        elif t is None:
+        elif t is None:  # If the dataset didn't provide default task ids:
             task_ids = self._random_state.randint(nb_tasks, size=len(y))
             self.dataset = (x, y, task_ids)
-        else:
+        else:  # With dataset default task ids provided:
             default_nb_tasks = len(np.unique(t))
             if nb_tasks > 0 and default_nb_tasks > nb_tasks:
+                # If the user desired a particular amount of tasks, that is lower
+                # than the dataset's default number of tasks, we truncate the
+                # latest tasks.
                 warnings.warn(
                     f"The default number of task ({default_nb_tasks} is lower than"
                     f" the one asked ({nb_tasks}), some tasks will be removed."
@@ -64,6 +65,8 @@ class InstanceIncremental(_BaseCLLoader):
                 indexes = np.where(t <= nb_tasks - 1)[0]
                 x, y, t = x[indexes], y[indexes], t[indexes]
             elif nb_tasks > 0 and default_nb_tasks < nb_tasks:
+                # If the user requests more tasks than the dataset was designed for,
+                # we raise an error.
                 raise ValueError(
                     f"Cannot have {nb_tasks} tasks while this dataset"
                     f" at most {default_nb_tasks} tasks."
