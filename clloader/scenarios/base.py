@@ -9,6 +9,18 @@ from clloader.task_set import TaskSet
 
 
 class _BaseCLLoader(abc.ABC):
+    """Abstract loader.
+
+    DO NOT INSTANTIATE THIS CLASS.
+
+    :param cl_dataset: A Continuum dataset.
+    :param nb_tasks: The number of tasks to do.
+    :param train_transformations: The PyTorch transformations exclusive to the
+                                  train set.
+    :param common_transformations: The PyTorch transformations common to the
+                                   train set and the test set.
+    :param train: Boolean flag whether to use the train or test subset.
+    """
 
     def __init__(
         self,
