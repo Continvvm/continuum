@@ -1,11 +1,12 @@
 from typing import Callable, List, Tuple, Union
 
-import torch
 import numpy as np
-from clloader.viz import plot
+import torch
 from PIL import Image
-from torchvision import transforms
 from torch.utils.data import Dataset as TorchDataset
+from torchvision import transforms
+
+from clloader.viz import plot
 
 
 class TaskSet(TorchDataset):
@@ -14,15 +15,19 @@ class TaskSet(TorchDataset):
     :param x: The data, either image-arrays or paths to images saved on disk.
     :param y: The targets, not one-hot encoded.
     :param trsf: The transformations to apply on the images.
-    :param open_image: Whether to open image from disk, or index in-memory.
+    :param data_type: Type of the data, either "image_path", "image_array", or "text".
     """
 
     def __init__(
-        self, x: np.ndarray, y: np.ndarray, trsf: transforms.Compose, open_image: bool = False
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        trsf: transforms.Compose,
+        data_type: str = "image_array"
     ):
         self.x, self.y = x, y
         self.trsf = trsf
-        self.open_image = open_image
+        self.data_type = data_type
 
     @property
     def nb_classes(self):
@@ -52,24 +57,29 @@ class TaskSet(TorchDataset):
         """The amount of images in the current task."""
         return self.x.shape[0]
 
-    def get_image(self, index):
+    def get_sample(self, index):
         """Returns a Pillow image corresponding to the given `index`.
 
         :param index: Index to query the image.
         :return: A Pillow image.
         """
         x = self.x[index]
-        if self.open_image:
-            img = Image.open(x).convert("RGB")
-        else:
-            img = Image.fromarray(x.astype("uint8"))
-        return img
+
+        if self.data_type == "image_path":
+            x = Image.open(x).convert("RGB")
+        elif self.data_type == "image_array":
+            x = Image.fromarray(x.astype("uint8"))
+        elif self.data_type == "text":
+            pass
+
+        return x
 
     def __getitem__(self, index):
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
-        img = self.get_image(index)
+        img = self.get_sample(index)
         y = self.y[index]
-        img = self.trsf(img)
+        if self.trsf is not None:
+            img = self.trsf(img)
         return img, y
 
 

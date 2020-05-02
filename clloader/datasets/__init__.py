@@ -4,6 +4,7 @@ from clloader.datasets.base import (
 from clloader.datasets.core50 import CORe50
 from clloader.datasets.fellowship import (CIFARFellowship, Fellowship, MNISTFellowship)
 from clloader.datasets.imagenet import ImageNet100, ImageNet1000
+from clloader.datasets.nlp import MultiNLI
 from clloader.datasets.pytorch import (
     CIFAR10, CIFAR100, EMNIST, KMNIST, MNIST, QMNIST, FashionMNIST
 )
@@ -29,5 +30,6 @@ __all__ = [
     Fellowship,
     MNISTFellowship,
     CIFARFellowship,
-    CORe50
+    CORe50,
+    MultiNLI
 ]

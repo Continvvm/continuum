@@ -21,8 +21,8 @@ class CORe50(_ContinuumDataset):
             self._download()
 
     @property
-    def in_memory(self):
-        return False
+    def data_type(self):
+        return "image_path"
 
     def _download(self):
         if os.path.exists(self.folder):
@@ -43,9 +43,11 @@ class CORe50(_ContinuumDataset):
         else:
             train_images_ids = set(self.train_image_ids)
 
+        domain_counter = 0
         for domain_id in range(10):
             domain_folder = os.path.join(self.folder, "core50_128x128", f"s{domain_id + 1}")
 
+            has_images = False
             for object_id in range(50):
                 object_folder = os.path.join(domain_folder, f"o{object_id + 1}")
 
@@ -59,7 +61,14 @@ class CORe50(_ContinuumDataset):
 
                     x.append(os.path.join(object_folder, path))
                     y.append(object_id)
-                    t.append(domain_id)
+                    if train:
+                        t.append(domain_counter)
+                    else:
+                        t.append(0)
+
+                    has_images = True
+            if has_images:
+                domain_counter += 1
 
         x = np.array(x)
         y = np.array(y)

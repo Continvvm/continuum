@@ -27,8 +27,11 @@ class _BaseCLLoader(abc.ABC):
         if common_transformations is None:
             common_transformations = self.cl_dataset.transformations
 
-        self.train_trsf = transforms.Compose(train_transformations + common_transformations)
-        self.test_trsf = transforms.Compose(common_transformations)
+        if len(common_transformations) == 0:
+            self.train_trsf, self.test_trsf = None, None
+        else:
+            self.train_trsf = transforms.Compose(train_transformations + common_transformations)
+            self.test_trsf = transforms.Compose(common_transformations)
         self.train = train
 
     @abc.abstractmethod
@@ -71,11 +74,12 @@ class _BaseCLLoader(abc.ABC):
         :param task_index: The unique index of a task, between 0 and len(loader) - 1.
         :return: A train PyTorch's Datasets.
         """
-
-        train = self._select_data_by_task(task_index)
-        train_dataset = TaskSet(*train, self.train_trsf, open_image=not self.cl_dataset.in_memory)
-
-        return train_dataset
+        data = self._select_data_by_task(task_index)
+        return TaskSet(
+            *data,
+            self.train_trsf if self.train else self.test_trsf,
+            data_type=self.cl_dataset.data_type
+        )
 
     def _select_data_by_task(self, ind_task: int):
         """Selects a subset of the whole data for a given task.
@@ -90,7 +94,7 @@ class _BaseCLLoader(abc.ABC):
         selected_x = x_[indexes]
         selected_y = y_[indexes]
 
-        if self.cl_dataset.need_class_remapping:
+        if self.cl_dataset.need_class_remapping:  # TODO: to remove with TransformIncremental
             # A remapping of the class ids is done to handle some special cases
             # like PermutedMNIST or RotatedMNIST.
             selected_y = self.cl_dataset.class_remapping(selected_y)

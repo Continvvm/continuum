@@ -36,8 +36,8 @@ class _ContinuumDataset(abc.ABC):
         return None
 
     @property
-    def in_memory(self):
-        return True
+    def data_type(self) -> str:
+        return "image_array"
 
     @property
     def transformations(self):
@@ -65,7 +65,7 @@ class InMemoryDataset(_ContinuumDataset):
         y_train: np.ndarray,
         x_test: np.ndarray,
         y_test: np.ndarray,
-        is_path: bool = False,
+        data_type: str = "image_array",
         t_train: Union[None, np.ndarray] = None,
         t_test: Union[None, np.ndarray] = None,
         **kwargs
@@ -74,7 +74,7 @@ class InMemoryDataset(_ContinuumDataset):
 
         self.train = (x_train, y_train, t_train)
         self.test = (x_test, y_test, t_test)
-        self.is_path = is_path
+        self._data_type = data_type
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if train:
@@ -82,8 +82,12 @@ class InMemoryDataset(_ContinuumDataset):
         return self.test
 
     @property
-    def in_memory(self) -> bool:
-        return not self.is_path
+    def data_type(self) -> bool:
+        return self._data_type
+
+    @data_type.setter
+    def data_type(self, data_type: str) -> None:
+        self._data_type = data_type
 
 
 class ImageFolderDataset(_ContinuumDataset):
@@ -98,8 +102,8 @@ class ImageFolderDataset(_ContinuumDataset):
             self._download()
 
     @property
-    def in_memory(self):
-        return False
+    def data_type(self):
+        return "image_path"
 
     def _download(self):
         pass
