@@ -33,7 +33,7 @@ class _ContinuumDataset(abc.ABC):
         :param class_ids: Original class_ids.
         :return: A remapping of the class ids.
         """
-        return None
+        return class_ids
 
     @property
     def data_type(self) -> str:
@@ -45,6 +45,11 @@ class _ContinuumDataset(abc.ABC):
 
 
 class PyTorchDataset(_ContinuumDataset):
+    """Continuum version of torchvision datasets.
+
+    :param dataset_type: A Torchvision dataset, like MNIST or CIFAR100.
+    """
+
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(self, *args, dataset_type, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,6 +63,16 @@ class PyTorchDataset(_ContinuumDataset):
 
 
 class InMemoryDataset(_ContinuumDataset):
+    """Continuum dataset for in-memory data.
+
+    :param x_train: Numpy array of images or paths to images for the train set.
+    :param y_train: Targets for the train set.
+    :param x_test: Numpy array of images or paths to images for the test set.
+    :param y_test: Targets for the test set.
+    :param data_type: Format of the data.
+    :param t_train: Optional task ids for the train set.
+    :param t_test: Optional task ids for the test set.
+    """
 
     def __init__(
         self,
@@ -91,6 +106,12 @@ class InMemoryDataset(_ContinuumDataset):
 
 
 class ImageFolderDataset(_ContinuumDataset):
+    """Continuum dataset for datasets with tree-like structure.
+
+    :param train_folder: The folder of the train data.
+    :param test_folder: The folder of the test data.
+    :param download: Dummy parameter.
+    """
 
     def __init__(self, train_folder: str, test_folder: str, download: bool = True, **kwargs):
         super().__init__(download=download, **kwargs)

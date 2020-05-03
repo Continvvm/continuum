@@ -43,9 +43,11 @@ class CORe50(_ContinuumDataset):
         if os.path.exists(self.folder):
             print("CORe50 already downloaded.")
         else:
-            raise IOError(f"CORe50 was not found there: {self.folder}."
-                          f" Please download and unzip this: {self.data_url},"
-                          f" and get the train images ids there: {self.train_ids_url}.")
+            raise IOError(
+                f"CORe50 was not found there: {self.folder}."
+                f" Please download and unzip this: {self.data_url},"
+                f" and get the train images ids there: {self.train_ids_url}."
+            )
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate the CORe50 data.
@@ -87,9 +89,8 @@ class CORe50(_ContinuumDataset):
                 for path in os.listdir(object_folder):
                     image_id = path.split(".")[0]
 
-                    if train and image_id not in train_images_ids:
-                        continue
-                    elif not train and image_id in train_images_ids:
+                    if (train and image_id not in train_images_ids) \
+                       or (not train and image_id in train_images_ids):
                         continue
 
                     x.append(os.path.join(object_folder, path))
