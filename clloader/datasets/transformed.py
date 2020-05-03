@@ -53,7 +53,7 @@ class PermutedMNIST(MNIST):
             )
         return self._mapping[class_ids]
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, None]:
         base_data = MNIST.init(self, train)
 
         x, y = [base_data[0]], [base_data[1]]
@@ -70,11 +70,11 @@ class PermutedMNIST(MNIST):
 
         return x, y, None
 
-    def _transform(self, x: np.ndarray, seed: int) -> np.ndarray:
+    def _transform(self, x: np.ndarray, value: int) -> np.ndarray:
         # It's important to generate a new random state with a given seed
         # So that every run produces the same transformation,
         # and also that train & test have the same transformation.
-        random_state = np.random.RandomState(seed=seed)
+        random_state = np.random.RandomState(seed=value)
         permutations = random_state.permutation(x.shape[1] * x.shape[2])
 
         shape = x.shape
@@ -101,11 +101,11 @@ class RotatedMNIST(PermutedMNIST):
     """
 
     def __init__(self, *args, angles=[45, 90, 135, 180], **kwargs):
-        MNIST.__init__(self, *args, **kwargs)
+        MNIST.__init__(self, *args, **kwargs)  # pylint: disable=non-parent-init-called
 
         self._transformations = angles
         self._mapping = None
 
-    def _transform(self, x: np.ndarray, angle: int) -> np.ndarray:
-        x_transformed = ndimage.rotate(x, angle=angle, axes=(2, 1), reshape=False)
+    def _transform(self, x: np.ndarray, value: int) -> np.ndarray:
+        x_transformed = ndimage.rotate(x, angle=value, axes=(2, 1), reshape=False)
         return x_transformed
