@@ -6,11 +6,14 @@ distribute: FORCE clean
 	python3 -m twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 
 
+prospector:
+	prospector --profile-path .prospector.yaml
+
 tests: FORCE
 	pytest tests/
 
 clean: FORCE
 	rm -rf dist/
-	rm -rf clloader.egg-info/
+	rm -rf continuum.egg-info/
 
 FORCE: ;
