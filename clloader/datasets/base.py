@@ -1,5 +1,5 @@
 import abc
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 from torchvision import datasets as torchdata
@@ -17,7 +17,7 @@ class _ContinuumDataset(abc.ABC):
         pass
 
     @property
-    def class_order(self) -> List[int]:
+    def class_order(self) -> Union[None, List[int]]:
         return None
 
     @property
@@ -33,11 +33,11 @@ class _ContinuumDataset(abc.ABC):
         :param class_ids: Original class_ids.
         :return: A remapping of the class ids.
         """
-        return None
+        return class_ids
 
     @property
-    def in_memory(self):
-        return True
+    def data_type(self) -> str:
+        return "image_array"
 
     @property
     def transformations(self):
@@ -45,6 +45,11 @@ class _ContinuumDataset(abc.ABC):
 
 
 class PyTorchDataset(_ContinuumDataset):
+    """Continuum version of torchvision datasets.
+
+    :param dataset_type: A Torchvision dataset, like MNIST or CIFAR100.
+    """
+
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(self, *args, dataset_type, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,6 +63,16 @@ class PyTorchDataset(_ContinuumDataset):
 
 
 class InMemoryDataset(_ContinuumDataset):
+    """Continuum dataset for in-memory data.
+
+    :param x_train: Numpy array of images or paths to images for the train set.
+    :param y_train: Targets for the train set.
+    :param x_test: Numpy array of images or paths to images for the test set.
+    :param y_test: Targets for the test set.
+    :param data_type: Format of the data.
+    :param t_train: Optional task ids for the train set.
+    :param t_test: Optional task ids for the test set.
+    """
 
     def __init__(
         self,
@@ -65,14 +80,16 @@ class InMemoryDataset(_ContinuumDataset):
         y_train: np.ndarray,
         x_test: np.ndarray,
         y_test: np.ndarray,
-        is_path: bool = False,
+        data_type: str = "image_array",
+        t_train: Union[None, np.ndarray] = None,
+        t_test: Union[None, np.ndarray] = None,
         **kwargs
     ):
         super().__init__(**kwargs)
 
-        self.train = (x_train, y_train, None)
-        self.test = (x_test, y_test, None)
-        self.is_path = is_path
+        self.train = (x_train, y_train, t_train)
+        self.test = (x_test, y_test, t_test)
+        self._data_type = data_type
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if train:
@@ -80,11 +97,21 @@ class InMemoryDataset(_ContinuumDataset):
         return self.test
 
     @property
-    def in_memory(self) -> bool:
-        return not self.is_path
+    def data_type(self) -> str:
+        return self._data_type
+
+    @data_type.setter
+    def data_type(self, data_type: str) -> None:
+        self._data_type = data_type
 
 
 class ImageFolderDataset(_ContinuumDataset):
+    """Continuum dataset for datasets with tree-like structure.
+
+    :param train_folder: The folder of the train data.
+    :param test_folder: The folder of the test data.
+    :param download: Dummy parameter.
+    """
 
     def __init__(self, train_folder: str, test_folder: str, download: bool = True, **kwargs):
         super().__init__(download=download, **kwargs)
@@ -96,13 +123,13 @@ class ImageFolderDataset(_ContinuumDataset):
             self._download()
 
     @property
-    def in_memory(self):
-        return False
+    def data_type(self) -> str:
+        return "image_path"
 
     def _download(self):
         pass
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         if train:
             folder = self.train_folder
         else:
@@ -112,7 +139,7 @@ class ImageFolderDataset(_ContinuumDataset):
         return self._format(dataset.imgs)
 
     @staticmethod
-    def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray]:
+    def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:
         x = np.empty(len(raw_data), dtype="S255")
         y = np.empty(len(raw_data), dtype=np.int16)
 

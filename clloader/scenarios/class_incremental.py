@@ -82,14 +82,15 @@ class ClassIncremental(_BaseCLLoader):
         return len(np.unique(task_ids))
 
     def _set_task_labels(self, y: np.ndarray) -> np.ndarray:
-        """
-        For each data point, defines a task associated with the data
+        """For each data point, defines a task associated with the data
+
         :param y: label tensor
         :param increments: increments contains information about classes per tasks
         :return: tensor of task label
         """
         t = copy(y)  # task label as same size as y
-        for task_index in range(len(self.increments)):
+
+        for task_index, _ in enumerate(self.increments):
             max_class = sum(self.increments[:task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
@@ -101,7 +102,6 @@ class ClassIncremental(_BaseCLLoader):
         self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
     ) -> List[int]:
         if isinstance(increment, list):
-
             # Check if the total number of classes is compatible between increment list and self.nb_classes
             if not sum(increment) == len(unique_classes):
                 raise Exception("The increment list is not compatible with the number of classes")
