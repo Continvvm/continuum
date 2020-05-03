@@ -63,13 +63,34 @@ class TaskSet(TorchDataset):
         """The amount of images in the current task."""
         return self._x.shape[0]
 
+    def get_samples_from_ind(self, indices):
+        batch = None
+        labels = None
+
+        for i, ind in enumerate(indices):
+            # we need to use get item to have the transform used
+            img, y = self.__getitem__(ind)
+
+            if i == 0:
+                if len(list(img.shape)) == 2:
+                    size_image = [1] + list(img.shape)
+                else:
+                    size_image = list(img.shape)
+                batch = torch.zeros(([len(indices)] + size_image))
+                labels = np.zeros(len(indices))
+
+            batch[i] = img.clone()
+            labels[i] = y
+
+        return batch, labels
+
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
 
         :param index: Index to query the image.
         :return: A Pillow image.
         """
-        x = self.x[index]
+        x = self._x[index]
 
         if self.data_type == "image_path":
             x = Image.open(x).convert("RGB")
@@ -83,7 +104,7 @@ class TaskSet(TorchDataset):
     def __getitem__(self, index: int) -> Tuple[np.ndarray, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
         img = self.get_sample(index)
-        y = self.y[index]
+        y = self._y[index]
         if self.trsf is not None:
             img = self.trsf(img)
         return img, y
