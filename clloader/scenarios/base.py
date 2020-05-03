@@ -26,8 +26,7 @@ class _BaseCLLoader(abc.ABC):
         self,
         cl_dataset: _ContinuumDataset,
         nb_tasks: int,
-        base_transformations: List[Callable] = None,
-        train=True
+        base_transformations: List[Callable] = None
     ) -> None:
 
         self.cl_dataset = cl_dataset
@@ -36,7 +35,6 @@ class _BaseCLLoader(abc.ABC):
         if base_transformations is None:
             base_transformations = self.cl_dataset.transformations
         self.trsf = transforms.Compose(base_transformations)
-        self.train = train
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
@@ -79,7 +77,7 @@ class _BaseCLLoader(abc.ABC):
         :return: A train PyTorch's Datasets.
         """
         train = self._select_data_by_task(task_index)
-        train_dataset = TaskSet(*train, self.trsf, open_image=not self.cl_dataset.in_memory)
+        train_dataset = TaskSet(*train, self.trsf, data_type=self.cl_dataset.data_type)
 
         return train_dataset
 
