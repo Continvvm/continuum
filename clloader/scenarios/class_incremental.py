@@ -91,6 +91,7 @@ class ClassIncremental(_BaseCLLoader):
         :return: tensor of task label
         """
         t = copy(y)  # task label as same size as y
+
         for task_index, _ in enumerate(self.increments):
             max_class = sum(self.increments[:task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
