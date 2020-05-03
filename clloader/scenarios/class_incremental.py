@@ -29,16 +29,14 @@ class ClassIncremental(_BaseCLLoader):
         nb_tasks: int = 0,
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
+        base_transformations: List[Callable] = None,
         train=True,
         class_order=None
     ) -> None:
         super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
-            train_transformations=train_transformations,
-            common_transformations=common_transformations,
+            base_transformations=base_transformations,
             train=train
         )
 

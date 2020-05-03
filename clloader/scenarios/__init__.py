@@ -4,5 +4,6 @@ from clloader.scenarios.data_incremental import DataIncremental
 from clloader.scenarios.instance_incremental import InstanceIncremental
 from clloader.scenarios.transformation_incremental import TransformationIncremental
 from clloader.scenarios.rotations import Rotations
+from clloader.scenarios.permutations import Permutations
 
 __all__ = ["ClassIncremental", "DataIncremental", "InstanceIncremental"]
