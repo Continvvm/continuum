@@ -1,3 +1,5 @@
+# pylint: disable=C0401
+# flake8: noqa
 from clloader.datasets.base import (
     ImageFolderDataset, InMemoryDataset, PyTorchDataset, _ContinuumDataset
 )
