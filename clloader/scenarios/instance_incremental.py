@@ -24,41 +24,25 @@ class InstanceIncremental(_BaseCLLoader):
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-<<<<<<< HEAD
-        nb_tasks: int,
-        base_transformations: List[Callable] = None,
-        train=True
-=======
-        nb_tasks: int = 0,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
-        train: bool = True,
-        random_seed: int = 1
->>>>>>> 6207018ee662b43e1c10a7dae6e70d27decd9125
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: int = 0,
+            base_transformations: List[Callable] = None,
+            random_seed: int = 1
     ):
         super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
-            base_transformations=base_transformations,
-            train=train
+            base_transformations=base_transformations
         )
 
         self._random_state = np.random.RandomState(seed=random_seed)
 
         self._nb_tasks = self._setup(nb_tasks)
 
-    def get_task_index(self, nb_tasks, y):
-        return np.random.randint(nb_tasks, size=len(y))
-
     def _setup(self, nb_tasks: int) -> int:
         x, y, t = self.cl_dataset.init(train=self.train)
 
-<<<<<<< HEAD
-        # TODO: need to add seed + randomstate to ensure reproducibility
-        task_ids = self.get_task_index(nb_tasks, y)
-=======
         if t is None and nb_tasks <= 0:
             raise ValueError(f"You need to specify a number of tasks > 0, not {nb_tasks}.")
         elif t is None:  # If the dataset didn't provide default task ids:
@@ -85,7 +69,6 @@ class InstanceIncremental(_BaseCLLoader):
                 )
             else:
                 nb_tasks = default_nb_tasks
->>>>>>> 6207018ee662b43e1c10a7dae6e70d27decd9125
 
             self.dataset = (x, y, t)
 

@@ -31,14 +31,12 @@ class TransformationIncremental(InstanceIncremental):
         cl_dataset: _ContinuumDataset,
         nb_tasks: int,
         incremental_transformations: List[List[Callable]],
-        base_transformations: List[Callable] = None,
-        train=True
+        base_transformations: List[Callable] = None
     ):
         super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
-            base_transformations=base_transformations,
-            train=train
+            base_transformations=base_transformations
         )
         if incremental_transformations is None:
             raise ValueError("For this scenario a list transformation should be set")
@@ -54,7 +52,7 @@ class TransformationIncremental(InstanceIncremental):
         return y
 
     def get_task_transformation(self, task_index):
-        return transforms.Compose(self.inc_trsf[task_index]+self.train_trsf.transforms)
+        return transforms.Compose(self.inc_trsf[task_index]+self.trsf.transforms)
 
 
     def update_task_indexes(self, task_index):
@@ -70,6 +68,6 @@ class TransformationIncremental(InstanceIncremental):
         self.update_task_indexes(task_index)
         train = self._select_data_by_task(task_index)
         trsf = self.get_task_transformation(task_index)
-        train_dataset = TaskSet(*train, trsf, open_image=not self.cl_dataset.in_memory)
+        train_dataset = TaskSet(*train, trsf, data_type=self.cl_dataset.data_type)
 
         return train_dataset
