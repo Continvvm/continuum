@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -89,16 +89,16 @@ class MultiNLI(_ContinuumDataset):
 
         with open(json_path) as f:
             for line in f:
-                line = json.loads(line)
+                line_parsed: Dict[str, str] = json.loads(line)
 
-                if line["gold_label"] not in available_targets:
+                if line_parsed["gold_label"] not in available_targets:
                     continue  # A few cases exist w/o targets.
 
-                texts.append((line["sentence1"], line["sentence2"]))
-                targets.append(available_targets.index(line["gold_label"]))
+                texts.append((line_parsed["sentence1"], line_parsed["sentence2"]))
+                targets.append(available_targets.index(line_parsed["gold_label"]))
 
                 if train:  # We add a new domain id for the train set.
-                    genres.append(available_genres.index(line["genre"]))
+                    genres.append(available_genres.index(line_parsed["genre"]))
                 else:  # Test set is fixed, therefore we artificially give a unique domain.
                     genres.append(0)
 

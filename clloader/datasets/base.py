@@ -17,7 +17,7 @@ class _ContinuumDataset(abc.ABC):
         pass
 
     @property
-    def class_order(self) -> List[int]:
+    def class_order(self) -> Union[None, List[int]]:
         return None
 
     @property
@@ -97,7 +97,7 @@ class InMemoryDataset(_ContinuumDataset):
         return self.test
 
     @property
-    def data_type(self) -> bool:
+    def data_type(self) -> str:
         return self._data_type
 
     @data_type.setter
@@ -123,13 +123,13 @@ class ImageFolderDataset(_ContinuumDataset):
             self._download()
 
     @property
-    def data_type(self):
+    def data_type(self) -> str:
         return "image_path"
 
     def _download(self):
         pass
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         if train:
             folder = self.train_folder
         else:
@@ -139,7 +139,7 @@ class ImageFolderDataset(_ContinuumDataset):
         return self._format(dataset.imgs)
 
     @staticmethod
-    def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray]:
+    def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:
         x = np.empty(len(raw_data), dtype="S255")
         y = np.empty(len(raw_data), dtype=np.int16)
 

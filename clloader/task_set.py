@@ -88,8 +88,7 @@ class TaskSet(TorchDataset):
         return img, y
 
 
-def split_train_val(dataset: TorchDataset,
-                    val_split: float = 0.1) -> Tuple[TorchDataset, TorchDataset]:
+def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, TaskSet]:
     """Split train dataset into two datasets, one for training and one for validation.
 
     :param dataset: A torch dataset, with .x and .y attributes.

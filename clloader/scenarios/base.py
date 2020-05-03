@@ -53,7 +53,7 @@ class _BaseCLLoader(abc.ABC):
     @property
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
-        return len(np.unique(self.dataset[1]))
+        return len(np.unique(self.dataset[1]))  # type: ignore
 
     @property
     def nb_tasks(self) -> int:
@@ -100,7 +100,7 @@ class _BaseCLLoader(abc.ABC):
         :return: A tuple of numpy array, the first item being the data and the
                  second the associated targets.
         """
-        x_, y_, t_ = self.dataset
+        x_, y_, t_ = self.dataset  # type: ignore
 
         indexes = np.where(t_ == ind_task)[0]
         selected_x = x_[indexes]

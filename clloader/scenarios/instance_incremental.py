@@ -54,7 +54,7 @@ class InstanceIncremental(_BaseCLLoader):
             self.dataset = (x, y, task_ids)
         else:  # With dataset default task ids provided:
             default_nb_tasks = len(np.unique(t))
-            if nb_tasks > 0 and default_nb_tasks > nb_tasks:
+            if default_nb_tasks > nb_tasks > 0:
                 # If the user desired a particular amount of tasks, that is lower
                 # than the dataset's default number of tasks, we truncate the
                 # latest tasks.
