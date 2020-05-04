@@ -218,3 +218,14 @@ If you find this library useful in your work, please consider citing it:
   url          = {https://doi.org/10.5281/zenodo.8475}
 }
 ```
+
+### On PyPi
+
+Our project is available on PyPi!
+
+```bash
+pip3 install continuum
+```
+
+Note that previously another project, a CI tool, was using that name. It is now
+there [continuum_ci](https://pypi.org/project/continuum_ci/).
