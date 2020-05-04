@@ -107,11 +107,13 @@ class _BaseCLLoader(abc.ABC):
             stop = task_index.stop
             step = task_index.step or 1
             task_indexes = list(range(start, stop, step))
-            task_indexes = [t if t >= 0 else t + len(self) for t in task_indexes]
+            task_indexes = [
+                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_indexes
+            ]
             indexes = np.where(np.isin(t, task_indexes))[0]
         else:
             if task_index < 0:
-                task_index += len(self)
+                task_index = _handle_negative_indexes(task_index, len(self))
             indexes = np.where(t == task_index)[0]
         selected_x = x[indexes]
         selected_y = y[indexes]
@@ -122,3 +124,9 @@ class _BaseCLLoader(abc.ABC):
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
         return selected_x, selected_y
+
+
+def _handle_negative_indexes(index: int, total_len: int) -> int:
+    while index < 0:
+        index += total_len
+    return index

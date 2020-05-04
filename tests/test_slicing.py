@@ -30,7 +30,10 @@ def gen_data():
     (slice(0, 10, 2), [0, 1, 4, 5, 8, 9]),
     (-1, [8, 9]),
     (-5, [0, 1]),
-    (slice(-1, -3, -1), [6, 7, 8, 9])
+    (slice(-1, -3, -1), [6, 7, 8, 9]),
+    (-6, [8, 9]),  # full loop
+    (-7, [6, 7]),  # full loop
+    (-20, [0, 1]),  # full loop
 ])
 def test_slicing_nc(index, classes):
     train, test = gen_data()
