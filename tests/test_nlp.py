@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from clloader.datasets import InMemoryDataset
-from clloader.scenarios import ClassIncremental, InstanceIncremental
+from continuum.datasets import InMemoryDataset
+from continuum.scenarios import ClassIncremental, InstanceIncremental
 
 
 @pytest.fixture

@@ -2,8 +2,8 @@ from typing import List, Tuple, Type
 
 import numpy as np
 
-from clloader.datasets.base import _ContinuumDataset
-from clloader.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST)
+from continuum.datasets.base import _ContinuumDataset
+from continuum.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST)
 
 
 class Fellowship(_ContinuumDataset):

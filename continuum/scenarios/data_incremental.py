@@ -1,4 +1,4 @@
-from clloader.scenarios import _BaseCLLoader
+from continuum.scenarios import _BaseCLLoader
 
 
 class DataIncremental(_BaseCLLoader):

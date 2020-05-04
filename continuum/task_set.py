@@ -5,7 +5,7 @@ from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
-from clloader.viz import plot
+from continuum.viz import plot
 
 
 class TaskSet(TorchDataset):

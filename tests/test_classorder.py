@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
-from clloader.scenarios import ClassIncremental
-from clloader.datasets import InMemoryDataset
 from torch.utils.data import DataLoader
+
+from continuum.datasets import InMemoryDataset
+from continuum.scenarios import ClassIncremental
 
 
 class InMemoryDatasetTest(InMemoryDataset):

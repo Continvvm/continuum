@@ -11,15 +11,15 @@ Aka Continual Learning, Lifelong-Learning, Incremental Learning, etc.
 
 Install from and PyPi:
 ```bash
-pip3 install clloader
+pip3 install continuum
 ```
 
 And run!
 ```python
 from torch.utils.data import DataLoader
 
-from clloader import ClassIncremental
-from clloader.datasets import MNIST
+from continuum import ClassIncremental
+from continuum.datasets import MNIST
 
 clloader = ClassIncremental(
     MNIST("my/data/path", download=True),

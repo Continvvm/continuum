@@ -7,7 +7,7 @@ Continual Learning.
 """
 # pylint: disable=C0401
 # flake8: noqa
-from clloader import datasets
-from clloader.scenarios import *
-from clloader.task_set import TaskSet
-from clloader.viz import plot
+from continuum import datasets
+from continuum.scenarios import *
+from continuum.task_set import TaskSet
+from continuum.viz import plot

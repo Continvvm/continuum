@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 
-from clloader.datasets.base import _ContinuumDataset
+from continuum.datasets.base import _ContinuumDataset
 
 
 class MultiNLI(_ContinuumDataset):
