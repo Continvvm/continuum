@@ -4,8 +4,8 @@ from typing import Callable, List, Tuple
 import numpy as np
 from torchvision import transforms
 
-from clloader.datasets import _ContinuumDataset
-from clloader.task_set import TaskSet
+from continuum.datasets import _ContinuumDataset
+from continuum.task_set import TaskSet
 
 
 class _BaseCLLoader(abc.ABC):

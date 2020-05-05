@@ -3,7 +3,7 @@ from typing import Tuple
 import numpy as np
 from scipy import ndimage
 
-from clloader.datasets import MNIST
+from continuum.datasets import MNIST
 
 
 class PermutedMNIST(MNIST):

@@ -3,7 +3,7 @@ from typing import List, Tuple, Union
 
 import numpy as np
 
-from clloader.datasets.base import _ContinuumDataset
+from continuum.datasets.base import _ContinuumDataset
 
 
 class CORe50(_ContinuumDataset):

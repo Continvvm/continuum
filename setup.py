@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="clloader",
-    version="0.0.1",
-    author="Arthur DOuillard",
+    name="continuum",
+    version="0.0.2",
+    author="Arthur Douillard, Timothée Lesort",
     author_email="ar.douillard@gmail.com",
-    description="A DataLoader library for Continual Learning in PyTorch.",
+    description="A clean and simple library for Continual Learning in PyTorch.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/arthurdouillard/continual_loader",
+    url="https://github.com/Continvvm/continuum",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
