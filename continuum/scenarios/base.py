@@ -121,13 +121,14 @@ class _BaseCLLoader(abc.ABC):
             indexes = np.where(t == task_index)[0]
         selected_x = x[indexes]
         selected_y = y[indexes]
+        selected_t = t[indexes]
 
         if self.cl_dataset.need_class_remapping:  # TODO: to remove with TransformIncremental
             # A remapping of the class ids is done to handle some special cases
             # like PermutedMNIST or RotatedMNIST.
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
-        return selected_x, selected_y
+        return selected_x, selected_y, selected_t
 
 
 def _handle_negative_indexes(index: int, total_len: int) -> int:
