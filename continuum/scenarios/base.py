@@ -83,7 +83,9 @@ class _BaseCLLoader(abc.ABC):
     def __getitem__(self, task_index: Union[int, slice]):
         """Returns a task by its unique index.
 
-        :param task_index: The unique index of a task, between 0 and len(loader) - 1.
+        :param task_index: The unique index of a task. As for List, you can use
+                           indexing between [0, len], negative indexing, or
+                           even slices.
         :return: A train PyTorch's Datasets.
         """
         data = self._select_data_by_task(task_index)
@@ -96,7 +98,9 @@ class _BaseCLLoader(abc.ABC):
     def _select_data_by_task(self, task_index: Union[int, slice]):
         """Selects a subset of the whole data for a given task.
 
-        :param ind_task: task index
+        :param task_index: The unique index of a task. As for List, you can use
+                           indexing between [0, len], negative indexing, or
+                           even slices.
         :return: A tuple of numpy array, the first item being the data and the
                  second the associated targets.
         """
