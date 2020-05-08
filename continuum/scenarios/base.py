@@ -1,5 +1,5 @@
 import abc
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union
 
 import numpy as np
 from torchvision import transforms
@@ -80,10 +80,12 @@ class _BaseCLLoader(abc.ABC):
         self._counter += 1
         return task
 
-    def __getitem__(self, task_index):
+    def __getitem__(self, task_index: Union[int, slice]):
         """Returns a task by its unique index.
 
-        :param task_index: The unique index of a task, between 0 and len(loader) - 1.
+        :param task_index: The unique index of a task. As for List, you can use
+                           indexing between [0, len], negative indexing, or
+                           even slices.
         :return: A train PyTorch's Datasets.
         """
         data = self._select_data_by_task(task_index)
@@ -93,22 +95,43 @@ class _BaseCLLoader(abc.ABC):
             data_type=self.cl_dataset.data_type
         )
 
-    def _select_data_by_task(self, ind_task: int):
+    def _select_data_by_task(self, task_index: Union[int, slice]):
         """Selects a subset of the whole data for a given task.
 
-        :param ind_task: task index
+        :param task_index: The unique index of a task. As for List, you can use
+                           indexing between [0, len], negative indexing, or
+                           even slices.
         :return: A tuple of numpy array, the first item being the data and the
                  second the associated targets.
         """
-        x_, y_, t_ = self.dataset  # type: ignore
+        x, y, t = self.dataset  # type: ignore
 
-        indexes = np.where(t_ == ind_task)[0]
-        selected_x = x_[indexes]
-        selected_y = y_[indexes]
+        if isinstance(task_index, slice):
+            start = task_index.start or 0
+            stop = task_index.stop
+            step = task_index.step or 1
+            task_indexes = list(range(start, stop, step))
+            task_indexes = [
+                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_indexes
+            ]
+            indexes = np.where(np.isin(t, task_indexes))[0]
+        else:
+            if task_index < 0:
+                task_index = _handle_negative_indexes(task_index, len(self))
+            indexes = np.where(t == task_index)[0]
+        selected_x = x[indexes]
+        selected_y = y[indexes]
+        selected_t = t[indexes]
 
         if self.cl_dataset.need_class_remapping:  # TODO: to remove with TransformIncremental
             # A remapping of the class ids is done to handle some special cases
             # like PermutedMNIST or RotatedMNIST.
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
-        return selected_x, selected_y
+        return selected_x, selected_y, selected_t
+
+
+def _handle_negative_indexes(index: int, total_len: int) -> int:
+    while index < 0:
+        index += total_len
+    return index

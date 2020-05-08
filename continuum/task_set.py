@@ -13,6 +13,7 @@ class TaskSet(TorchDataset):
 
     :param x: The data, either image-arrays or paths to images saved on disk.
     :param y: The targets, not one-hot encoded.
+    :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
     :param data_type: Type of the data, either "image_path", "image_array", or "text".
     """
@@ -21,10 +22,11 @@ class TaskSet(TorchDataset):
         self,
         x: np.ndarray,
         y: np.ndarray,
+        t: np.ndarray,
         trsf: transforms.Compose,
         data_type: str = "image_array"
     ):
-        self.x, self.y = x, y
+        self.x, self.y, self.t = x, y, t
         self.trsf = trsf
         self.data_type = data_type
 
@@ -33,14 +35,22 @@ class TaskSet(TorchDataset):
         """The number of classes contained in the current task."""
         return len(np.unique(self.y))
 
-    def add_memory(self, x_memory: np.ndarray, y_memory: np.ndarray):
+    def add_memory(
+        self, x_memory: np.ndarray, y_memory: np.ndarray, t_memory: Union[None, np.ndarray] = None
+    ):
         """Add memory for rehearsal.
 
         :param x_memory: Sampled data chosen for rehearsal.
         :param y_memory: The associated targets of `x_memory`.
+        :param t_memory: The associated task ids. If not provided, they will be
+                         defaulted to -1.
         """
         self.x = np.concatenate((self.x, x_memory))
         self.y = np.concatenate((self.y, y_memory))
+        if t_memory is not None:
+            self.t = np.concatenate((self.t, t_memory))
+        else:
+            self.t = np.concatenate((self.t, -1 * np.ones(len(x_memory))))
 
     def plot(
         self,
@@ -79,13 +89,16 @@ class TaskSet(TorchDataset):
 
         return x
 
-    def __getitem__(self, index: int) -> Tuple[np.ndarray, int]:
+    def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
         img = self.get_sample(index)
         y = self.y[index]
+        t = self.t[index]
+
         if self.trsf is not None:
             img = self.trsf(img)
-        return img, y
+
+        return img, y, t
 
 
 def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, TaskSet]:
