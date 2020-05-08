@@ -89,7 +89,7 @@ class TaskSet(TorchDataset):
 
         return x
 
-    def __getitem__(self, index: int) -> Tuple[np.ndarray, int]:
+    def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
         img = self.get_sample(index)
         y = self.y[index]
