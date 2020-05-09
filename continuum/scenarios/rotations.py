@@ -2,9 +2,9 @@ from typing import Callable, List, Tuple
 
 import numpy as np
 
-from clloader.task_set import TaskSet
-from clloader.datasets import _ContinuumDataset
-from clloader.scenarios import TransformationIncremental
+from continuum.task_set import TaskSet
+from continuum.datasets import _ContinuumDataset
+from continuum.scenarios import TransformationIncremental
 
 from torchvision import transforms
 

@@ -2,8 +2,8 @@ from typing import Callable, List
 
 import torch
 
-from clloader.datasets import _ContinuumDataset
-from clloader.scenarios import TransformationIncremental
+from continuum.datasets import _ContinuumDataset
+from continuum.scenarios import TransformationIncremental
 
 from torchvision import transforms
 
