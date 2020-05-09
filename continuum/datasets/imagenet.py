@@ -3,7 +3,7 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from clloader.datasets import ImageFolderDataset
+from continuum.datasets import ImageFolderDataset
 
 
 class ImageNet1000(ImageFolderDataset):

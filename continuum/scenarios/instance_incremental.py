@@ -3,8 +3,8 @@ from typing import Callable, List
 
 import numpy as np
 
-from clloader.datasets import _ContinuumDataset
-from clloader.scenarios import _BaseCLLoader
+from continuum.datasets import _ContinuumDataset
+from continuum.scenarios import _BaseCLLoader
 
 
 class InstanceIncremental(_BaseCLLoader):

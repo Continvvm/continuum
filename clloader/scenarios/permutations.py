@@ -48,6 +48,7 @@ class Permutations(TransformationIncremental):
         list_transformations = []
         g_cpu = torch.Generator()
         list_seed = torch.randperm(1000, generator=g_cpu)[:nb_tasks]
+        self.seed = seed
 
         # first task is not permuted
         list_seed[0] = 0

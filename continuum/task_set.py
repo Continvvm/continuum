@@ -6,7 +6,7 @@ from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
-from clloader.viz import plot
+from continuum.viz import plot
 
 
 class TaskSet(TorchDataset):
@@ -14,18 +14,20 @@ class TaskSet(TorchDataset):
 
     :param x: The data, either image-arrays or paths to images saved on disk.
     :param y: The targets, not one-hot encoded.
+    :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
     :param data_type: Type of the data, either "image_path", "image_array", or "text".
     """
 
     def __init__(
-            self,
-            x: np.ndarray,
-            y: np.ndarray,
-            trsf: transforms.Compose,
-            data_type: str = "image_array"
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        t: np.ndarray,
+        trsf: transforms.Compose,
+        data_type: str = "image_array"
     ):
-        self._x, self._y = x, y
+        self._x, self._y, self._t = x, y, t
         self.trsf = trsf
         self.data_type = data_type
 
@@ -34,14 +36,24 @@ class TaskSet(TorchDataset):
         """The number of classes contained in the current task."""
         return len(np.unique(self._y))
 
-    def add_set(self, x_memory: np.ndarray, y_memory: np.ndarray):
-        """Add set of images for rehearsal.
+
+    def add_memory(
+        self, x_memory: np.ndarray, y_memory: np.ndarray, t_memory: Union[None, np.ndarray] = None
+    ):
+        """Add memory for rehearsal.
 
         :param x_memory: Sampled data chosen for rehearsal.
         :param y_memory: The associated targets of `x_memory`.
+        :param t_memory: The associated task ids. If not provided, they will be
+                         defaulted to -1.
         """
+
         self._x = np.concatenate((self._x, x_memory))
         self._y = np.concatenate((self._y, y_memory))
+        if t_memory is not None:
+            self.t = np.concatenate((self.t, t_memory))
+        else:
+            self.t = np.concatenate((self.t, -1 * np.ones(len(x_memory))))
 
     def plot(
             self,
@@ -101,13 +113,16 @@ class TaskSet(TorchDataset):
 
         return x
 
-    def __getitem__(self, index: int) -> Tuple[np.ndarray, int]:
+    def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
         img = self.get_sample(index)
         y = self._y[index]
+        t = self._t[index]
+
         if self.trsf is not None:
             img = self.trsf(img)
-        return img, y
+
+        return img, y, t
 
     def get_image(self, index):
         return self.__getitem__(index)

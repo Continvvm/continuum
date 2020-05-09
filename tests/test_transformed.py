@@ -1,11 +1,9 @@
-import tempfile
-
 import numpy as np
 import pytest
 from torch.utils.data import DataLoader
 
-from clloader.scenarios import ClassIncremental
-from clloader.datasets import PermutedMNIST, RotatedMNIST
+from continuum.datasets import PermutedMNIST, RotatedMNIST
+from continuum.scenarios import ClassIncremental
 
 # yapf: disable
 

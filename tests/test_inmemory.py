@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from torch.utils.data import DataLoader
 
-from clloader.datasets import InMemoryDataset
-from clloader.scenarios import ClassIncremental
+from continuum.datasets import InMemoryDataset
+from continuum.scenarios import ClassIncremental
 
 
 def gen_data():

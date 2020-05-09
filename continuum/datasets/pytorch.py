@@ -1,7 +1,7 @@
 from torchvision import datasets as torchdata
 from torchvision import transforms
 
-from clloader.datasets import PyTorchDataset
+from continuum.datasets import PyTorchDataset
 
 
 class CIFAR10(PyTorchDataset):

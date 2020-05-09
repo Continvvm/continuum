@@ -12,22 +12,24 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+# yapf: disable
+import os
+import sys
 
+import sphinx.ext.apidoc
+
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
 project = 'Continuum'
-copyright = '2020, ArthurDouillard_TimothÃ©eLesort'
-author = 'ArthurDouillard_TimothÃ©eLesort'
+copyright = '2020, Arthur Douillard, Timothe Lesort'
+author = 'Arthur Douillard, Timothe Lesort'
 
 # The short X.Y version
-version = ''
+version = 'v0.1'
 # The full version, including alpha/beta/rc tags
-release = ''
-
+release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -39,12 +41,19 @@ release = ''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
+    'sphinx_rtd_theme',
+    'autoapi.extension'
 ]
+autoapi_dirs = ['../continuum']
+autoapi_type = 'python'
+
+# To avoid generating docs for the following libraries:
+autodoc_mock_imports = ['matplotlib', 'numpy', 'scipy', 'sys', 'torch', 'torchvision', 'skimage']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -71,15 +80,14 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
-
+pygments_style = "sphinx"
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -102,12 +110,10 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
-
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Continuumdoc'
-
+htmlhelp_basename = 'continuumdoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -133,20 +139,17 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Continuum.tex', 'Continuum Documentation',
-     'ArthurDouillard\\_TimothÃ©eLesort', 'manual'),
+    (
+        master_doc, 'Continuum.tex', 'Continuum Documentation', 'Arthur Douillard, Timothee Lesort',
+        'manual'
+    ),
 ]
-
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'continuum', 'Continuum Documentation',
-     [author], 1)
-]
-
+man_pages = [(master_doc, 'continuum', 'Continuum Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -154,11 +157,11 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Continuum', 'Continuum Documentation',
-     author, 'Continuum', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc, 'Continuum', 'Continuum Documentation', author, 'Continuum',
+        'One line description of project.', 'Miscellaneous'
+    ),
 ]
-
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -176,6 +179,5 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
-
 
 # -- Extension configuration -------------------------------------------------
