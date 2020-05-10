@@ -79,9 +79,7 @@ class _BaseCLLoader(abc.ABC):
         :return: A train PyTorch's Datasets.
         """
         train = self._select_data_by_task(task_index)
-        train_dataset = TaskSet(*train, self.trsf, data_type=self.cl_dataset.data_type)
-
-        return train_dataset
+        return TaskSet(*train, self.trsf, data_type=self.cl_dataset.data_type)
 
     def _select_data_by_task(self, task_index: Union[int, slice]):
         """Selects a subset of the whole data for a given task.

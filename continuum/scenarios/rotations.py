@@ -1,8 +1,5 @@
 from typing import Callable, List, Tuple
 
-import numpy as np
-
-from continuum.task_set import TaskSet
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import TransformationIncremental
 
@@ -36,18 +33,19 @@ class Rotations(TransformationIncremental):
     ):
 
         if len(list_degrees) != nb_tasks:
-            raise ValueError("The number of tasks is not equal to the number of angles tuples set in the list")
+            raise ValueError("The nb of tasks != with number of angles tuples set in the list")
 
         list_transformations = []
         min, max = 0, 0
-        for tuple in list_degrees:
-            if type(tuple) == int:
-                min = tuple
-                max = tuple
-            elif len(tuple) == 2:
-                min, max = tuple
+        for tuple_ in list_degrees:
+            if isinstance(tuple_, int):
+                min = tuple_
+                max = tuple_
+            elif len(tuple_) == 2:
+                min, max = tuple_
             else:
-                raise ("list_degrees should contains list of rotations either with only one angle or with (min,max)")
+                # list_degrees should contains list of rotations either with only one angle or with (min,max)
+                raise ("list_degrees is wrong")
 
             list_transformations.append([transforms.RandomAffine(degrees=[min, max])])
 

@@ -9,7 +9,13 @@ from torchvision import transforms
 
 
 class PermutationTransform:
-    """Permutation transformers"""
+    """
+    Permutation transformers
+    This transformer is initialized with a seed that lead to a specific permutation, same seed = same permutation.
+    Seed 0 means no permutations
+
+    :param seed: seed to initialize the random number generator
+    """
 
     def __init__(self, seed):
         self.seed = seed
@@ -27,7 +33,8 @@ class PermutationTransform:
 
 
 class Permutations(TransformationIncremental):
-    """Continual Loader, generating datasets for the consecutive tasks.
+    """
+    Continual Loader, generating datasets for the consecutive tasks.
     Scenario: Mode incremental scenario is a new instance scenario where we explore the distribution mode by mode.
               For example rotation mnist, is a exploration of the distribution by rotation angles, each angle can be
               seen as a mode of the distribution. Same for permutMnist, mode=permutations space.
@@ -53,8 +60,8 @@ class Permutations(TransformationIncremental):
         # first task is not permuted
         list_seed[0] = 0
 
-        for seed in list_seed:
-            list_transformations.append([PermutationTransform(seed.item())])
+        for s_ in list_seed:
+            list_transformations.append([PermutationTransform(s_.item())])
 
         super().__init__(
             cl_dataset=cl_dataset,

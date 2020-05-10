@@ -20,12 +20,12 @@ class TaskSet(TorchDataset):
     """
 
     def __init__(
-        self,
-        x: np.ndarray,
-        y: np.ndarray,
-        t: np.ndarray,
-        trsf: transforms.Compose,
-        data_type: str = "image_array"
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            t: np.ndarray,
+            trsf: transforms.Compose,
+            data_type: str = "image_array"
     ):
         self._x, self._y, self._t = x, y, t
         self.trsf = trsf
@@ -36,9 +36,8 @@ class TaskSet(TorchDataset):
         """The number of classes contained in the current task."""
         return len(np.unique(self._y))
 
-
     def add_memory(
-        self, x_memory: np.ndarray, y_memory: np.ndarray, t_memory: Union[None, np.ndarray] = None
+            self, x_memory: np.ndarray, y_memory: np.ndarray, t_memory: Union[None, np.ndarray] = None
     ):
         """Add memory for rehearsal.
 
@@ -47,13 +46,12 @@ class TaskSet(TorchDataset):
         :param t_memory: The associated task ids. If not provided, they will be
                          defaulted to -1.
         """
-
         self._x = np.concatenate((self._x, x_memory))
         self._y = np.concatenate((self._y, y_memory))
         if t_memory is not None:
-            self.t = np.concatenate((self.t, t_memory))
+            self._t = np.concatenate((self._t, t_memory))
         else:
-            self.t = np.concatenate((self.t, -1 * np.ones(len(x_memory))))
+            self._t = np.concatenate((self._t, -1 * np.ones(len(x_memory))))
 
     def plot(
             self,
@@ -75,11 +73,11 @@ class TaskSet(TorchDataset):
         """The amount of images in the current task."""
         return self._x.shape[0]
 
-    def get_samples_from_ind(self, indices):
+    def get_samples_from_ind(self, indexes):
         batch = None
         labels = None
 
-        for i, ind in enumerate(indices):
+        for i, ind in enumerate(indexes):
             # we need to use get item to have the transform used
             img, y = self.__getitem__(ind)
 
@@ -88,8 +86,8 @@ class TaskSet(TorchDataset):
                     size_image = [1] + list(img.shape)
                 else:
                     size_image = list(img.shape)
-                batch = torch.zeros(([len(indices)] + size_image))
-                labels = np.zeros(len(indices))
+                batch = torch.zeros(([len(indexes)] + size_image))
+                labels = np.zeros(len(indexes))
 
             batch[i] = img.clone()
             labels[i] = y
@@ -125,7 +123,7 @@ class TaskSet(TorchDataset):
         return img, y, t
 
     def get_image(self, index):
-        return self.__getitem__(index)
+        return self[index]
 
 
 def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, TaskSet]:

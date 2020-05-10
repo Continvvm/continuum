@@ -17,9 +17,10 @@ def sample(dataset, nb_per_class=5):
 
     return sampled_x, sampled_y
 
+
 def plot_old(dataset, title="", path=None, nb_per_class=5, shape=None):
-    #x, y = sample(dataset.x, dataset.y, nb_per_class=nb_per_class)
-    #if not dataset.open_image and x.shape[1] == 1:
+    # x, y = sample(dataset.x, dataset.y, nb_per_class=nb_per_class)
+    # if not dataset.open_image and x.shape[1] == 1:
     #    x = x.squeeze(1)
 
     print("start")
@@ -74,18 +75,16 @@ def plot_old(dataset, title="", path=None, nb_per_class=5, shape=None):
         plt.savefig(path, bbox_inches='tight', pad_inches=0)
 
 
-
 def plot(dataset, title="", path=None, nb_per_class=5, shape=None):
-
     x, _ = sample(dataset, nb_per_class=nb_per_class)
-    if dataset.data_type=="image_array" and x.shape[1] == 1:
+    if dataset.data_type == "image_array" and x.shape[1] == 1:
         x = x.squeeze(1)
 
     big_image = None
     cmap = None
     for class_id in range(dataset.nb_classes):
         for sample_id in range(nb_per_class):
-            if dataset.data_type=="path_array":
+            if dataset.data_type == "path_array":
                 img = dataset.get_image(class_id * nb_per_class + sample_id)
                 img = np.asarray(img)
             elif len(x.shape) == 3:  # Grayscale, no channel dimension
