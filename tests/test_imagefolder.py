@@ -59,6 +59,6 @@ def test_increments(increment, initial_increment, nb_tasks):
             for _ in DataLoader(train_dataset):
                 pass
 
-            assert np.max(train_dataset.y) == max_class - 1
-            assert np.min(train_dataset.y) == min_class
+            assert np.max(train_dataset._y) == max_class - 1
+            assert np.min(train_dataset._y) == min_class
     assert seen_tasks == nb_tasks

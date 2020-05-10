@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from clloader.scenarios import Rotations
+from continuum.scenarios import Rotations
 from tests.test_classorder import InMemoryDatasetTest
 from torchvision.transforms import transforms
 

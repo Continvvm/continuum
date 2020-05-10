@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
-from clloader.scenarios import TransformationIncremental
-from tests.test_classorder import InMemoryDatasetTest
+from continuum.scenarios import TransformationIncremental
+from continuum.datasets import InMemoryDataset
 from torchvision.transforms import transforms
 
 @pytest.fixture
@@ -18,17 +18,14 @@ def numpy_data():
     x_train = np.concatenate(x_train)
     y_train = np.concatenate(y_train)
 
-    x_test = np.copy(x_train)
-    y_test = np.copy(y_train)
-
-    return (x_train, y_train.astype(int)), (x_test, y_test.astype(int))
+    return x_train, y_train.astype(int)
 
 '''
 Test the initialization with three tasks
 '''
 def test_init(numpy_data):
-    train, test = numpy_data
-    dummy = InMemoryDatasetTest(*train, *test)
+    x, y = numpy_data
+    dummy = InMemoryDataset(x, y, train='train')
 
     Trsf_0 = []
     Trsf_1 = [transforms.RandomAffine(degrees=[40, 50])]
@@ -36,12 +33,12 @@ def test_init(numpy_data):
 
     list_transf = [Trsf_0, Trsf_1, Trsf_2]
 
-    clloader = TransformationIncremental(cl_dataset=dummy, nb_tasks=3, incremental_transformations=list_transf)
+    continuum = TransformationIncremental(cl_dataset=dummy, nb_tasks=3, incremental_transformations=list_transf)
 
 @pytest.mark.xfail
 def test_init_fail(numpy_data):
     train, test = numpy_data
-    dummy = InMemoryDatasetTest(*train, *test)
+    dummy = TransformationIncremental(*train, *test)
 
     Trsf_0 = []
     Trsf_1 = [transforms.RandomAffine(degrees=[40, 50])]

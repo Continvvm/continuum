@@ -35,14 +35,14 @@ def test_instance_auto_nb_tasks(numpy_data, nb_tasks, nb_tasks_gt):
     """Test the InstanceIncremental loader when the dataset doesn't provide
     any default number of tasks."""
     train, test = numpy_data
-    dummy = InMemoryDataset(*train, *test)
+    dummy = InMemoryDataset(*train)
     clloader = InstanceIncremental(dummy, nb_tasks=nb_tasks)
 
     nb_classes = clloader.nb_classes
 
     assert len(clloader) == nb_tasks_gt
     for task_id, train_dataset in enumerate(clloader):
-        assert nb_classes == len(np.unique(train_dataset.y))
+        assert nb_classes == len(np.unique(train_dataset._y))
 
 
 @pytest.fixture
@@ -83,7 +83,7 @@ def test_instance_default_nb_tasks(numpy_data_per_task, nb_tasks, nb_tasks_gt, c
     x_train, y_train, t_train = train
     x_test, y_test, t_test = test
 
-    dummy = InMemoryDataset(x_train, y_train, x_test, y_test, t_train=t_train, t_test=t_test)
+    dummy = InMemoryDataset(x_train, y_train, t_=t_train)
 
     has_raised = False
     try:
@@ -101,7 +101,7 @@ def test_instance_default_nb_tasks(numpy_data_per_task, nb_tasks, nb_tasks_gt, c
 
     assert len(clloader) == nb_tasks_gt
     for task_id, train_dataset in enumerate(clloader):
-        assert nb_classes == len(np.unique(train_dataset.y))
+        assert nb_classes == len(np.unique(train_dataset._y))
 
-        unique_pixels = np.unique(train_dataset.x)
+        unique_pixels = np.unique(train_dataset._x)
         assert len(unique_pixels) == 1 and unique_pixels[0] == float(task_id)
