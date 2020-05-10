@@ -41,7 +41,7 @@ class InstanceIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        x, y, t = self.cl_dataset.init(train=self.train)
+        x, y, t = self.cl_dataset.get_data()
 
         if t is None and nb_tasks <= 0:
             raise ValueError(f"You need to specify a number of tasks > 0, not {nb_tasks}.")

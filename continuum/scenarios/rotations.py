@@ -32,8 +32,7 @@ class Rotations(TransformationIncremental):
             cl_dataset: _ContinuumDataset,
             nb_tasks: int,
             list_degrees: List[Tuple],
-            base_transformations: List[Callable] = None,
-            train=True
+            base_transformations: List[Callable] = None
     ):
 
         if len(list_degrees) != nb_tasks:
@@ -56,6 +55,5 @@ class Rotations(TransformationIncremental):
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
             incremental_transformations=list_transformations,
-            base_transformations=base_transformations,
-            train=train
+            base_transformations=base_transformations
         )
