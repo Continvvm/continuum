@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 
+from continuum import download
 from continuum.datasets.base import _ContinuumDataset
 
 
@@ -29,19 +30,21 @@ class MultiNLI(_ContinuumDataset):
     :param download: An option useless in this case.
     """
 
-    data_url = "https://www.nyu.edu/projects/bowman/multinli/multinli_1.0.zip"
+    data_url = "https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip"
 
-    def __init__(self, data_path: str = "", download: bool = False) -> None:
+    def __init__(self, data_path: str = "", download: bool = True) -> None:
         super().__init__(data_path, download)
 
         if self.download:
             self._download()
 
     def _download(self):
-        if os.path.exists(self.data_path):
-            print("MultiNLI already downloaded.")
+        if os.path.exists(os.path.join(self.data_path, "multinli_1.0")):
+            print("Dataset already extracted.")
         else:
-            raise IOError(f"You must download & unzip this dataset: {self.data_url}")
+            path = download.download(self.data_url, self.data_path)
+            download.unzip(path)
+            print("Dataset extracted.")
 
     @property
     def data_type(self) -> str:
@@ -83,9 +86,11 @@ class MultiNLI(_ContinuumDataset):
         ]
 
         if train:
-            json_path = os.path.join(self.data_path, "multinli_1.0_train.jsonl")
+            json_path = os.path.join(self.data_path, "multinli_1.0", "multinli_1.0_train.jsonl")
         else:
-            json_path = os.path.join(self.data_path, "multinli_1.0_dev_mismatched.jsonl")
+            json_path = os.path.join(
+                self.data_path, "multinli_1.0", "multinli_1.0_dev_mismatched.jsonl"
+            )
 
         with open(json_path) as f:
             for line in f:
