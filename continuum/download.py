@@ -37,10 +37,10 @@ class ProgressBar:
     def update(self, block_count, block_size, total_size):
         self.count += block_size
 
-        percent = f"{round(100 * self.count / total_size, 2)}"
+        percent = f"{int(100 * self.count / total_size)}"
         filled_length = int(100 * self.count // total_size)
         bar = "#" * filled_length + '-' * (100 - filled_length)
 
-        print("\rDownloading dataset |%s| %s%%" % (bar, percent), end="\r")
+        print("\r|%s| %s%%" % (bar, percent), end="\r")
         if self.count == total_size:
             print()
