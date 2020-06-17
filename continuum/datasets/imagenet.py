@@ -21,8 +21,7 @@ class ImageNet1000(ImageFolderDataset):
                 " Please go to http://www.image-net.org/challenges/LSVRC/2012/downloads and"
                 " download 'Training images (Task 1 & 2)' and 'Validation images (all tasks)'."
             )
-        else:
-            print("ImageNet already downloaded.")
+        print("ImageNet already downloaded.")
 
 
 class ImageNet100(ImageNet1000):
@@ -34,6 +33,7 @@ class ImageNet100(ImageNet1000):
         * Small Task Incremental Learning
           Douillard et al. 2020
     """
+
     train_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/train_100.txt"
     test_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/val_100.txt"
 
@@ -53,15 +53,13 @@ class ImageNet100(ImageNet1000):
         super()._download()
 
         if self.train_subset is None:
-            print("Downloading train subset for ImageNet100.")
             self.train_subset = os.path.join(self.train_folder, "train_100.txt")
             download(self.train_subset_url, self.train_folder)
         if self.test_subset is None:
-            print("Downloading test subset for ImageNet100.")
             self.test_subset = os.path.join(self.test_folder, "val_100.txt")
             download(self.test_subset_url, self.test_folder)
 
-    def init(self, train) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def init(self, train) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
         train = (*self._parse_subset(self.train_subset, train=train), None)
         return train
 

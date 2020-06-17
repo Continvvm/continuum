@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple, Union
+from typing import List, Set, Tuple, Union
 
 import numpy as np
 
@@ -39,7 +39,7 @@ class CORe50(_ContinuumDataset):
             self._download()
         if isinstance(self.train_image_ids, str):
             self.train_image_ids = self._read_csv(self.train_image_ids)
-        else:
+        elif isinstance(self.train_image_ids, list):
             self.train_image_ids = set(self.train_image_ids)
 
     @property
@@ -58,11 +58,11 @@ class CORe50(_ContinuumDataset):
             print("Downloading train/test split.")
             self.train_image_ids = download.download(self.train_ids_url, self.data_path)
 
-    def _read_csv(self, csv_file: str) -> List[str]:
+    def _read_csv(self, csv_file: str) -> Set[str]:
         """Read the csv file containing the ids of training samples."""
         train_images_ids = set()
 
-        with open(self.train_image_ids, "r") as f:
+        with open(csv_file, "r") as f:
             next(f)
             for line in f:
                 image_id = line.split(",")[0].split(".")[0]
@@ -101,7 +101,7 @@ class CORe50(_ContinuumDataset):
                     image_id = path.split(".")[0]
 
                     if (train and image_id not in self.train_image_ids) \
-                       or (not train and image_id in self.train_image_ids):
+                       or (not train and image_id in self.train_image_ids):  # type: ignore
                         continue
 
                     x.append(os.path.join(object_folder, path))

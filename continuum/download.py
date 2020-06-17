@@ -34,13 +34,14 @@ class ProgressBar:
     def __init__(self):
         self.count = 0
 
-    def update(self, block_count, block_size, total_size):
+    def update(self, urlretrieve_inputs):
+        _, block_size, total_size = urlretrieve_inputs
         self.count += block_size
 
         percent = f"{int(100 * self.count / total_size)}"
         filled_length = int(100 * self.count // total_size)
-        bar = "#" * filled_length + '-' * (100 - filled_length)
+        pbar = "#" * filled_length + '-' * (100 - filled_length)
 
-        print("\r|%s| %s%%" % (bar, percent), end="\r")
+        print("\r|%s| %s%%" % (pbar, percent), end="\r")
         if self.count == total_size:
             print()
