@@ -4,9 +4,15 @@ from typing import Tuple, Union
 import numpy as np
 
 from continuum.datasets import ImageFolderDataset
+from continuum.download import download
 
 
 class ImageNet1000(ImageFolderDataset):
+    """ImageNet1000 dataset.
+
+    Simple wrapper around ImageFolderDataset to provide a link to the download
+    page.
+    """
 
     def _download(self):
         if not os.path.exists(self.train_folder) or not os.path.exists(self.test_folder):
@@ -15,21 +21,48 @@ class ImageNet1000(ImageFolderDataset):
                 " Please go to http://www.image-net.org/challenges/LSVRC/2012/downloads and"
                 " download 'Training images (Task 1 & 2)' and 'Validation images (all tasks)'."
             )
+        else:
+            print("ImageNet already downloaded.")
 
 
 class ImageNet100(ImageNet1000):
+    """Subset of ImageNet1000 made of only 100 classes.
+
+    You must download the ImageNet1000 dataset then provide the images subset.
+    If in doubt, use the option at initialization `download=True` and it will
+    auto-download for you the subset ids used in:
+        * Small Task Incremental Learning
+          Douillard et al. 2020
+    """
+    train_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/train_100.txt"
+    test_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/val_100.txt"
 
     def __init__(
-        self, *args, train_subset: Union[Tuple[np.array, np.array], str],
-        test_subset: Union[Tuple[np.array, np.array], str], **kwargs
+        self,
+        *args,
+        train_subset: Union[Tuple[np.array, np.array], str, None] = None,
+        test_subset: Union[Tuple[np.array, np.array], str, None] = None,
+        **kwargs
     ):
-        super().__init__(*args, **kwargs)
-
         self.train_subset = train_subset
         self.test_subset = test_subset
 
+        super().__init__(*args, **kwargs)
+
+    def _download(self):
+        super()._download()
+
+        if self.train_subset is None:
+            print("Downloading train subset for ImageNet100.")
+            self.train_subset = os.path.join(self.train_folder, "train_100.txt")
+            download(self.train_subset_url, self.train_folder)
+        if self.test_subset is None:
+            print("Downloading test subset for ImageNet100.")
+            self.test_subset = os.path.join(self.test_folder, "val_100.txt")
+            download(self.test_subset_url, self.test_folder)
+
     def init(self, train) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        train = self._parse_subset(self.train_subset, train=train), None
+        train = (*self._parse_subset(self.train_subset, train=train), None)
         return train
 
     def _parse_subset(self,
