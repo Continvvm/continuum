@@ -1,5 +1,5 @@
 import os
-from typing import List, Set, Tuple, Union
+from typing import Iterable, Set, Tuple, Union
 
 import numpy as np
 
@@ -28,7 +28,7 @@ class CORe50(_ContinuumDataset):
     def __init__(
         self,
         data_path: str,
-        train_image_ids: Union[str, List[str], None] = None,
+        train_image_ids: Union[str, Iterable[str], None] = None,
         download: bool = True
     ):
         super().__init__(data_path, download)
@@ -100,8 +100,10 @@ class CORe50(_ContinuumDataset):
                 for path in os.listdir(object_folder):
                     image_id = path.split(".")[0]
 
-                    if (train and image_id not in self.train_image_ids) \
-                       or (not train and image_id in self.train_image_ids):  # type: ignore
+                    if (
+                        (train and image_id not in self.train_image_ids) or  # type: ignore
+                        (not train and image_id in self.train_image_ids)  # type: ignore
+                    ):
                         continue
 
                     x.append(os.path.join(object_folder, path))

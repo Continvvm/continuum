@@ -59,13 +59,18 @@ class ImageNet100(ImageNet1000):
             self.test_subset = os.path.join(self.test_folder, "val_100.txt")
             download(self.test_subset_url, self.test_folder)
 
-    def init(self, train) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
-        train = (*self._parse_subset(self.train_subset, train=train), None)
-        return train
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
+        data = self._parse_subset(
+            self.train_subset if train else self.test_subset, train=train
+        )  # type: ignore
 
-    def _parse_subset(self,
-                      subset: Union[Tuple[np.array, np.array], str],
-                      train: bool = True) -> Tuple[np.array, np.array]:
+        return (*data, None)
+
+    def _parse_subset(
+        self,
+        subset: Union[Tuple[np.array, np.array], str, None],
+        train: bool = True
+    ) -> Tuple[np.array, np.array]:
         if isinstance(subset, str):
             x, y = [], []
             folder = self.train_folder if train else self.test_folder
@@ -79,4 +84,4 @@ class ImageNet100(ImageNet1000):
             x = np.array(x)
             y = np.array(y)
             return x, y
-        return subset
+        return subset  # type: ignore
