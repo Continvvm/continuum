@@ -7,7 +7,7 @@ distribute: FORCE clean
 
 
 prospector:
-	prospector --profile-path .prospector.yaml
+	prospector --profile-path .prospector.yaml continuum/
 
 tests: FORCE
 	pytest tests/
