@@ -45,27 +45,30 @@ for task_id, train_dataset in enumerate(clloader):
 |:----|:---|:---:|
 | **New Instances** | NI | :white_check_mark: |
 | **New Classes** | NC | :white_check_mark: |
-| **New Instances & Classes** | NIC | :x: |
+| **New Instances & Classes** | NIC | :white_check_mark: |
 
 ### Supported Datasets:
 
 Note that the task sizes are fully customizable.
 
-|Name | Nb classes | Image Size | Automatic Download |
-|:----|:---:|:----:|:---:|
-| **MNIST** | 10 | 28x28x1 | :white_check_mark: |
-| **Fashion MNIST** | 10 | 28x28x1 | :white_check_mark: |
-| **KMNIST** | 10 | 28x28x1 | :white_check_mark: |
-| **EMNIST** | 10 | 28x28x1 | :white_check_mark: |
-| **QMNIST** | 10 | 28x28x1 | :white_check_mark: |
-| **MNIST Fellowship** | 30 | 28x28x1 | :white_check_mark: |
-| **CIFAR10** | 10 | 32x32x3 | :white_check_mark: |
-| **CIFAR100** | 100 | 32x32x3 | :white_check_mark: |
-| **CIFAR Fellowship** | 110 | 32x32x3 | :white_check_mark: |
-| **ImageNet100** | 100 | 224x224x3 | :x: |
-| **ImageNet1000** | 1000 | 224x224x3 | :x: |
-| **Permuted MNIST** | 10 | 28x28x1 | :white_check_mark: |
-| **Rotated MNIST** | 10 | 28x28x1 | :white_check_mark: |
+|Name | Nb classes | Image Size | Automatic Download | Type |
+|:----|:---:|:----:|:---:|:---:|
+| **MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
+| **Fashion MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
+| **KMNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
+| **EMNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
+| **QMNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
+| **MNIST Fellowship** | 30 | 28x28x1 | :white_check_mark: | :eyes: |
+| **CIFAR10** | 10 | 32x32x3 | :white_check_mark: | :eyes: |
+| **CIFAR100** | 100 | 32x32x3 | :white_check_mark: | :eyes: |
+| **CIFAR Fellowship** | 110 | 32x32x3 | :white_check_mark: | :eyes: |
+| **ImageNet100** | 100 | 224x224x3 | :x: | :eyes: |
+| **ImageNet1000** | 1000 | 224x224x3 | :x: | :eyes: |
+| **Permuted MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
+| **Rotated MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
+| **CORe50** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
+| **MultiNLI** | 5 | | :white_check_mark: | :book: |
+
 
 Furthermore some "Meta"-datasets are available:
 
@@ -112,30 +115,21 @@ clloader = CLLoader(
 )
 ```
 
-Some papers use a subset, called ImageNet100 or ImageNetSubset. You'll need to get the subset ids. It's either a file in the following format:
-```
-my/path/to/image0.JPEG target0
-my/path/to/image1.JPEG target1
-```
-Or a list of tuple `[("my/path/to/image0.JPEG", target0), ...]`. Then loading the continual loader is very simple:
-```python
-clloader = CLLoader(
-    ImageNet100(
-        "/my/train/folder",
-        "/my/test/folder",
-        train_subset=... # My subset ids
-        test_subset=... # My subset ids
-    ),
-    increment=10,
-)
-```
+Some papers use a subset, called ImageNet100 or ImageNetSubset. They are automatically
+downloaded for you, but you can also provide your own.
+
 
 ### Continual Loader
 
-The Continual Loader `CLLoader` loads the data and batch it in several tasks. See there some example arguments:
+#### Class Incremental
+
+The Continual Loader `ClassIncremental` loads the data and batch it in several
+tasks, each with new classes. See there some example arguments:
 
 ```python
-clloader = CLLoader(
+from continuum import ClassIncremental
+
+clloader = ClassIncremental(
     my_continual_dataset,
     increment=10,
     initial_increment=2,
@@ -144,7 +138,7 @@ clloader = CLLoader(
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
     ],
-    evaluate_on="seen"
+    train=True
 )
 ```
 
@@ -152,8 +146,37 @@ Here the first task is made of 2 classes, then all following tasks of 10 classes
 
 The `train_transformations` is applied only on the training data, while the `common_transformations` on both the training and testing data.
 
-By default, we evaluate our model after each task on `seen` classes. But you can evalute only on `current` classes, or even on `all` classes.
+If you want a clloader for the test data, you'll need to create a new instance with `train=False`.
 
+#### Instance Incremental
+
+Tasks can also be made of new instances. By default the samples images are randomly
+shuffled in different tasks, but some datasets provide, in addition of the data `x` and labels `y`,
+a task id `t` per sample. For example `MultiNLI`, a NLP dataset, has 5 classes but
+with 10 different domains. Each domain represents a new task.
+
+```python
+from continuum import InstanceIncremental
+from continuum.datasets import MultiNLI
+
+clloader = InstanceIncremental(
+    MultiNLI("/my/path/where/to/download"),
+    train=True
+)
+```
+
+#### New Class & Instance
+
+NIC settting is a special case of NI setting. For now, only the CORe50 dataset
+supports this setting.
+
+### Indexing
+
+All our continual loader are iterable (i.e. you can for loop on them), and are
+also indexable.
+
+Meaning that `clloader[2]` returns the third task (index starts at 0). Likewise,
+if you want to evaluate after each task, on all seen tasks do `clloader_test[:n]`.
 
 ### Sample Images
 
@@ -218,6 +241,14 @@ If you find this library useful in your work, please consider citing it:
   url          = {https://doi.org/10.5281/zenodo.8475}
 }
 ```
+
+### Maintainers
+
+This project was started by a joint effort from [Arthur Douillard](https://arthurdouillard.com/) &
+[Timothée Lesort](https://tlesort.github.io/).
+
+Feel free to contribute! If you want to propose new features, please create an issue.
+
 
 ### On PyPi
 
