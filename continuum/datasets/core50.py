@@ -1,8 +1,9 @@
 import os
-from typing import List, Tuple, Union
+from typing import Iterable, Set, Tuple, Union
 
 import numpy as np
 
+from continuum import download
 from continuum.datasets.base import _ContinuumDataset
 
 
@@ -14,10 +15,10 @@ class CORe50(_ContinuumDataset):
           Lomonaco & Maltoni.
           CoRL 2017
 
-    :param folder: The folder extracted from the official zip file.
+    :param data_path: The folder path containing the data.
     :param train_image_ids: The image ids belonging to the train set. Either the
-                            containing them provided by the official webpage, or
-                            a list of string.
+                            csv file containing them auto-downloaded, or a list
+                            of string.
     :param download: An option useless in this case.
     """
 
@@ -25,29 +26,49 @@ class CORe50(_ContinuumDataset):
     train_ids_url = "https://vlomonaco.github.io/core50/data/core50_train.csv"
 
     def __init__(
-        self, folder: str, train_image_ids: Union[str, List[str]], download: bool = True, **kwargs
+        self,
+        data_path: str,
+        train_image_ids: Union[str, Iterable[str], None] = None,
+        download: bool = True
     ):
-        super().__init__(download=download, **kwargs)
+        super().__init__(data_path, download)
 
-        self.folder = folder
         self.train_image_ids = train_image_ids
 
         if download:
             self._download()
+        if isinstance(self.train_image_ids, str):
+            self.train_image_ids = self._read_csv(self.train_image_ids)
+        elif isinstance(self.train_image_ids, list):
+            self.train_image_ids = set(self.train_image_ids)
 
     @property
     def data_type(self):
         return "image_path"
 
     def _download(self):
-        if os.path.exists(self.folder):
-            print("CORe50 already downloaded.")
+        if os.path.exists(os.path.join(self.data_path, "core50_128x128")):
+            print("Dataset already extracted.")
         else:
-            raise IOError(
-                f"CORe50 was not found there: {self.folder}."
-                f" Please download and unzip this: {self.data_url},"
-                f" and get the train images ids there: {self.train_ids_url}."
-            )
+            path = download.download(self.data_url, self.data_path)
+            download.unzip(path)
+            print("Dataset extracted.")
+
+        if self.train_image_ids is None:
+            print("Downloading train/test split.")
+            self.train_image_ids = download.download(self.train_ids_url, self.data_path)
+
+    def _read_csv(self, csv_file: str) -> Set[str]:
+        """Read the csv file containing the ids of training samples."""
+        train_images_ids = set()
+
+        with open(csv_file, "r") as f:
+            next(f)
+            for line in f:
+                image_id = line.split(",")[0].split(".")[0]
+                train_images_ids.add(image_id)
+
+        return train_images_ids
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate the CORe50 data.
@@ -66,20 +87,10 @@ class CORe50(_ContinuumDataset):
         """
         x, y, t = [], [], []
 
-        train_images_ids = set()
-        if isinstance(self.train_image_ids, str):
-            with open(self.train_image_ids, "r") as f:
-                next(f)
-                for line in f:
-                    image_id = line.split(",")[0].split(".")[0]
-                    train_images_ids.add(image_id)
-        else:
-            train_images_ids = set(self.train_image_ids)
-
         domain_counter = 0
         for domain_id in range(10):
             # We walk through the 10 available domains.
-            domain_folder = os.path.join(self.folder, "core50_128x128", f"s{domain_id + 1}")
+            domain_folder = os.path.join(self.data_path, "core50_128x128", f"s{domain_id + 1}")
 
             has_images = False
             for object_id in range(50):
@@ -89,8 +100,10 @@ class CORe50(_ContinuumDataset):
                 for path in os.listdir(object_folder):
                     image_id = path.split(".")[0]
 
-                    if (train and image_id not in train_images_ids) \
-                       or (not train and image_id in train_images_ids):
+                    if (
+                        (train and image_id not in self.train_image_ids) or  # type: ignore
+                        (not train and image_id in self.train_image_ids)  # type: ignore
+                    ):
                         continue
 
                     x.append(os.path.join(object_folder, path))
