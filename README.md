@@ -18,7 +18,7 @@ And run!
 ```python
 from torch.utils.data import DataLoader
 
-from continuum import ClassIncremental
+from continuum import ClassIncremental, split_train_val
 from continuum.datasets import MNIST
 
 clloader = ClassIncremental(
@@ -32,7 +32,7 @@ print(f"Number of classes: {clloader.nb_classes}.")
 print(f"Number of tasks: {clloader.nb_tasks}.")
 
 for task_id, train_dataset in enumerate(clloader):
-    train_dataset, val_dataset = split_train_val(train_dataset)
+    train_dataset, val_dataset = split_train_val(train_dataset, val_split=0.1)
     train_loader = DataLoader(train_dataset)
     val_loader = DataLoader(val_dataset)
 
