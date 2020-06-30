@@ -1,4 +1,0 @@
-Class Incremental
------------------
-
-TODO
