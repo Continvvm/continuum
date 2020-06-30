@@ -59,3 +59,16 @@ def test_slicing_nc_no_end(start_index, classes):
     targets = np.sort(np.unique(dataset.y))
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
+
+
+def test_slicing_nc_no_index():
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train, *test)
+    clloader = ClassIncremental(dummy, increment=2)
+    dataset = clloader[:]
+    targets = np.sort(np.unique(dataset.y))
+
+    classes = list(range(10))
+
+    assert len(targets) == len(classes)
+    assert (targets == np.array(classes)).all(), (targets, classes)
