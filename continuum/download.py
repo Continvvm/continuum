@@ -22,7 +22,6 @@ def unzip(path):
 
     with zipfile.ZipFile(path, 'r') as zip_ref:
         zip_ref.extractall(directory_path)
-    print(f"Dataset extracted at {directory_path}")
 
 
 class ProgressBar:
@@ -34,8 +33,7 @@ class ProgressBar:
     def __init__(self):
         self.count = 0
 
-    def update(self, urlretrieve_inputs):
-        _, block_size, total_size = urlretrieve_inputs
+    def update(self, tmp, block_size, total_size):
         self.count += block_size
 
         percent = f"{int(100 * self.count / total_size)}"
