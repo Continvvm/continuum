@@ -6,6 +6,7 @@
 
 Aka Continual Learning, Lifelong-Learning, Incremental Learning, etc.
 
+Read the [documentation](https://continuum.readthedocs.io/en/latest/).
 
 ### Example:
 
@@ -67,6 +68,9 @@ Note that the task sizes are fully customizable.
 | **Permuted MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
 | **Rotated MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
 | **CORe50** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
+| **CORe50-v2-79** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
+| **CORe50-v2-196** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
+| **CORe50-v2-391** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
 | **MultiNLI** | 5 | | :white_check_mark: | :book: |
 
 

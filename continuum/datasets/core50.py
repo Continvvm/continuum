@@ -31,12 +31,9 @@ class CORe50(_ContinuumDataset):
         train_image_ids: Union[str, Iterable[str], None] = None,
         download: bool = True
     ):
+        self.train_image_ids = train_image_ids
         super().__init__(data_path, download)
 
-        self.train_image_ids = train_image_ids
-
-        if download:
-            self._download()
         if isinstance(self.train_image_ids, str):
             self.train_image_ids = self._read_csv(self.train_image_ids)
         elif isinstance(self.train_image_ids, list):
@@ -54,7 +51,11 @@ class CORe50(_ContinuumDataset):
             download.unzip(path)
             print("Dataset extracted.")
 
-        if self.train_image_ids is None:
+        split_path = os.path.join(self.data_path, "core50_train.csv")
+        if self.train_image_ids is None and os.path.exists(split_path):
+            self.train_image_ids = split_path
+            print("Train/split already downloaded.")
+        elif self.train_image_ids is None:
             print("Downloading train/test split.")
             self.train_image_ids = download.download(self.train_ids_url, self.data_path)
 
@@ -63,7 +64,7 @@ class CORe50(_ContinuumDataset):
         train_images_ids = set()
 
         with open(csv_file, "r") as f:
-            next(f)
+            print(csv_file)
             for line in f:
                 image_id = line.split(",")[0].split(".")[0]
                 train_images_ids.add(image_id)
@@ -122,3 +123,94 @@ class CORe50(_ContinuumDataset):
         t = np.array(t)
 
         return x, y, t
+
+
+class CORe50v2_79(_ContinuumDataset):
+    data_url = "http://bias.csr.unibo.it/maltoni/download/core50/core50_128x128.zip"
+    splits_url = "https://vlomonaco.github.io/core50/data/batches_filelists_NICv2.zip"
+    nb_tasks = 79
+
+    def __init__(self, data_path: str, download: bool = True, run_id: int = 0):
+        if run_id > 9 or run_id < 0:
+            raise ValueError(
+                "CORe50 v2 only provides split for 10 runs (ids 0 to 9),"
+                f" invalid run_id={run_id}."
+            )
+        self.run_id = run_id
+
+        super().__init__(data_path, download)
+
+    def _download(self):
+        if os.path.exists(os.path.join(self.data_path, "core50_128x128")):
+            print("Dataset already extracted.")
+        else:
+            path = download.download(self.data_url, self.data_path)
+            download.unzip(path)
+            print("Dataset extracted.")
+
+        if os.path.exists(os.path.join(self.data_path, "batches_filelists_NICv2.zip")):
+            print("Split info already downloaded.")
+        else:
+            path = download.download(self.splits_url, self.data_path)
+            download.unzip(path)
+            print("Split info extracted.")
+
+    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if train:
+            return self._train_init()
+        return self._test_init()
+
+    def _test_init(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        text_file = os.path.join(
+            self.data_path, f"NIC_v2_{self.nb_tasks}", f"run{self.run_id}", "test_filelist.txt"
+        )
+        paths, targets = self._read_txt(text_file)
+
+        return paths, targets, np.zeros(len(targets))
+
+    def _train_init(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        template = os.path.join(
+            self.data_path, f"NIC_v2_{self.nb_tasks}", f"run{self.run_id}",
+            "train_batch_{}_filelist.txt"
+        )
+
+        paths, targets, tasks = [], [], []
+        for task_id in range(self.nb_tasks):
+            p, t = self._read_txt(template.format(str(task_id).rjust(2, "0")))
+
+            paths.append(p)
+            targets.append(t)
+            tasks.append(task_id * np.ones(len(t)))
+
+        paths = np.concatenate(paths)
+        targets = np.concatenate(targets)
+        tasks = np.concatenate(tasks)
+
+        return paths, targets, tasks
+
+    def _read_txt(self, path: str) -> Tuple[np.ndarray, np.ndarray]:
+        """Read CORe50 v2 split info that are stored in a txt file.
+
+        The format, for each line, is "path<space>class_id".
+
+        :param path: The path to the text file.
+        :return: An array of image paths and an array of targets.
+        """
+        image_root_path = os.path.join(self.data_path, "core50_128x128")
+
+        paths, targets = [], []
+        with open(path, "r") as f:
+            for line in f:
+                p, t = line.strip().split(" ")
+                paths.append(os.path.join(image_root_path, p))
+                targets.append(int(t))
+
+        return np.array(paths), np.array(targets)
+
+
+class CORe50v2_196(CORe50v2_79):
+    nb_tasks = 196
+
+
+class CORe50v2_391(CORe50v2_79):
+    nb_tasks = 391
