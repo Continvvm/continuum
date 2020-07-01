@@ -35,9 +35,6 @@ class MultiNLI(_ContinuumDataset):
     def __init__(self, data_path: str = "", download: bool = True) -> None:
         super().__init__(data_path, download)
 
-        if self.download:
-            self._download()
-
     def _download(self):
         if os.path.exists(os.path.join(self.data_path, "multinli_1.0")):
             print("Dataset already extracted.")

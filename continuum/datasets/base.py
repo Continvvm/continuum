@@ -12,8 +12,14 @@ class _ContinuumDataset(abc.ABC):
         self.data_path = data_path
         self.download = download
 
+        if self.download:
+            self._download()
+
     @abc.abstractmethod
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        pass
+
+    def _download(self):
         pass
 
     @property
@@ -52,11 +58,14 @@ class PyTorchDataset(_ContinuumDataset):
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(self, *args, dataset_type, **kwargs):
-        super().__init__(*args, **kwargs)
         self.dataset_type = dataset_type
+        super().__init__(*args, **kwargs)
+
+    def _download(self):
+        self.dataset_type(self.data_path, download=True)
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        dataset = self.dataset_type(self.data_path, download=self.download, train=train)
+        dataset = self.dataset_type(self.data_path, download=False, train=train)
         x, y = np.array(dataset.data), np.array(dataset.targets)
 
         return x, y, None
@@ -113,21 +122,15 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, train_folder: str, test_folder: str, download: bool = True, **kwargs):
+    def __init__(self, train_folder: str, test_folder: str, download: bool = False, **kwargs):
         super().__init__(download=download, **kwargs)
 
         self.train_folder = train_folder
         self.test_folder = test_folder
 
-        if download:
-            self._download()
-
     @property
     def data_type(self) -> str:
         return "image_path"
-
-    def _download(self):
-        pass
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         if train:
