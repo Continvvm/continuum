@@ -4,6 +4,9 @@ import zipfile
 
 
 def download(url, path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
     file_name = os.path.join(path, url.split("/")[-1])
 
     if os.path.exists(file_name):
