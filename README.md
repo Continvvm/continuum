@@ -234,15 +234,12 @@ if you want to evaluate after each task, on all seen tasks do `clloader_test[:n]
 If you find this library useful in your work, please consider citing it:
 
 ```
-@software{douillard_lesort_continuum20,
-  author       = {Arthur Douillard, Timothée LESORT},
-  title        = {Continuum library},
-  month        = {April},
-  year         = {2020},
-  publisher    = {Zenodo},
-  version      = {v1.0},
-  doi          = {10.5281/zenodo.8475},
-  url          = {https://doi.org/10.5281/zenodo.8475}
+@misc{douillardlesort2020continuum,
+  author={Douillard, Arthur and Lesort, Timothée},
+  title={Continuum, Data Loaders for Continual Learning},
+  howpublished={https://github.com/Continvvm/continuum},
+  year={2020},
+  doi={10.5281/zenodo.3759673}
 }
 ```
 
