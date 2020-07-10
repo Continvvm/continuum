@@ -40,7 +40,7 @@ def test_slicing_nc(index, classes):
     dummy = InMemoryDataset(*train, *test)
     clloader = ClassIncremental(dummy, increment=2)
     dataset = clloader[index]
-    targets = np.sort(np.unique(dataset.y))
+    targets = np.sort(np.unique(dataset._y))
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
 

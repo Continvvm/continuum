@@ -26,25 +26,15 @@ class _BaseCLLoader(abc.ABC):
         self,
         cl_dataset: _ContinuumDataset,
         nb_tasks: int,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
-        train=True
+        base_transformations: List[Callable] = None
     ) -> None:
 
         self.cl_dataset = cl_dataset
         self._nb_tasks = nb_tasks
 
-        if train_transformations is None:
-            train_transformations = []
-        if common_transformations is None:
-            common_transformations = self.cl_dataset.transformations
-
-        if len(common_transformations) == 0:
-            self.train_trsf, self.test_trsf = None, None
-        else:
-            self.train_trsf = transforms.Compose(train_transformations + common_transformations)
-            self.test_trsf = transforms.Compose(common_transformations)
-        self.train = train
+        if base_transformations is None:
+            base_transformations = self.cl_dataset.transformations
+        self.trsf = transforms.Compose(base_transformations)
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
@@ -88,12 +78,8 @@ class _BaseCLLoader(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
-        data = self._select_data_by_task(task_index)
-        return TaskSet(
-            *data,
-            self.train_trsf if self.train else self.test_trsf,
-            data_type=self.cl_dataset.data_type
-        )
+        train = self._select_data_by_task(task_index)
+        return TaskSet(*train, self.trsf, data_type=self.cl_dataset.data_type)
 
     def _select_data_by_task(self, task_index: Union[int, slice]):
         """Selects a subset of the whole data for a given task.

@@ -16,7 +16,7 @@ class _ContinuumDataset(abc.ABC):
             self._download()
 
     @abc.abstractmethod
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_data(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         pass
 
     def _download(self):
@@ -57,17 +57,16 @@ class PyTorchDataset(_ContinuumDataset):
     """
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
-    def __init__(self, *args, dataset_type, **kwargs):
-        self.dataset_type = dataset_type
+    def __init__(self, *args, dataset_type, train, **kwargs):
         super().__init__(*args, **kwargs)
+        self.dataset_type = dataset_type
+        self.train = train
 
-    def _download(self):
-        self.dataset_type(self.data_path, download=True)
+        self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        dataset = self.dataset_type(self.data_path, download=False, train=train)
-        x, y = np.array(dataset.data), np.array(dataset.targets)
-
+    @property
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
         return x, y, None
 
 
@@ -85,25 +84,21 @@ class InMemoryDataset(_ContinuumDataset):
 
     def __init__(
         self,
-        x_train: np.ndarray,
-        y_train: np.ndarray,
-        x_test: np.ndarray,
-        y_test: np.ndarray,
+        x_: np.ndarray,
+        y_: np.ndarray,
         data_type: str = "image_array",
-        t_train: Union[None, np.ndarray] = None,
-        t_test: Union[None, np.ndarray] = None,
+        t_: Union[None, np.ndarray] = None,
+        train='train',
         **kwargs
     ):
+
+        self.train = train
+        self.data = (x_, y_, t_)
+        self._data_type = data_type
         super().__init__(**kwargs)
 
-        self.train = (x_train, y_train, t_train)
-        self.test = (x_test, y_test, t_test)
-        self._data_type = data_type
-
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        if train:
-            return self.train
-        return self.test
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        return self.data
 
     @property
     def data_type(self) -> str:
@@ -122,24 +117,28 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, train_folder: str, test_folder: str, download: bool = False, **kwargs):
+
+    def __init__(self, folder: str, train: str, download: bool = True, **kwargs):
         super().__init__(download=download, **kwargs)
 
-        self.train_folder = train_folder
-        self.test_folder = test_folder
+        self.folder = folder
+        self.train = train
+
+        if download:
+            self._download()
+
+        self.dataset = torchdata.ImageFolder(folder)
 
     @property
     def data_type(self) -> str:
         return "image_path"
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
-        if train:
-            folder = self.train_folder
-        else:
-            folder = self.test_folder
+    def _download(self):
+        pass
 
-        dataset = torchdata.ImageFolder(folder)
-        return self._format(dataset.imgs)
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
+        return self._format(self.dataset.imgs)
+
 
     @staticmethod
     def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:

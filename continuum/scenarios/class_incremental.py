@@ -29,17 +29,14 @@ class ClassIncremental(_BaseCLLoader):
         nb_tasks: int = 0,
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
+        base_transformations: List[Callable] = None,
         train=True,
         class_order=None
     ) -> None:
         super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
-            train_transformations=train_transformations,
-            common_transformations=common_transformations,
-            train=train
+            base_transformations=base_transformations
         )
 
         self.increment = increment
@@ -49,7 +46,7 @@ class ClassIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        x, y, _ = self.cl_dataset.init(train=self.train)
+        x, y, _ = self.cl_dataset.get_data()
         unique_classes = np.unique(y)
 
         self.class_order = self.class_order or self.cl_dataset.class_order or list(

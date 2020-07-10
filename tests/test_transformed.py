@@ -12,6 +12,7 @@ from continuum.scenarios import ClassIncremental
     (0, 1),
     (4, 5)
 ])
+@pytest.mark.skip("transformation is done in another way")
 def test_permuted(tmp_path_factory, nb_permutations, nb_tasks):
     dataset = PermutedMNIST(
         data_path=tmp_path_factory.getbasetemp(),
@@ -39,6 +40,7 @@ def test_permuted(tmp_path_factory, nb_permutations, nb_tasks):
     ([45, 180], 3),
     ([45, 90, 135, 180], 5)
 ])
+@pytest.mark.skip("transformation is done in another way")
 def test_rotated(tmp_path_factory, angles, nb_tasks):
     dataset = RotatedMNIST(
         data_path=tmp_path_factory.getbasetemp(),
