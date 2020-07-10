@@ -135,13 +135,13 @@ def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, 
     """
     random_state = np.random.RandomState(seed=1)
 
-    indexes = np.arange(len(dataset.x))
+    indexes = np.arange(len(dataset._x))
     random_state.shuffle(indexes)
 
     train_indexes = indexes[int(val_split * len(indexes)):]
     val_indexes = indexes[:int(val_split * len(indexes))]
 
-    x, y = dataset.x, dataset.y
+    x, y = dataset._x, dataset._y
     train_dataset = TaskSet(x[train_indexes], y[train_indexes], dataset.trsf, dataset.data_type)
     val_dataset = TaskSet(x[val_indexes], y[val_indexes], dataset.trsf, dataset.data_type)
 

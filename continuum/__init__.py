@@ -1,6 +1,6 @@
 """Continuum lib.
 
-Made by Arthur Douillard and Timothée Lesort.
+Made by Arthur Douillard and Timothee Lesort.
 
 The goal of this library is to provide clean and simple to use utilities for
 Continual Learning.
