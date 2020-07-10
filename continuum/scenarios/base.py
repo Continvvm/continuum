@@ -94,7 +94,7 @@ class _BaseCLLoader(abc.ABC):
 
         if isinstance(task_index, slice):
             start = task_index.start or 0
-            stop = task_index.stop
+            stop = task_index.stop or len(self) + 1
             step = task_index.step or 1
             task_indexes = list(range(start, stop, step))
             task_indexes = [

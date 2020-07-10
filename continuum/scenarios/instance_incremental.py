@@ -45,7 +45,7 @@ class InstanceIncremental(_BaseCLLoader):
 
         if t is None and nb_tasks <= 0:
             raise ValueError(f"You need to specify a number of tasks > 0, not {nb_tasks}.")
-        elif t is None:  # If the dataset didn't provide default task ids:
+        if t is None:  # If the dataset didn't provide default task ids:
             task_ids = self._random_state.randint(nb_tasks, size=len(y))
             self.dataset = (x, y, task_ids)
         else:  # With dataset default task ids provided:

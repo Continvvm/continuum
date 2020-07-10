@@ -43,3 +43,32 @@ def test_slicing_nc(index, classes):
     targets = np.sort(np.unique(dataset._y))
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
+
+
+@pytest.mark.parametrize("start_index,classes", [
+    (0, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+    (3, [6, 7, 8, 9]),
+    (4, [8, 9]),
+    (12, [])
+])
+def test_slicing_nc_no_end(start_index, classes):
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train, *test)
+    clloader = ClassIncremental(dummy, increment=2)
+    dataset = clloader[start_index:]
+    targets = np.sort(np.unique(dataset.y))
+    assert len(targets) == len(classes)
+    assert (targets == np.array(classes)).all(), (targets, classes)
+
+
+def test_slicing_nc_no_index():
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train, *test)
+    clloader = ClassIncremental(dummy, increment=2)
+    dataset = clloader[:]
+    targets = np.sort(np.unique(dataset.y))
+
+    classes = list(range(10))
+
+    assert len(targets) == len(classes)
+    assert (targets == np.array(classes)).all(), (targets, classes)

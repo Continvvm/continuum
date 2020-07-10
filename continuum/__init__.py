@@ -9,5 +9,5 @@ Continual Learning.
 # flake8: noqa
 from continuum import datasets
 from continuum.scenarios import *
-from continuum.task_set import TaskSet
+from continuum.task_set import TaskSet, split_train_val
 from continuum.viz import plot

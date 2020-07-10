@@ -12,8 +12,14 @@ class _ContinuumDataset(abc.ABC):
         self.data_path = data_path
         self.download = download
 
+        if self.download:
+            self._download()
+
     @abc.abstractmethod
     def get_data(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        pass
+
+    def _download(self):
         pass
 
     @property
@@ -61,7 +67,6 @@ class PyTorchDataset(_ContinuumDataset):
     @property
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
-
         return x, y, None
 
 
@@ -112,6 +117,7 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
+
     def __init__(self, folder: str, train: str, download: bool = True, **kwargs):
         super().__init__(download=download, **kwargs)
 
@@ -132,6 +138,7 @@ class ImageFolderDataset(_ContinuumDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         return self._format(self.dataset.imgs)
+
 
     @staticmethod
     def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:

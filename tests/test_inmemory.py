@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from torch.utils.data import DataLoader
 
+from continuum import split_train_val
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import ClassIncremental
 
@@ -44,7 +45,7 @@ def test_increments(increment, initial_increment, nb_tasks):
             min_class = sum(increment[:task_id])
         elif initial_increment:
             max_class = initial_increment + increment * task_id
-            min_class = initial_increment + increment * (task_id -1) if task_id > 0 else 0
+            min_class = initial_increment + increment * (task_id - 1) if task_id > 0 else 0
         else:
             max_class = increment * (task_id + 1)
             min_class = increment * task_id
@@ -55,3 +56,15 @@ def test_increments(increment, initial_increment, nb_tasks):
         assert np.max(train_dataset._y) == max_class - 1
         assert np.min(train_dataset._y) == min_class
     assert seen_tasks == nb_tasks
+
+
+@pytest.mark.parametrize("val_split", [0, 0.1, 0.5, 0.8, 1.0])
+def test_split_train_val(val_split):
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train, *test)
+    clloader = ClassIncremental(dummy, increment=5)
+
+    for dataset in clloader:
+        train_dataset, val_dataset = split_train_val(dataset, val_split=val_split)
+        assert int(val_split * len(dataset)) == len(val_dataset)
+        assert len(val_dataset) + len(train_dataset) == len(dataset)
