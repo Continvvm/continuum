@@ -72,7 +72,7 @@ class _BaseCLLoader(abc.ABC):
         self._counter = 0
         return self
 
-    def __next__(self) -> Tuple[TaskSet, TaskSet]:
+    def __next__(self) -> TaskSet:
         """An iteration/task in the for loop."""
         if self._counter >= len(self):
             raise StopIteration
@@ -89,6 +89,7 @@ class _BaseCLLoader(abc.ABC):
         :return: A train PyTorch's Datasets.
         """
         data = self._select_data_by_task(task_index)
+
         return TaskSet(
             *data,
             self.train_trsf if self.train else self.test_trsf,

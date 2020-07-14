@@ -116,8 +116,12 @@ def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, 
     train_indexes = indexes[int(val_split * len(indexes)):]
     val_indexes = indexes[:int(val_split * len(indexes))]
 
-    x, y = dataset.x, dataset.y
-    train_dataset = TaskSet(x[train_indexes], y[train_indexes], dataset.trsf, dataset.data_type)
-    val_dataset = TaskSet(x[val_indexes], y[val_indexes], dataset.trsf, dataset.data_type)
+    x, y, t = dataset.x, dataset.y, dataset.t
+    train_dataset = TaskSet(
+        x[train_indexes], y[train_indexes], t[train_indexes], dataset.trsf, dataset.data_type
+    )
+    val_dataset = TaskSet(
+        x[val_indexes], y[val_indexes], t[val_indexes], dataset.trsf, dataset.data_type
+    )
 
     return train_dataset, val_dataset

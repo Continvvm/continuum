@@ -37,7 +37,8 @@ for task_id, train_dataset in enumerate(clloader):
     train_loader = DataLoader(train_dataset)
     val_loader = DataLoader(val_dataset)
 
-    # Do your cool stuff here
+    for x, y, t in train_loader:
+        # Do your cool stuff here
 ```
 
 ### Supported Scenarios
