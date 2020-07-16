@@ -6,7 +6,7 @@ from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
-from continuum.viz import plot
+from continuum.viz import plot_samples
 
 
 class TaskSet(TorchDataset):
@@ -59,21 +59,28 @@ class TaskSet(TorchDataset):
             self,
             path: Union[str, None] = None,
             title: str = "",
-            nb_per_class: int = 5,
+            nb_samples: int = 100,
             shape=None
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
         :param path: If not None, save on disk at this path.
         :param title: The title of the figure.
-        :param nb_per_class: Amount to sample per class.
+        :param nb_samples: Amount of samples randomly selected.
         :param shape: Shape to resize the image before plotting.
         """
-        plot(self, title=title, path=path, nb_per_class=nb_per_class, shape=shape)
+        plot_samples(self, title=title, path=path, nb_samples=nb_samples, shape=shape)
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
         return self._x.shape[0]
+
+    def rand_samples(self, nb_samples):
+
+        nb_tot_samples = self._x.shape[0]
+        indexes = np.random.randint(0, nb_tot_samples, nb_samples)
+        return self.get_samples_from_ind(indexes)
+
 
     def get_samples_from_ind(self, indexes):
         batch = None
@@ -81,7 +88,7 @@ class TaskSet(TorchDataset):
 
         for i, ind in enumerate(indexes):
             # we need to use get item to have the transform used
-            img, y = self.__getitem__(ind)
+            img, y, t = self.__getitem__(ind)
 
             if i == 0:
                 if len(list(img.shape)) == 2:

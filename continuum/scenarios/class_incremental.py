@@ -42,7 +42,6 @@ class ClassIncremental(_BaseCLLoader):
         self.increment = increment
         self.initial_increment = initial_increment
         self.class_order = class_order
-        self.cl_dataset = cl_dataset
 
         self._nb_tasks = self._setup(nb_tasks)
 

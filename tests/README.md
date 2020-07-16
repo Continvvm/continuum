@@ -8,10 +8,10 @@ Command to run from the main folder:
 ```bash
 #python 3.6
 # All test
-python pytest tests/
+pytest tests/
 
 # one test, ex
-python pytest tests/test_classorder.py 
+pytest tests/test_classorder.py 
 
 # stop after first failure
 pytest -x          
