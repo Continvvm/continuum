@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Union
 
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import TransformationIncremental
@@ -28,7 +28,7 @@ class Rotations(TransformationIncremental):
             self,
             cl_dataset: _ContinuumDataset,
             nb_tasks: int,
-            list_degrees: List[Tuple],
+            list_degrees: Union[List[Tuple], List[int]],
             base_transformations: List[Callable] = None
     ):
 
