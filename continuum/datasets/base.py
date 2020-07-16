@@ -57,16 +57,19 @@ class PyTorchDataset(_ContinuumDataset):
     """
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
-    def __init__(self, *args, dataset_type, train, **kwargs):
+    def __init__(self, *args, dataset_type, train: bool, **kwargs):
         super(PyTorchDataset, self).__init__(*args, **kwargs)
         self.dataset_type = dataset_type
         self.train = train
 
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
 
-    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def TorchDataset(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
         return x, y, None
+
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        return self.TorchDataset()
 
 
 class InMemoryDataset(_ContinuumDataset):

@@ -38,3 +38,7 @@ def test_init(numpy_data):
 
     clloader = Rotations(cl_dataset=dummy, nb_tasks=3, list_degrees=list_degrees)
 
+
+    for task_id, train_dataset in enumerate(clloader):
+        continue
+
