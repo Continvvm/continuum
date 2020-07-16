@@ -24,16 +24,17 @@ class ClassIncremental(_BaseCLLoader):
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-        nb_tasks: int = 0,
-        increment: Union[List[int], int] = 0,
-        initial_increment: int = 0,
-        base_transformations: List[Callable] = None,
-        train=True,
-        class_order=None
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: int = 0,
+            increment: Union[List[int], int] = 0,
+            initial_increment: int = 0,
+            base_transformations: List[Callable] = None,
+            train=True,
+            class_order=None
     ) -> None:
-        super().__init__(
+
+        super(ClassIncremental, self).__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
             base_transformations=base_transformations
@@ -98,7 +99,7 @@ class ClassIncremental(_BaseCLLoader):
         return t
 
     def _define_increments(
-        self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
+            self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
     ) -> List[int]:
         if isinstance(increment, list):
             # Check if the total number of classes is compatible between increment list and self.nb_classes

@@ -37,7 +37,9 @@ class TaskSet(TorchDataset):
         return len(np.unique(self._y))
 
     def add_memory(
-            self, x_memory: np.ndarray, y_memory: np.ndarray, t_memory: Union[None, np.ndarray] = None
+            self, x_memory: np.ndarray,
+            y_memory: np.ndarray,
+            t_memory: Union[None, np.ndarray] = None
     ):
         """Add memory for rehearsal.
 

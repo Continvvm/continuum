@@ -30,11 +30,9 @@ class InstanceIncremental(_BaseCLLoader):
             base_transformations: List[Callable] = None,
             random_seed: int = 1
     ):
-        super().__init__(
-            cl_dataset=cl_dataset,
-            nb_tasks=nb_tasks,
-            base_transformations=base_transformations
-        )
+        super(InstanceIncremental, self).__init__(cl_dataset=cl_dataset,
+                         nb_tasks=nb_tasks,
+                         base_transformations=base_transformations)
 
         self._random_state = np.random.RandomState(seed=random_seed)
 

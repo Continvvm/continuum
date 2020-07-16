@@ -23,10 +23,10 @@ class _BaseCLLoader(abc.ABC):
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-        nb_tasks: int,
-        base_transformations: List[Callable] = None
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: int,
+            base_transformations: List[Callable] = None
     ) -> None:
 
         self.cl_dataset = cl_dataset
@@ -78,8 +78,8 @@ class _BaseCLLoader(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
-        data = self._select_data_by_task(task_index)
-        return TaskSet(*data, self.trsf, data_type=self.cl_dataset.data_type)
+        _x, _y, _t = self._select_data_by_task(task_index)
+        return TaskSet(_x, _y, _t, self.trsf, data_type=self.cl_dataset.data_type)
 
     def _select_data_by_task(self, task_index: Union[int, slice]):
         """Selects a subset of the whole data for a given task.

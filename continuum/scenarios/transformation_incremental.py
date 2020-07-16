@@ -8,6 +8,7 @@ from continuum.scenarios import InstanceIncremental
 
 from torchvision import transforms
 
+
 class TransformationIncremental(InstanceIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
     Scenario: Mode incremental scenario is a new instance scenario where we explore the distribution mode by mode.
@@ -27,11 +28,11 @@ class TransformationIncremental(InstanceIncremental):
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-        nb_tasks: int,
-        incremental_transformations: List[List[Callable]],
-        base_transformations: List[Callable] = None
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: int,
+            incremental_transformations: List[List[Callable]],
+            base_transformations: List[Callable] = None
     ):
         super().__init__(
             cl_dataset=cl_dataset,
@@ -52,11 +53,10 @@ class TransformationIncremental(InstanceIncremental):
         return y
 
     def get_task_transformation(self, task_index):
-        return transforms.Compose(self.inc_trsf[task_index]+self.trsf.transforms)
-
+        return transforms.Compose(self.inc_trsf[task_index] + self.trsf.transforms)
 
     def update_task_indexes(self, task_index):
-        new_t_ = np.ones(len(self.dataset[1]))*task_index
+        new_t_ = np.ones(len(self.dataset[1])) * task_index
         self.dataset = (self.dataset[0], self.dataset[1], new_t_)
 
     def __getitem__(self, task_index):

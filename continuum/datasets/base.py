@@ -16,7 +16,7 @@ class _ContinuumDataset(abc.ABC):
             self._download()
 
     @abc.abstractmethod
-    def get_data(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         pass
 
     def _download(self):
@@ -83,15 +83,14 @@ class InMemoryDataset(_ContinuumDataset):
     """
 
     def __init__(
-        self,
-        x_: np.ndarray,
-        y_: np.ndarray,
-        data_type: str = "image_array",
-        t_: Union[None, np.ndarray] = None,
-        train='train',
-        **kwargs
+            self,
+            x_: np.ndarray,
+            y_: np.ndarray,
+            data_type: str = "image_array",
+            t_: Union[None, np.ndarray] = None,
+            train='train',
+            **kwargs
     ):
-
         self.train = train
         self.data = (x_, y_, t_)
         self._data_type = data_type
@@ -117,7 +116,6 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-
     def __init__(self, folder: str, train: str, download: bool = True, **kwargs):
         super().__init__(download=download, **kwargs)
 
@@ -138,7 +136,6 @@ class ImageFolderDataset(_ContinuumDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         return self._format(self.dataset.imgs)
-
 
     @staticmethod
     def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:

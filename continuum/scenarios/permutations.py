@@ -9,9 +9,8 @@ from torchvision import transforms
 
 
 class PermutationTransform:
-    """
-    Permutation transformers
-    This transformer is initialized with a seed that lead to a specific permutation, same seed = same permutation.
+    """Permutation transformers
+    This transformer is initialized with a seed such as same seed = same permutation.
     Seed 0 means no permutations
 
     :param seed: seed to initialize the random number generator
@@ -33,11 +32,9 @@ class PermutationTransform:
 
 
 class Permutations(TransformationIncremental):
-    """
-    Continual Loader, generating datasets for the consecutive tasks.
-    Scenario: Mode incremental scenario is a new instance scenario where we explore the distribution mode by mode.
-              For example rotation mnist, is a exploration of the distribution by rotation angles, each angle can be
-              seen as a mode of the distribution. Same for permutMnist, mode=permutations space.
+    """Continual Loader, generating datasets for the consecutive tasks.
+    Scenario: Permutations scenarios, use same data for all task but with pixels permuted.
+    Each task get a specific permutation, such as all tasks are different.
 
     :param cl_dataset: A continual dataset.
     :param nb_tasks: number of tasks.
@@ -63,12 +60,10 @@ class Permutations(TransformationIncremental):
         for s_ in list_seed:
             list_transformations.append([PermutationTransform(s_.item())])
 
-        super().__init__(
-            cl_dataset=cl_dataset,
-            nb_tasks=nb_tasks,
-            incremental_transformations=list_transformations,
-            base_transformations=base_transformations
-        )
+        super().__init__(cl_dataset=cl_dataset,
+                         nb_tasks=nb_tasks,
+                         base_transformations=list_transformations,
+                         seed=self.seed)
 
     # We inverse permutation is after self.trsf because it is done an torch tensor
     def get_task_transformation(self, task_index):
