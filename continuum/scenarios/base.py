@@ -62,7 +62,7 @@ class _BaseCLLoader(abc.ABC):
         self._counter = 0
         return self
 
-    def __next__(self) -> Tuple[TaskSet, TaskSet]:
+    def __next__(self) -> TaskSet:
         """An iteration/task in the for loop."""
         if self._counter >= len(self):
             raise StopIteration
@@ -78,8 +78,8 @@ class _BaseCLLoader(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
-        train = self._select_data_by_task(task_index)
-        return TaskSet(*train, self.trsf, data_type=self.cl_dataset.data_type)
+        data = self._select_data_by_task(task_index)
+        return TaskSet(*data, self.trsf, data_type=self.cl_dataset.data_type)
 
     def _select_data_by_task(self, task_index: Union[int, slice]):
         """Selects a subset of the whole data for a given task.
