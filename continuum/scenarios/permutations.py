@@ -9,7 +9,8 @@ from torchvision import transforms
 
 
 class PermutationTransform:
-    """Permutation transformers
+    """Permutation transformers.
+
     This transformer is initialized with a seed such as same seed = same permutation.
     Seed 0 means no permutations
 
@@ -33,6 +34,7 @@ class PermutationTransform:
 
 class Permutations(TransformationIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
+
     Scenario: Permutations scenarios, use same data for all task but with pixels permuted.
     Each task get a specific permutation, such as all tasks are different.
 
@@ -60,10 +62,10 @@ class Permutations(TransformationIncremental):
         for s_ in list_seed:
             list_transformations.append([PermutationTransform(s_.item())])
 
-        super().__init__(cl_dataset=cl_dataset,
+        super(Permutations, self).__init__(cl_dataset=cl_dataset,
                          nb_tasks=nb_tasks,
-                         base_transformations=list_transformations,
-                         seed=self.seed)
+                         incremental_transformations=list_transformations,
+                         base_transformations=base_transformations)
 
     # We inverse permutation is after self.trsf because it is done an torch tensor
     def get_task_transformation(self, task_index):

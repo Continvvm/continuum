@@ -7,8 +7,10 @@ from skimage.transform import resize
 def sample(dataset, nb_per_class=5):
     sampled_x, sampled_y = [], []
 
-    for class_id in np.unique(dataset._y):
-        indexes = np.where(dataset._y == class_id)[0][:nb_per_class]
+    _x, _y, _t = dataset.get_data()
+
+    for class_id in np.unique(_y):
+        indexes = np.where(_y == class_id)[0][:nb_per_class]
         x, y = dataset.get_samples_from_ind(indexes)
         sampled_x.append(x.numpy())
         sampled_y.append(y)

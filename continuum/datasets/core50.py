@@ -7,11 +7,11 @@ from continuum import download
 from continuum.datasets.base import _ContinuumDataset
 
 
-class CORe50(_ContinuumDataset):
-    """Continuum version of the CORe50 dataset.
+class Core50(_ContinuumDataset):
+    """Continuum version of the Core50 dataset.
 
     References:
-        * CORe50: a new Dataset and Benchmark for Continuous Object Recognition
+        * Core50: a new Dataset and Benchmark for Continuous Object Recognition
           Lomonaco & Maltoni.
           CoRL 2017
 
@@ -125,7 +125,7 @@ class CORe50(_ContinuumDataset):
         return x, y, t
 
 
-class CORe50v2_79(_ContinuumDataset):
+class Core50v2_79(_ContinuumDataset):
     data_url = "http://bias.csr.unibo.it/maltoni/download/core50/core50_128x128.zip"
     splits_url = "https://vlomonaco.github.io/core50/data/batches_filelists_NICv2.zip"
     nb_tasks = 79
@@ -189,7 +189,7 @@ class CORe50v2_79(_ContinuumDataset):
         return paths, targets, tasks
 
     def _read_txt(self, path: str) -> Tuple[np.ndarray, np.ndarray]:
-        """Read CORe50 v2 split info that are stored in a txt file.
+        """Read Core50 v2 split info that are stored in a txt file.
 
         The format, for each line, is "path<space>class_id".
 
@@ -208,9 +208,9 @@ class CORe50v2_79(_ContinuumDataset):
         return np.array(paths), np.array(targets)
 
 
-class CORe50v2_196(CORe50v2_79):
+class Core50v2_196(Core50v2_79):
     nb_tasks = 196
 
 
-class CORe50v2_391(CORe50v2_79):
+class Core50v2_391(Core50v2_79):
     nb_tasks = 391

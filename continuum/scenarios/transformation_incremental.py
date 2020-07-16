@@ -11,10 +11,8 @@ from torchvision import transforms
 
 class TransformationIncremental(InstanceIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
-    Scenario: Mode incremental scenario is a new instance scenario where we explore the distribution mode by mode.
-              For example rotation mnist, is a exploration of the distribution by rotation angles, each angle can be
-              seen as a mode of the distribution. Same for permutMnist, mode=permutations space.
 
+    Scenario: TODO
     :param cl_dataset: A continual dataset.
     :param increment: Either number of classes per task, or a list specifying for
                       every task the amount of new classes.
@@ -34,7 +32,7 @@ class TransformationIncremental(InstanceIncremental):
             incremental_transformations: List[List[Callable]],
             base_transformations: List[Callable] = None
     ):
-        super().__init__(
+        super(TransformationIncremental, self).__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
             base_transformations=base_transformations

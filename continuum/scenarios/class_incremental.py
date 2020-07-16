@@ -30,7 +30,6 @@ class ClassIncremental(_BaseCLLoader):
             increment: Union[List[int], int] = 0,
             initial_increment: int = 0,
             base_transformations: List[Callable] = None,
-            train=True,
             class_order=None
     ) -> None:
 
@@ -43,10 +42,12 @@ class ClassIncremental(_BaseCLLoader):
         self.increment = increment
         self.initial_increment = initial_increment
         self.class_order = class_order
+        self.cl_dataset = cl_dataset
 
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
+
         x, y, _ = self.cl_dataset.get_data()
         unique_classes = np.unique(y)
 
@@ -82,7 +83,7 @@ class ClassIncremental(_BaseCLLoader):
         return len(np.unique(task_ids))
 
     def _set_task_labels(self, y: np.ndarray) -> np.ndarray:
-        """For each data point, defines a task associated with the data
+        """For each data point, defines a task associated with the data.
 
         :param y: label tensor
         :param increments: increments contains information about classes per tasks

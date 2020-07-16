@@ -14,7 +14,7 @@ class Fellowship(_ContinuumDataset):
         data_path: str = "",
         download: bool = True,
     ):
-        super().__init__(data_path, download)
+        super(Fellowship, self).__init__(data_path, download)
 
         self.datasets = [dataset(data_path, download) for dataset in dataset_list]
 
@@ -39,10 +39,10 @@ class Fellowship(_ContinuumDataset):
 class MNISTFellowship(Fellowship):
 
     def __init__(self, data_path: str = "", download: bool = True) -> None:
-        super().__init__([MNIST, FashionMNIST, KMNIST], data_path, download)
+        super(MNISTFellowship, self).__init__([MNIST, FashionMNIST, KMNIST], data_path, download)
 
 
 class CIFARFellowship(Fellowship):
 
     def __init__(self, data_path: str = "", download: bool = True) -> None:
-        super().__init__([CIFAR10, CIFAR100], data_path, download)
+        super(CIFARFellowship, self).__init__([CIFAR10, CIFAR100], data_path, download)

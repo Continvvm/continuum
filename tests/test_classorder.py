@@ -9,7 +9,7 @@ from continuum.scenarios import ClassIncremental
 class InMemoryDatasetTest(InMemoryDataset):
 
     def __init__(self, *args, class_order=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(InMemoryDatasetTest, self).__init__(*args, **kwargs)
         self._class_order = class_order
 
     @property
@@ -45,7 +45,7 @@ def numpy_data():
 ])
 def test_increments(numpy_data, classes, default_class_order, class_order):
     train, test = numpy_data
-    dummy = InMemoryDatasetTest(*train, *test, class_order=default_class_order)
+    dummy = InMemoryDatasetTest(*train, class_order=default_class_order)
     clloader = ClassIncremental(dummy, 2, 5, class_order=class_order)
 
     gt_new_targets = [np.arange(5), np.arange(5) + 5]
