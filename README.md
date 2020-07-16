@@ -23,11 +23,9 @@ from continuum import ClassIncremental, split_train_val
 from continuum.datasets import MNIST
 
 clloader = ClassIncremental(
-    MNIST("my/data/path", download=True),
+    MNIST("my/data/path", download=True, train=True),
     increment=1,
-    initial_increment=5,
-    train=True  # a different loader for test
-)
+    initial_increment=5)
 
 print(f"Number of classes: {clloader.nb_classes}.")
 print(f"Number of tasks: {clloader.nb_tasks}.")

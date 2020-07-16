@@ -10,4 +10,4 @@ Continual Learning.
 from continuum import datasets
 from continuum.scenarios import *
 from continuum.task_set import TaskSet, split_train_val
-from continuum.viz import plot
+from continuum.viz import plot_samples
