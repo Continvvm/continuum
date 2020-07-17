@@ -16,4 +16,7 @@ clean: FORCE
 	rm -rf dist/
 	rm -rf continuum.egg-info/
 
+documentation: FORCE
+	$(MAKE) -C docs/ html
+
 FORCE: ;
