@@ -13,16 +13,11 @@ class TransformationIncremental(InstanceIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
 
     Scenario: TODO
+
     :param cl_dataset: A continual dataset.
-    :param increment: Either number of classes per task, or a list specifying for
-                      every task the amount of new classes.
-    :param initial_increment: A different task size applied only for the first task.
-                              Desactivated if `increment` is a list.
-    :param train_transformations: A list of data augmentation applied to the train set.
-    :param common_transformations: A list of transformations applied to both the
-                                   the train set and the test set. i.e. normalization,
-                                   resizing, etc.
-    :param incremental_transformations: A list of transformations specific to each tasks. e.g. rotations, permutations
+    :param nb_tasks:
+    :param incremental_transformations:
+    :param base_transformations:
     """
 
     def __init__(

@@ -3,19 +3,15 @@ import numpy as np
 import os
 import imageio
 
-from skimage.transform import resize
-
-
 
 def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
     batch, _ = dataset.rand_samples(nb_samples)
     filename = os.path.join(path, title)
 
     if shape is None:
-        shape= x[0].shape
+        shape = batch[0].shape
 
     visualize_batch(batch, nb_samples, shape, filename)
-
 
 
 def visualize_batch(batch, number, shape, path):
@@ -25,13 +21,15 @@ def visualize_batch(batch, number, shape, path):
 
     if shape[2] == 1:
         data_np = batch.numpy().reshape(number, shape[0], shape[1], shape[2])
-        save_images(data_np[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
+        save_images(data_np[:image_frame_dim * image_frame_dim, :, :, :],
+                    [image_frame_dim, image_frame_dim],
                     path)
     elif shape[2] == 3:
         data = batch.numpy().reshape(number, shape[2], shape[1], shape[0])
         make_samples_batche(data[:number], number, path)
     else:
-        save_images(batch[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
+        save_images(batch[:image_frame_dim * image_frame_dim, :, :, :],
+                    [image_frame_dim, image_frame_dim],
                     path)
 
 
@@ -45,13 +43,11 @@ def imsave(images, size, path):
     image /= np.max(image) + 1e-12
     image = 255 * image  # Now scale by 255
     image = image.astype(np.uint8)
-
-    print(image.shape)
-
     return imageio.imwrite(path, image)
 
 
 def merge(images, size):
+    img = None
     h, w = images.shape[1], images.shape[2]
     if (images.shape[3] in (3, 4)):
         c = images.shape[3]
@@ -60,16 +56,17 @@ def merge(images, size):
             i = idx % size[1]
             j = idx // size[1]
             img[j * h:j * h + h, i * w:i * w + w, :] = image
-        return img
     elif images.shape[3] == 1:
         img = np.zeros((h * size[0], w * size[1]))
         for idx, image in enumerate(images):
             i = idx % size[1]
             j = idx // size[1]
             img[j * h:j * h + h, i * w:i * w + w] = image[:, :, 0]
-        return img
     else:
-        raise ValueError('in merge(images,size) images parameter ''must have dimensions: HxW or HxWx3 or HxWx4')
+        raise ValueError('in merge(images,size) images parameter '
+                         'must have dimensions: HxW or HxWx3 or HxWx4')
+
+    return img
 
 
 def img_stretch(img):
@@ -85,7 +82,11 @@ def make_samples_batche(prediction, batch_size, filename_dest):
     input_channel = prediction[0].shape[0]
     input_dim = prediction[0].shape[1]
     prediction = np.clip(prediction, 0, 1)
-    pred = np.rollaxis(prediction.reshape((batch_size_sqrt, batch_size_sqrt, input_channel, input_dim, input_dim)), 2,
+    pred = np.rollaxis(prediction.reshape((batch_size_sqrt,
+                                           batch_size_sqrt,
+                                           input_channel,
+                                           input_dim, input_dim)),
+                       2,
                        5)
     pred = pred.swapaxes(2, 1)
     pred = pred.reshape((batch_size_sqrt * input_dim, batch_size_sqrt * input_dim, input_channel))

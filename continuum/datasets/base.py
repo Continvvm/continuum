@@ -11,7 +11,7 @@ class _ContinuumDataset(abc.ABC):
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
         self.data_path = data_path
         self.download = download
-        self.train=train
+        self.train = train
 
         if self.download:
             self._download()
@@ -64,12 +64,12 @@ class PyTorchDataset(_ContinuumDataset):
 
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
 
-    def TorchDataset(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def torch_dataset(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
         return x, y, None
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return self.TorchDataset()
+        return self.torch_dataset()
 
 
 class InMemoryDataset(_ContinuumDataset):
@@ -93,7 +93,6 @@ class InMemoryDataset(_ContinuumDataset):
         self._data_type = data_type
         super(InMemoryDataset, self).__init__(**kwargs)
 
-
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data
 
@@ -114,16 +113,16 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, folder: str, train: str, download: bool = True, **kwargs):
+    def __init__(self, data_folder: str, train: bool, download: bool = True, **kwargs):
         super(ImageFolderDataset, self).__init__(download=download, **kwargs)
 
-        self.folder = folder
+        self.data_folder = data_folder
         self.train = train
 
         if download:
             self._download()
 
-        self.dataset = torchdata.ImageFolder(folder)
+        self.dataset = torchdata.ImageFolder(data_folder)
 
     @property
     def data_type(self) -> str:

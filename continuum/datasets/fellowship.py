@@ -18,22 +18,25 @@ class Fellowship(_ContinuumDataset):
 
         self.datasets = [dataset(data_path, download) for dataset in dataset_list]
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, None]:
-        x, y = [], []
+
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray,  np.ndarray]:
+        x, y, t = [], [], []
         class_counter = 0
 
-        for dataset in self.datasets:
-            data = dataset.init(train)
+        for i, dataset in enumerate(self.datasets):
+            data = dataset.get_data()
 
             x.append(data[0])
             y.append(data[1] + class_counter)
+            t.append(np.ones(len(data[0])*i))
 
             class_counter += len(np.unique(data[1]))
 
         x = np.concatenate(x)
         y = np.concatenate(y)
+        t = np.concatenate(t)
 
-        return x, y, None
+        return x, y, t
 
 
 class MNISTFellowship(Fellowship):

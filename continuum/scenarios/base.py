@@ -1,5 +1,5 @@
 import abc
-from typing import Callable, List, Tuple, Union
+from typing import Callable, List, Union
 
 import numpy as np
 from torchvision import transforms
@@ -115,7 +115,6 @@ class _BaseCLLoader(abc.ABC):
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
         return selected_x, selected_y, selected_t
-
 
 
 def _handle_negative_indexes(index: int, total_len: int) -> int:

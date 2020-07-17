@@ -10,6 +10,8 @@ from continuum.scenarios import _BaseCLLoader
 class ClassIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
 
+    Scenario: Each new tasks bring new classes only
+
     :param cl_dataset: A continual dataset.
     :param nb_tasks: The scenario number of tasks
     :param increment: Either number of classes per task, or a list specifying for
@@ -99,10 +101,15 @@ class ClassIncremental(_BaseCLLoader):
         return t
 
     def _define_increments(
-            self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
+            self,
+            increment: Union[List[int], int],
+            initial_increment: int,
+            unique_classes: List[int]
     ) -> List[int]:
+
         if isinstance(increment, list):
-            # Check if the total number of classes is compatible between increment list and self.nb_classes
+            # Check if the total number of classes is compatible
+            # with increment list and self.nb_classes
             if not sum(increment) == len(unique_classes):
                 raise Exception("The increment list is not compatible with the number of classes")
 

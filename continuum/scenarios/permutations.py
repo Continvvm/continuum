@@ -51,6 +51,7 @@ class Permutations(TransformationIncremental):
             base_transformations: List[Callable] = None,
             seed=0
     ):
+
         list_transformations = []
         g_cpu = torch.Generator()
         list_seed = torch.randperm(1000, generator=g_cpu)[:nb_tasks]
@@ -63,9 +64,9 @@ class Permutations(TransformationIncremental):
             list_transformations.append([PermutationTransform(s_.item())])
 
         super(Permutations, self).__init__(cl_dataset=cl_dataset,
-                         nb_tasks=nb_tasks,
-                         incremental_transformations=list_transformations,
-                         base_transformations=base_transformations)
+                                           nb_tasks=nb_tasks,
+                                           incremental_transformations=list_transformations,
+                                           base_transformations=base_transformations)
 
     # We inverse permutation is after self.trsf because it is done an torch tensor
     def get_task_transformation(self, task_index):

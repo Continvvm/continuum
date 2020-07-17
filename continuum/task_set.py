@@ -27,6 +27,7 @@ class TaskSet(TorchDataset):
             trsf: transforms.Compose,
             data_type: str = "image_array"
     ):
+
         self._x, self._y, self._t = x, y, t
         self.trsf = trsf
         self.data_type = data_type
@@ -81,10 +82,10 @@ class TaskSet(TorchDataset):
         indexes = np.random.randint(0, nb_tot_samples, nb_samples)
         return self.get_samples_from_ind(indexes)
 
-
     def get_samples_from_ind(self, indexes):
         batch = None
         labels = None
+        task_id = None
 
         for i, ind in enumerate(indexes):
             # we need to use get item to have the transform used
@@ -97,11 +98,13 @@ class TaskSet(TorchDataset):
                     size_image = list(img.shape)
                 batch = torch.zeros(([len(indexes)] + size_image))
                 labels = np.zeros(len(indexes))
+                task_id = np.zeros(len(indexes))
 
             batch[i] = img.clone()
             labels[i] = y
+            task_id[i] = t
 
-        return batch, labels
+        return batch, labels, task_id
 
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
@@ -144,18 +147,21 @@ def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, 
     """
     random_state = np.random.RandomState(seed=1)
 
-    indexes = np.arange(len(dataset._x))
+    indexes = np.arange(len(dataset))
     random_state.shuffle(indexes)
 
     train_indexes = indexes[int(val_split * len(indexes)):]
     val_indexes = indexes[:int(val_split * len(indexes))]
 
-    x, y, t = dataset._x, dataset._y, dataset._t
+    x_train, y_train, t_train = dataset.get_samples_from_ind(train_indexes)
+
     train_dataset = TaskSet(
-        x[train_indexes], y[train_indexes], t[train_indexes], dataset.trsf, dataset.data_type
+        x_train, y_train, t_train, dataset.trsf, dataset.data_type
     )
+
+    x_val, y_val, t_val = dataset.get_samples_from_ind(val_indexes)
     val_dataset = TaskSet(
-        x[val_indexes], y[val_indexes], t[val_indexes], dataset.trsf, dataset.data_type
+        x_val, y_val, t_val, dataset.trsf, dataset.data_type
     )
 
     return train_dataset, val_dataset
