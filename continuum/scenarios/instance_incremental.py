@@ -15,10 +15,7 @@ class InstanceIncremental(_BaseCLLoader):
     :param cl_dataset: A continual dataset.
     :param nb_tasks: The desired number of tasks. If left to 0, it will try to use
                      the dataset's default number of tasks.
-    :param train_transformations: A list of data augmentation applied to the train set.
-    :param common_transformations: A list of transformations applied to both the
-                                   the train set and the test set. i.e. normalization,
-                                   resizing, etc.
+    :param base_transformations: List of transformation to apply to all tasks.
     :param random_seed: A random seed which can be used if the task ids are randomly
                         generated.
     """

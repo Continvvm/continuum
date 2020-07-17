@@ -12,12 +12,14 @@ from torchvision import transforms
 class TransformationIncremental(InstanceIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
 
-    Scenario: TODO
+    Scenario: Every task contains the same data with different transformation
+    It is a cheap way to create instance incremental scenarios.
+    Classic transformation incremental scenarios are "permutations" and "rotations"
 
     :param cl_dataset: A continual dataset.
-    :param nb_tasks:
-    :param incremental_transformations:
-    :param base_transformations:
+    :param nb_tasks: Number of tasks in the continuum.
+    :param incremental_transformations: list of transformations to apply to specific tasks
+    :param base_transformations: List of transformation to apply to all tasks.
     """
 
     def __init__(
