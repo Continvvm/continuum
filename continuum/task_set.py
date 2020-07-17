@@ -83,9 +83,9 @@ class TaskSet(TorchDataset):
         return self.get_samples_from_ind(indexes)
 
     def get_samples_from_ind(self, indexes):
-        batch = None
-        labels = None
-        task_id = None
+        batch = torch.zeros(0)
+        labels = torch.zeros(0)
+        task_id = torch.zeros(0)
 
         for i, ind in enumerate(indexes):
             # we need to use get item to have the transform used
@@ -138,6 +138,10 @@ class TaskSet(TorchDataset):
         return self[index]
 
 
+    def get_raw_samples_from_ind(self, indexes):
+        """Get samples without preprocessing, for split train/val for example"""
+        return self._x[indexes], self._y[indexes], self._t[indexes]
+
 def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, TaskSet]:
     """Split train dataset into two datasets, one for training and one for validation.
 
@@ -146,22 +150,16 @@ def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, 
     :return: A tuple a dataset, respectively for train and validation.
     """
     random_state = np.random.RandomState(seed=1)
-
     indexes = np.arange(len(dataset))
     random_state.shuffle(indexes)
 
     train_indexes = indexes[int(val_split * len(indexes)):]
     val_indexes = indexes[:int(val_split * len(indexes))]
 
-    x_train, y_train, t_train = dataset.get_samples_from_ind(train_indexes)
+    x_train, y_train, t_train = dataset.get_raw_samples_from_ind(train_indexes)
+    train_dataset = TaskSet(x_train, y_train, t_train, dataset.trsf, dataset.data_type)
 
-    train_dataset = TaskSet(
-        x_train, y_train, t_train, dataset.trsf, dataset.data_type
-    )
-
-    x_val, y_val, t_val = dataset.get_samples_from_ind(val_indexes)
-    val_dataset = TaskSet(
-        x_val, y_val, t_val, dataset.trsf, dataset.data_type
-    )
+    x_val, y_val, t_val = dataset.get_raw_samples_from_ind(val_indexes)
+    val_dataset = TaskSet(x_val, y_val, t_val, dataset.trsf, dataset.data_type)
 
     return train_dataset, val_dataset

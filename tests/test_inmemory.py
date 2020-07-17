@@ -61,7 +61,7 @@ def test_increments(increment, initial_increment, nb_tasks):
 @pytest.mark.parametrize("val_split", [0, 0.1, 0.5, 0.8, 1.0])
 def test_split_train_val(val_split):
     train, test = gen_data()
-    dummy = InMemoryDataset(*train, *test)
+    dummy = InMemoryDataset(*train)
     clloader = ClassIncremental(dummy, increment=5)
 
     for dataset in clloader:

@@ -28,7 +28,7 @@ Test the initialization with three tasks
 '''
 def test_init(numpy_data):
     train, test = numpy_data
-    dummy = InMemoryDatasetTest(*train, *test)
+    dummy = InMemoryDatasetTest(*train)
 
     Trsf_0 = 0
     Trsf_1 = (15,20)
