@@ -133,7 +133,8 @@ class TaskSet(TorchDataset):
             img = self.trsf(img)
 
         # we impose output data to be Tensor
-        img = transforms.ToTensor()(img)
+        if not type(img) == torch.Tensor:
+            img = transforms.ToTensor()(img)
 
         return img, y, t
 
