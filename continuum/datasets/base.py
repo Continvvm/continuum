@@ -64,12 +64,9 @@ class PyTorchDataset(_ContinuumDataset):
 
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
 
-    def torch_dataset(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
         return x, y, None
-
-    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return self.torch_dataset()
 
 
 class InMemoryDataset(_ContinuumDataset):
