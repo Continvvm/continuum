@@ -20,6 +20,26 @@ def gen_data():
     return (x_train, y_train), (x_test, y_test)
 
 
+# this function create data with a mismatch between x and y shape
+def gen_bad_data():
+    nb_classes = 6
+    nb_data_x = 10
+    nb_data_y = 100
+
+    x_train = []
+    y_train = []
+    for i in range(nb_classes):
+        x_train.append(np.random.randint(100, size=(nb_data_x, 2, 2, 3)).astype(dtype=np.uint8))
+        y_train.append(np.ones(nb_data_y) * i)
+    x_train = np.concatenate(x_train)
+    y_train = np.concatenate(y_train)
+
+    x_test = np.copy(x_train)
+    y_test = np.copy(y_train)
+
+    return (x_train, y_train.astype(int)), (x_test, y_test.astype(int))
+
+
 # yapf: disable
 
 @pytest.mark.parametrize("increment,initial_increment,nb_tasks", [
@@ -56,6 +76,12 @@ def test_increments(increment, initial_increment, nb_tasks):
         assert np.max(train_dataset._y) == max_class - 1
         assert np.min(train_dataset._y) == min_class
     assert seen_tasks == nb_tasks
+
+
+def test_bad_data():
+    train, test = gen_bad_data()
+    with pytest.raises(AssertionError):
+        dummy = InMemoryDataset(*train)
 
 
 @pytest.mark.parametrize("val_split", [0, 0.1, 0.5, 0.8, 1.0])
