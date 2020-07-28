@@ -11,6 +11,7 @@ from continuum.scenarios import ClassIncremental
 '''
 Test the visualization with three tasks
 '''
+@pytest.mark.slow
 def test_visualization_rotations():
     clloader = Rotations(cl_dataset=MNIST("./pytest/Samples/Datasets", download=True, train=True),
                          nb_tasks=3,
@@ -30,6 +31,7 @@ def test_visualization_rotations():
 '''
 Test the visualization with three tasks
 '''
+@pytest.mark.slow
 def test_visualization_permutations():
     clloader = Permutations(cl_dataset=MNIST("./pytest/Samples/Datasets", download=True, train=True),
                          nb_tasks=3,
@@ -45,6 +47,7 @@ def test_visualization_permutations():
              nb_samples=100,
              shape=[28,28,1])
 
+@pytest.mark.slow
 def test_visualization_incremental():
     clloader = ClassIncremental(cl_dataset=MNIST("./pytest/Samples/Datasets", download=True, train=True),
                          nb_tasks=5,

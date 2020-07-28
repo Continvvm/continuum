@@ -10,7 +10,7 @@ prospector:
 	prospector --profile-path .prospector.yaml continuum/
 
 tests: FORCE
-	pytest tests/
+	pytest tests/  -m 'not slow'
 
 clean: FORCE
 	rm -rf dist/
