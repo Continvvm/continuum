@@ -116,11 +116,6 @@ class ImageFolderDataset(_ContinuumDataset):
         super(ImageFolderDataset, self).__init__(download=download, **kwargs)
 
         self.data_folder = data_folder
-        self.train = train
-
-        if download:
-            self._download()
-
         self.dataset = torchdata.ImageFolder(data_folder)
 
     @property
