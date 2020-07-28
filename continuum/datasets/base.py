@@ -81,12 +81,13 @@ class InMemoryDataset(_ContinuumDataset):
             self,
             x_: np.ndarray,
             y_: np.ndarray,
-            data_type: str = "image_array",
             t_: Union[None, np.ndarray] = None,
+            data_type: str = "image_array",
             **kwargs
     ):
         super(InMemoryDataset, self).__init__(**kwargs)
 
+        assert x_.shape[0] == y_.shape[0]
         self.data = (x_, y_, t_)
         assert data_type in ["image_array", "path_array", "text"], print(data_type)
         self._data_type = data_type

@@ -28,11 +28,12 @@ class Permutations(TransformationIncremental):
             seed=0
     ):
         list_transformations = []
-        g_cpu = torch.Generator()
-        list_seed = torch.randperm(1000, generator=g_cpu)[:nb_tasks]
         self.seed = seed
+        g_cpu = torch.Generator()
+        g_cpu.manual_seed(self.seed)
+        list_seed = torch.randperm(1000, generator=g_cpu)[:nb_tasks]
 
-        # first task is not permuted
+        # first task is not permuted, therefore first seed is 0
         list_seed[0] = 0
 
         for s_ in list_seed:
@@ -63,10 +64,10 @@ class PermutationTransform:
 
     def __call__(self, x):
         shape = list(x.shape)
-        x = x.view(-1)
+        x = x.reshape(-1)
         # if seed is 0, no permutations
         if self.seed != 0:
             self.g_cpu.manual_seed(self.seed)
             perm = torch.randperm(x.numel(), generator=self.g_cpu).long()
             x = x[perm]
-        return x.view(shape)
+        return x.reshape(shape)
