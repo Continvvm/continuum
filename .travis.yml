@@ -6,7 +6,7 @@ install:
   - pip3 install -r requirements.txt
 
 script:
-  - pytest tests/
+  - pytest tests/ -m 'not slow'
 
 after_sucess:
   coveralls
