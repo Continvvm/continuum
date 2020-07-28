@@ -24,11 +24,27 @@ def test_split_train_val(val_split, nb_val):
     assert len(train_set) + len(val_set) == len(base_set)
 
 
-def test_rand_samples():
+@pytest.mark.parametrize("nb_samples", [1, 5, 10])
+def test_rand_samples(nb_samples):
     x = np.ones((10, 2, 2, 3))
     y = np.ones((10,))
     t = np.ones((10,))
 
     base_set = TaskSet(x, y, t, None)
 
-    base_set.rand_samples(nb_samples=5)
+    base_set.rand_samples(nb_samples=nb_samples)
+
+
+@pytest.mark.parametrize("nb_samples", [1, 5, 10])
+def test_get_raw_samples_from_ind(nb_samples):
+    x = np.ones((10, 2, 2, 3))
+    y = np.ones((10,))
+    t = np.ones((10,))
+
+    base_set = TaskSet(x, y, t, None)
+
+    data, y_, t_ = base_set.get_raw_samples_from_ind(indexes=range(nb_samples))
+
+    assert (x[:nb_samples] == data).all()
+    assert (y[:nb_samples] == y_).all()
+    assert (t[:nb_samples] == t_).all()
