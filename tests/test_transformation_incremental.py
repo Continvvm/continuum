@@ -38,7 +38,7 @@ def test_init(numpy_data):
 @pytest.mark.xfail
 def test_init_fail(numpy_data):
     train, test = numpy_data
-    dummy = TransformationIncremental(*train, *test)
+    dummy = TransformationIncremental(*train)
 
     Trsf_0 = []
     Trsf_1 = [transforms.RandomAffine(degrees=[40, 50])]
@@ -48,3 +48,11 @@ def test_init_fail(numpy_data):
 
     # the wrong number of task is set
     clloader = TransformationIncremental(cl_dataset=dummy, nb_tasks=2, incremental_transformations=list_transf)
+
+@pytest.mark.xfail
+def test_init_fail2(numpy_data):
+    train, test = numpy_data
+    dummy = TransformationIncremental(*train)
+
+    # No transformation is set
+    clloader = TransformationIncremental(cl_dataset=dummy, nb_tasks=3)

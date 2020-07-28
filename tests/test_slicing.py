@@ -37,7 +37,7 @@ def gen_data():
 ])
 def test_slicing_nc(index, classes):
     train, test = gen_data()
-    dummy = InMemoryDataset(*train, *test)
+    dummy = InMemoryDataset(*train)
     clloader = ClassIncremental(dummy, increment=2)
     dataset = clloader[index]
     targets = np.sort(np.unique(dataset._y))

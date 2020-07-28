@@ -28,6 +28,11 @@ Test the initialization with three tasks
 '''
 def test_init(numpy_data):
     train, test = numpy_data
-    dummy = InMemoryDatasetTest(*train, *test)
+    dummy = InMemoryDatasetTest(*train)
     clloader = Permutations(cl_dataset=dummy, nb_tasks=3, seed=0)
+
+
+    for task_id, train_dataset in enumerate(clloader):
+        assert task_id < 3
+        continue
 

@@ -42,3 +42,20 @@ def test_init(numpy_data):
     for task_id, train_dataset in enumerate(clloader):
         continue
 
+
+@pytest.mark.xfail
+def test_fail_init(numpy_data):
+    train, test = numpy_data
+    dummy = InMemoryDatasetTest(*train)
+
+    Trsf_0 = 2
+    Trsf_1 = (15,20,25) # non sens
+    Trsf_2 = 45
+
+    list_degrees = [Trsf_0, Trsf_1, Trsf_2]
+
+    clloader = Rotations(cl_dataset=dummy, nb_tasks=3, list_degrees=list_degrees)
+
+
+    for task_id, train_dataset in enumerate(clloader):
+        continue
