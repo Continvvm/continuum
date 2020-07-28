@@ -13,7 +13,7 @@ from continuum import TaskSet, split_train_val
                              (1.0, 10)
                          ])
 def test_split_train_val(val_split, nb_val):
-    x = np.ones((10, 2, 2, 3))
+    x = np.random.rand(10, 2, 2, 3)
     y = np.ones((10,))
     t = np.ones((10,))
 
