@@ -132,6 +132,9 @@ class TaskSet(TorchDataset):
         if self.trsf is not None:
             img = self.trsf(img)
 
+        # we impose output data to be Tensor
+        img = transforms.ToTensor()(img)
+
         return img, y, t
 
     def get_image(self, index):
