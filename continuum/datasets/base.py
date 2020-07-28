@@ -130,9 +130,6 @@ class ImageFolderDataset(_ContinuumDataset):
     def data_type(self) -> str:
         return "image_path"
 
-    def _download(self):
-        pass
-
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         return self._format(self.dataset.imgs)
 
