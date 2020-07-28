@@ -20,7 +20,10 @@ pytest -x
 pytest test_mod.py::test_func
 
 # run slow tests
-python pytest -m slow
+pytest tests/ -m slow
+
+# run not slow tests
+pytest tests/  -m 'not slow'
 
 # get coverage
 python pytest --cov=. tests/
