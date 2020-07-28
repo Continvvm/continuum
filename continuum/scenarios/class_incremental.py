@@ -10,36 +10,32 @@ from continuum.scenarios import _BaseCLLoader
 class ClassIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
 
+    Scenario: Each new tasks bring new classes only
+
     :param cl_dataset: A continual dataset.
     :param nb_tasks: The scenario number of tasks
     :param increment: Either number of classes per task, or a list specifying for
                       every task the amount of new classes.
     :param initial_increment: A different task size applied only for the first task.
                               Desactivated if `increment` is a list.
-    :param train_transformations: A list of data augmentation applied to the train set.
-    :param common_transformations: A list of transformations applied to both the
-                                   the train set and the test set. i.e. normalization,
-                                   resizing, etc.
+    :param base_transformations: A list of transformations applied to all tasks
     :param class_order: An optional custom class order, used for NC.
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-        nb_tasks: int = 0,
-        increment: Union[List[int], int] = 0,
-        initial_increment: int = 0,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
-        train=True,
-        class_order=None
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: int = 0,
+            increment: Union[List[int], int] = 0,
+            initial_increment: int = 0,
+            base_transformations: List[Callable] = None,
+            class_order=None
     ) -> None:
-        super().__init__(
+
+        super(ClassIncremental, self).__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
-            train_transformations=train_transformations,
-            common_transformations=common_transformations,
-            train=train
+            base_transformations=base_transformations
         )
 
         self.increment = increment
@@ -49,7 +45,8 @@ class ClassIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        x, y, _ = self.cl_dataset.init(train=self.train)
+
+        x, y, _ = self.cl_dataset.get_data()
         unique_classes = np.unique(y)
 
         self.class_order = self.class_order or self.cl_dataset.class_order or list(
@@ -84,7 +81,7 @@ class ClassIncremental(_BaseCLLoader):
         return len(np.unique(task_ids))
 
     def _set_task_labels(self, y: np.ndarray) -> np.ndarray:
-        """For each data point, defines a task associated with the data
+        """For each data point, defines a task associated with the data.
 
         :param y: label tensor
         :param increments: increments contains information about classes per tasks
@@ -101,10 +98,15 @@ class ClassIncremental(_BaseCLLoader):
         return t
 
     def _define_increments(
-        self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
+            self,
+            increment: Union[List[int], int],
+            initial_increment: int,
+            unique_classes: List[int]
     ) -> List[int]:
+
         if isinstance(increment, list):
-            # Check if the total number of classes is compatible between increment list and self.nb_classes
+            # Check if the total number of classes is compatible
+            # with increment list and self.nb_classes
             if not sum(increment) == len(unique_classes):
                 raise Exception("The increment list is not compatible with the number of classes")
 

@@ -15,37 +15,28 @@ class InstanceIncremental(_BaseCLLoader):
     :param cl_dataset: A continual dataset.
     :param nb_tasks: The desired number of tasks. If left to 0, it will try to use
                      the dataset's default number of tasks.
-    :param train_transformations: A list of data augmentation applied to the train set.
-    :param common_transformations: A list of transformations applied to both the
-                                   the train set and the test set. i.e. normalization,
-                                   resizing, etc.
+    :param base_transformations: List of transformation to apply to all tasks.
     :param random_seed: A random seed which can be used if the task ids are randomly
                         generated.
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-        nb_tasks: int = 0,
-        train_transformations: List[Callable] = None,
-        common_transformations: List[Callable] = None,
-        train: bool = True,
-        random_seed: int = 1
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: int = 0,
+            base_transformations: List[Callable] = None,
+            random_seed: int = 1
     ):
-        super().__init__(
-            cl_dataset=cl_dataset,
-            nb_tasks=nb_tasks,
-            train_transformations=train_transformations,
-            common_transformations=common_transformations,
-            train=train
-        )
+        super(InstanceIncremental, self).__init__(cl_dataset=cl_dataset,
+                                                  nb_tasks=nb_tasks,
+                                                  base_transformations=base_transformations)
 
         self._random_state = np.random.RandomState(seed=random_seed)
 
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        x, y, t = self.cl_dataset.init(train=self.train)
+        x, y, t = self.cl_dataset.get_data()
 
         if t is None and nb_tasks <= 0:
             raise ValueError(f"You need to specify a number of tasks > 0, not {nb_tasks}.")

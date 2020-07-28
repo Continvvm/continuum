@@ -9,7 +9,7 @@ from continuum.scenarios import ClassIncremental
 class InMemoryDatasetTest(InMemoryDataset):
 
     def __init__(self, *args, class_order=None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(InMemoryDatasetTest, self).__init__(*args, **kwargs)
         self._class_order = class_order
 
     @property
@@ -45,7 +45,7 @@ def numpy_data():
 ])
 def test_increments(numpy_data, classes, default_class_order, class_order):
     train, test = numpy_data
-    dummy = InMemoryDatasetTest(*train, *test, class_order=default_class_order)
+    dummy = InMemoryDatasetTest(*train, class_order=default_class_order)
     clloader = ClassIncremental(dummy, 2, 5, class_order=class_order)
 
     gt_new_targets = [np.arange(5), np.arange(5) + 5]
@@ -53,14 +53,14 @@ def test_increments(numpy_data, classes, default_class_order, class_order):
         for _ in DataLoader(train_dataset):
             pass
 
-        unique_classes = np.sort(np.unique(train_dataset.x))
+        unique_classes = np.sort(np.unique(train_dataset._x))
         ans = (unique_classes == np.array(classes[task_id]))
         assert ans.all(), (task_id, unique_classes, np.array(classes[task_id]))
 
-        original_targets = np.sort(np.unique(clloader.get_original_targets(train_dataset.y)))
+        original_targets = np.sort(np.unique(clloader.get_original_targets(train_dataset._y)))
         ans = (original_targets == np.array(classes[task_id]))
         assert ans.all(), (task_id, original_targets, np.array(classes[task_id]))
 
-        new_targets = np.sort(np.unique(train_dataset.y))
+        new_targets = np.sort(np.unique(train_dataset._y))
         ans = (new_targets == gt_new_targets[task_id])
         assert ans.all(), (task_id, new_targets, gt_new_targets[task_id])

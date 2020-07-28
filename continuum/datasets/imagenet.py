@@ -15,7 +15,7 @@ class ImageNet1000(ImageFolderDataset):
     """
 
     def _download(self):
-        if not os.path.exists(self.train_folder) or not os.path.exists(self.test_folder):
+        if not os.path.exists(self.data_folder):
             raise IOError(
                 "You must download yourself the ImageNet dataset."
                 " Please go to http://www.image-net.org/challenges/LSVRC/2012/downloads and"
@@ -38,48 +38,47 @@ class ImageNet100(ImageNet1000):
     test_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/val_100.txt"
 
     def __init__(
-        self,
-        *args,
-        train_subset: Union[Tuple[np.array, np.array], str, None] = None,
-        test_subset: Union[Tuple[np.array, np.array], str, None] = None,
-        **kwargs
+            self,
+            *args,
+            data_subset: Union[Tuple[np.array, np.array], str, None] = None,
+            **kwargs
     ):
-        self.train_subset = train_subset
-        self.test_subset = test_subset
-
-        super().__init__(*args, **kwargs)
+        self.data_subset = data_subset
+        super(ImageNet100, self).__init__(*args, **kwargs)
 
     def _download(self):
-        super()._download()
+        super(ImageNet100, self)._download()
 
-        if self.train_subset is None:
-            self.train_subset = os.path.join(self.train_folder, "train_100.txt")
-            download(self.train_subset_url, self.train_folder)
-        if self.test_subset is None:
-            self.test_subset = os.path.join(self.test_folder, "val_100.txt")
-            download(self.test_subset_url, self.test_folder)
+        filename = "val_100.txt"
+        self.subset_url = test_subset_url
+        if self.train:
+            filename = "train_100.txt"
+            self.subset_url = train_subset_url
+
+        if self.data_subset is None:
+            self.data_subset = os.path.join(self.data_folder, filename)
+            download(self.subset_url, self.data_folder)
 
     def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
         data = self._parse_subset(
-            self.train_subset if train else self.test_subset, train=train
+            self.data_subset, train=train
         )  # type: ignore
 
         return (*data, None)
 
     def _parse_subset(
-        self,
-        subset: Union[Tuple[np.array, np.array], str, None],
-        train: bool = True
+            self,
+            subset: Union[Tuple[np.array, np.array], str, None],
+            train: bool = True
     ) -> Tuple[np.array, np.array]:
         if isinstance(subset, str):
             x, y = [], []
-            folder = self.train_folder if train else self.test_folder
 
             with open(subset, "r") as f:
                 for line in f:
                     split_line = line.split(" ")
                     path = "/".join(split_line[0].strip().split("/")[1:])
-                    x.append(os.path.join(folder, path))
+                    x.append(os.path.join(self.data_folder, path))
                     y.append(int(split_line[1].strip()))
             x = np.array(x)
             y = np.array(y)

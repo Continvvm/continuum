@@ -1,72 +1,101 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
-from skimage.transform import resize
-
-
-def sample(x, y, nb_per_class=5):
-    sampled_x, sampled_y = [], []
-
-    for class_id in np.unique(y):
-        indexes = np.where(y == class_id)[0][:nb_per_class]
-        sampled_x.append(x[indexes])
-        sampled_y.append(y[indexes])
-    sampled_x = np.concatenate(sampled_x)
-    sampled_y = np.concatenate(sampled_y)
-
-    return sampled_x, sampled_y
+import os
+import imageio
 
 
-def plot(dataset, title="", path=None, nb_per_class=5, shape=None):
-    x, _ = sample(dataset.x, dataset.y, nb_per_class=nb_per_class)
-    if not dataset.open_image and x.shape[1] == 1:
-        x = x.squeeze(1)
+def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
+    batch, _, _ = dataset.rand_samples(nb_samples)
+    filename = os.path.join(path, title)
 
-    big_image = None
-    cmap = None
-    for class_id in range(dataset.nb_classes):
-        for sample_id in range(nb_per_class):
-            if dataset.open_image:
-                img = dataset.get_image(class_id * nb_per_class + sample_id)
-                img = np.asarray(img)
-            elif len(x.shape) == 3:  # Grayscale, no channel dimension
-                img = x[class_id * nb_per_class + sample_id]
-                cmap = "gray"
-            else:
-                img = x[class_id * nb_per_class + sample_id]
+    if shape is None:
+        shape = batch[0].shape
 
-            if big_image is None:
-                if shape is None:
-                    h = img.shape[0]
-                    w = img.shape[1]
-                else:
-                    h, w = shape
+    visualize_batch(batch, nb_samples, shape, filename)
 
-                if cmap == "gray":
-                    big_image = np.empty(
-                        (dataset.nb_classes * h, nb_per_class * w), dtype=img.dtype
-                    )
-                else:
-                    big_image = np.empty(
-                        (dataset.nb_classes * h, nb_per_class * w, 3), dtype="uint8"
-                    )
 
-            h_lo = class_id * w
-            h_hi = (class_id + 1) * w
-            w_lo = sample_id * h
-            w_hi = (sample_id + 1) * h
+def visualize_batch(batch, number, shape, path):
+    batch = batch.cpu().data
 
-            if shape is not None:
-                img = (255 * resize(img, shape)).astype("uint8")
+    image_frame_dim = int(np.floor(np.sqrt(number)))
 
-            big_image[h_lo:h_hi, w_lo:w_hi] = img
-
-    plt.imshow(big_image, cmap=cmap)
-    plt.xticks([])
-    plt.yticks([])
-    plt.title(title)
-
-    if path is None:
-        plt.show()
+    if shape[2] == 1:
+        data_np = batch.numpy().reshape(number, shape[0], shape[1], shape[2])
+        save_images(data_np[:image_frame_dim * image_frame_dim, :, :, :],
+                    [image_frame_dim, image_frame_dim],
+                    path)
+    elif shape[2] == 3:
+        data = batch.numpy().reshape(number, shape[2], shape[1], shape[0])
+        make_samples_batche(data[:number], number, path)
     else:
-        plt.savefig(path, bbox_inches='tight', pad_inches=0)
+        save_images(batch[:image_frame_dim * image_frame_dim, :, :, :],
+                    [image_frame_dim, image_frame_dim],
+                    path)
+
+
+def save_images(images, size, image_path):
+    return imsave(images, size, image_path)
+
+
+def imsave(images, size, path):
+    image = np.squeeze(merge(images, size))
+    image -= np.min(image)
+    image /= np.max(image) + 1e-12
+    image = 255 * image  # Now scale by 255
+    image = image.astype(np.uint8)
+    return imageio.imwrite(path, image)
+
+
+def merge(images, size):
+    img = None
+    h, w = images.shape[1], images.shape[2]
+    if (images.shape[3] in (3, 4)):
+        c = images.shape[3]
+        img = np.zeros((h * size[0], w * size[1], c))
+        for idx, image in enumerate(images):
+            i = idx % size[1]
+            j = idx // size[1]
+            img[j * h:j * h + h, i * w:i * w + w, :] = image
+    elif images.shape[3] == 1:
+        img = np.zeros((h * size[0], w * size[1]))
+        for idx, image in enumerate(images):
+            i = idx % size[1]
+            j = idx // size[1]
+            img[j * h:j * h + h, i * w:i * w + w] = image[:, :, 0]
+    else:
+        raise ValueError('in merge(images,size) images parameter '
+                         'must have dimensions: HxW or HxWx3 or HxWx4')
+
+    return img
+
+
+def img_stretch(img):
+    img = img.astype(float)
+    img -= np.min(img)
+    img /= np.max(img) + 1e-12
+    return img
+
+
+def make_samples_batche(prediction, batch_size, filename_dest):
+    plt.figure()
+    batch_size_sqrt = int(np.sqrt(batch_size))
+    input_channel = prediction[0].shape[0]
+    input_dim = prediction[0].shape[1]
+    prediction = np.clip(prediction, 0, 1)
+    pred = np.rollaxis(prediction.reshape((batch_size_sqrt,
+                                           batch_size_sqrt,
+                                           input_channel,
+                                           input_dim, input_dim)),
+                       2,
+                       5)
+    pred = pred.swapaxes(2, 1)
+    pred = pred.reshape((batch_size_sqrt * input_dim, batch_size_sqrt * input_dim, input_channel))
+    fig, ax = plt.subplots(figsize=(batch_size_sqrt, batch_size_sqrt))
+    ax.axis('off')
+    ax.imshow(img_stretch(pred), interpolation='nearest')
+    ax.grid()
+    ax.set_xticks([])
+    ax.set_yticks([])
+    fig.savefig(filename_dest, bbox_inches='tight', pad_inches=0)
+    plt.close(fig)
+    plt.close()

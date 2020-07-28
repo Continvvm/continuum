@@ -3,6 +3,7 @@ from continuum.scenarios import _BaseCLLoader
 
 class DataIncremental(_BaseCLLoader):
     """Continual Loader, generating datasets for the consecutive tasks.
+
     Scenario: Classes and instances changes and may reappear (NIC scenario)
 
     :param cl_dataset: A continual dataset.

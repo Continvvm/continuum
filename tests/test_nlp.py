@@ -36,9 +36,8 @@ def test_nlp_class_incremental(numpy_data):
     train, test = numpy_data
 
     x_train, y_train, t_train = train
-    x_test, y_test, t_test = test
 
-    dummy = InMemoryDataset(x_train, y_train, x_test, y_test, data_type="text")
+    dummy = InMemoryDataset(x_train, y_train, data_type="text")
 
     clloader = ClassIncremental(dummy, increment=2)
 
@@ -53,10 +52,9 @@ def test_nlp_instance_incremental(numpy_data):
     train, test = numpy_data
 
     x_train, y_train, t_train = train
-    x_test, y_test, t_test = test
 
     dummy = InMemoryDataset(
-        x_train, y_train, x_test, y_test, t_train=t_train, t_test=t_test, data_type="text"
+        x_train, y_train, t_=t_train, data_type="text"
     )
 
     clloader = InstanceIncremental(dummy)

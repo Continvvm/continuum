@@ -1,6 +1,6 @@
 """Continuum lib.
 
-Made by Arthur Douillard and Timothée Lesort.
+Made by Arthur Douillard and Timothee Lesort.
 
 The goal of this library is to provide clean and simple to use utilities for
 Continual Learning.
@@ -10,4 +10,4 @@ Continual Learning.
 from continuum import datasets
 from continuum.scenarios import *
 from continuum.task_set import TaskSet, split_train_val
-from continuum.viz import plot
+from continuum.viz import plot_samples
