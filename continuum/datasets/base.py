@@ -90,6 +90,8 @@ class InMemoryDataset(_ContinuumDataset):
             **kwargs
     ):
         self.data = (x_, y_, t_)
+
+        assert data_type in ["image_array", "path_array", "text"], print(data_type)
         self._data_type = data_type
         super(InMemoryDataset, self).__init__(**kwargs)
 
