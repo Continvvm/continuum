@@ -3,18 +3,18 @@ import pytest
 from continuum.scenarios import TransformationIncremental
 from continuum.datasets import InMemoryDataset
 from torchvision.transforms import transforms
+from PIL import Image
+import torch
 
 @pytest.fixture
 def numpy_data():
-
     nb_classes = 6
     nb_data = 10
 
     x_train = []
     y_train = []
-    for i in range(nb_classes):
-        x_train.append(np.expand_dims(np.array([np.eye(5, dtype=np.uint8)]*nb_data), axis=-1) * i)
-        y_train.append(np.ones(nb_data) * i)
+    x_train.append(np.array([np.random.randint(100, size=(2, 2, 3)).astype(dtype=np.uint8)] * nb_data))
+    y_train.append(np.random.randint(nb_classes, size=(nb_data)))
     x_train = np.concatenate(x_train)
     y_train = np.concatenate(y_train)
 
@@ -36,20 +36,29 @@ def test_init(numpy_data):
     continuum = TransformationIncremental(cl_dataset=dummy, nb_tasks=3, incremental_transformations=list_transf)
 
     ref_data = None
+    raw_ref_data = None
     for task_id, train_dataset in enumerate(continuum):
 
-        samples = train_dataset.rand_samples(1)
-
-        print("yooooooooooooooooooooooo")
-        print(samples.shape)
+        samples, _, _ = train_dataset.rand_samples(10)
+        # we need raw data to apply same transformation as the TransformationIncremental class
+        raw_samples, _, _ = train_dataset.get_raw_samples_from_ind(range(10))
 
         if task_id == 0:
             ref_data = samples
+            raw_ref_data = raw_samples
         else:
-            assert not (ref_data==samples).all()
+            # we verify that data has changed
+            assert not torch.all(ref_data.eq(samples))
 
-            trsf_data = list_transf[task_id](ref_data)
-            assert not (ref_data==samples).all()
+            assert (raw_samples==raw_ref_data).all() # raw data should be the same in this scenario
+
+            # we test transformation on one data point and verify if it is applied
+            trsf = list_transf[task_id][0]
+            raw_sample = Image.fromarray(raw_ref_data[0].astype("uint8"))
+            trsf_data = trsf(raw_sample)
+            trsf_data = transforms.ToTensor()(trsf_data)
+
+            assert torch.all(trsf_data.eq(samples[0]))
 
 
 
@@ -58,7 +67,7 @@ Test the initialization with three tasks with degree range
 '''
 def test_init_range(numpy_data):
     x, y = numpy_data
-    dummy = InMemoryDataset(x, y, train='train')
+    dummy = InMemoryDataset(x, y)
 
     Trsf_0 = []
     Trsf_1 = [transforms.RandomAffine(degrees=[40, 50])]
@@ -68,10 +77,9 @@ def test_init_range(numpy_data):
 
     continuum = TransformationIncremental(cl_dataset=dummy, nb_tasks=3, incremental_transformations=list_transf)
 
-@pytest.mark.xfail
 def test_init_fail(numpy_data):
-    train, test = numpy_data
-    dummy = TransformationIncremental(*train)
+    train = numpy_data
+    dummy = InMemoryDataset(*train)
 
     Trsf_0 = []
     Trsf_1 = [transforms.RandomAffine(degrees=[40, 50])]
@@ -79,13 +87,13 @@ def test_init_fail(numpy_data):
 
     list_transf = [Trsf_0, Trsf_1, Trsf_2]
 
-    # the wrong number of task is set
-    clloader = TransformationIncremental(cl_dataset=dummy, nb_tasks=2, incremental_transformations=list_transf)
+    with pytest.raises(ValueError):
+        TransformationIncremental(cl_dataset=dummy, nb_tasks=2, incremental_transformations=list_transf)
 
-@pytest.mark.xfail
 def test_init_fail2(numpy_data):
-    train, test = numpy_data
-    dummy = TransformationIncremental(*train)
+    train = numpy_data
+    dummy = InMemoryDataset(*train)
 
     # No transformation is set
-    clloader = TransformationIncremental(cl_dataset=dummy, nb_tasks=3)
+    with pytest.raises(TypeError):
+        clloader = TransformationIncremental(cl_dataset=dummy, nb_tasks=3)
