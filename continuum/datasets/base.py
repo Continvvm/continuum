@@ -86,11 +86,12 @@ class InMemoryDataset(_ContinuumDataset):
             t_: Union[None, np.ndarray] = None,
             **kwargs
     ):
-        self.data = (x_, y_, t_)
 
+        super(InMemoryDataset, self).__init__(**kwargs)
+        
+        self.data = (x_, y_, t_)
         assert data_type in ["image_array", "path_array", "text"], print(data_type)
         self._data_type = data_type
-        super(InMemoryDataset, self).__init__(**kwargs)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data
