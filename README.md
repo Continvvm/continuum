@@ -78,10 +78,9 @@ Furthermore some "Meta"-datasets are available:
 **InMemoryDataset**, for in-memory numpy array:
 ```python
 x_train, y_train = gen_numpy_array()
-x_test, y_test = gen_numpy_array()
 
 clloader = CLLoader(
-    InMemoryDataset(x_train, y_train, x_test, y_test),
+    InMemoryDataset(x_train, y_train),
     increment=10,
 )
 ```
