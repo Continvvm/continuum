@@ -41,11 +41,11 @@ for task_id, train_dataset in enumerate(clloader):
 
 ### Supported Scenarios
 
-|Name | Acronym | Supported |
+|Name | Acronym | Supported | Scenario |
 |:----|:---|:---:|
-| **New Instances** | NI | :white_check_mark: |
-| **New Classes** | NC | :white_check_mark: |
-| **New Instances & Classes** | NIC | :white_check_mark: |
+| **New Instances** | NI | :white_check_mark: | [Instances Incremental](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#)|
+| **New Classes** | NC | :white_check_mark: |[Classes Incremental](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#instance-incremental)|
+| **New Instances & Classes** | NIC | :white_check_mark: | [Data Incremental](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#)|
 
 ### Supported Datasets:
 
@@ -120,57 +120,6 @@ clloader = CLLoader(
 Some papers use a subset, called ImageNet100 or ImageNetSubset. They are automatically
 downloaded for you, but you can also provide your own.
 
-
-### Continual Loader
-
-#### Class Incremental
-
-The Continual Loader `ClassIncremental` loads the data and batch it in several
-tasks, each with new classes. See there some example arguments:
-
-```python
-from continuum import ClassIncremental
-
-clloader = ClassIncremental(
-    my_continual_dataset,
-    increment=10,
-    initial_increment=2,
-    train_transformations=[transforms.RandomHorizontalFlip()],
-    common_transformations=[
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-    ],
-    train=True
-)
-```
-
-Here the first task is made of 2 classes, then all following tasks of 10 classes. You can have a more finegrained increment by providing a list of `increment=[2, 10, 5, 10]`.
-
-The `train_transformations` is applied only on the training data, while the `common_transformations` on both the training and testing data.
-
-If you want a clloader for the test data, you'll need to create a new instance with `train=False`.
-
-#### Instance Incremental
-
-Tasks can also be made of new instances. By default the samples images are randomly
-shuffled in different tasks, but some datasets provide, in addition of the data `x` and labels `y`,
-a task id `t` per sample. For example `MultiNLI`, a NLP dataset, has 5 classes but
-with 10 different domains. Each domain represents a new task.
-
-```python
-from continuum import InstanceIncremental
-from continuum.datasets import MultiNLI
-
-clloader = InstanceIncremental(
-    MultiNLI("/my/path/where/to/download"),
-    train=True
-)
-```
-
-#### New Class & Instance
-
-NIC settting is a special case of NI setting. For now, only the CORe50 dataset
-supports this setting.
 
 ### Indexing
 
