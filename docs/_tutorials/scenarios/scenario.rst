@@ -5,17 +5,22 @@ In Continuum, we implemented the four main types of scenarios used in the commun
 
 For each scenario, there is a finite set of tasks and the goal is to learn the tasks one by one and to be able to generalize at the end to a test set composed of data from all tasks.
 
-For clear evalutaion purpose, the data from each tasks can not be found in another tasks. The idea is to be able to assess precisely what the CL algorithms is able to remember or not. Those benchmarks purpose is not to mimic real life scenarios but to evaluate properly algorithms capabilities.
+For clear evalutaion purpose, the data from each tasks can not be found in another tasks. The idea is to be able to assess precisely what the CL algorithms is able to remember or not. Those benchmarks purpose is not to mimic real-life scenarios but to evaluate properly algorithms capabilities.
 
 Class Incremental
 -----------------
 
-*In short:* Each new task bring instances from new classes only.
+*In short:* 
 
-*Aim:* Evaluate the capability of an algorithms to learn concept sequentially, i.e. create representaion able to distinguish concepts and find the right decision boundaries without access to all past data.
+Each new task bring instances from new classes only.
+
+*Aim:* 
+
+Evaluate the capability of an algorithms to learn concept sequentially, i.e. create representaion able to distinguish concepts and find the right decision boundaries without access to all past data.
 
 *Some Details:*
-Class incremental scenarios is a continual learning scenarios specific to classification. The continuum of data is composed of several tasks. Each task contains class(es) that is/are specific to this task. One class can not be in several tasks.
+ 
+The continuum of data is composed of several tasks. Each task contains class(es) that is/are specific to this task. One class can not be in several tasks.
 
 One example, MNIST class incremental with five balanced tasks, MNIST has 10 classes then:
 - task 0 contains data points labelled as 0 and 1
@@ -46,4 +51,9 @@ New Class and Instance Incremental
 *In short:* Each new task bring both instances from new classes and new instances from known classes.
 
 *Aim:* Evaluate the capability of an algorithms to both create new representation and improve existing ones.
+
+
+
+Adding Your Own Scenarios
+----------------------------------
 
