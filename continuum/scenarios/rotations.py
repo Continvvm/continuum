@@ -13,7 +13,7 @@ class Rotations(TransformationIncremental):
               For each task data is rotated from a certain angle.
 
     :param cl_dataset: A continual dataset.
-    :param nb_tasks: number of tasks in the continuum.
+    :param nb_tasks: The scenario's number of tasks.
     :param list_degrees: list of rotation in degree (int) or list of range. e.g. (0, (40,45), 90).
     :param base_transformations: Preprocessing transformation to applied to data before rotation.
     """

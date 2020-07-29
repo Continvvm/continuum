@@ -15,8 +15,8 @@ class Permutations(TransformationIncremental):
     Each task get a specific permutation, such as all tasks are different.
 
     :param cl_dataset: A continual dataset.
-    :param nb_tasks: number of tasks in the continuum.
-    :param base_transformations: List of transformation to apply to all tasks.
+    :param nb_tasks: The scenario's number of tasks.
+    :param base_transformations: List of transformations to apply to all tasks.
     :param seed: initialization seed for the permutations.
     """
 

@@ -13,12 +13,13 @@ class ClassIncremental(_BaseCLLoader):
     Scenario: Each new tasks bring new classes only
 
     :param cl_dataset: A continual dataset.
-    :param nb_tasks: The scenario number of tasks
-    :param increment: Either number of classes per task, or a list specifying for
-                      every task the amount of new classes.
+    :param nb_tasks: The scenario number of tasks.
+    :param increment: Either number of classes per task (e.g. increment=2),
+                    or a list specifying for every task the amount of new classes
+                     (e.g. increment=[5,1,1,1,1]).
     :param initial_increment: A different task size applied only for the first task.
                               Desactivated if `increment` is a list.
-    :param base_transformations: A list of transformations applied to all tasks
+    :param base_transformations: A list of transformations applied to all tasks.
     :param class_order: An optional custom class order, used for NC.
     """
 

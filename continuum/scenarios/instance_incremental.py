@@ -8,16 +8,14 @@ from continuum.scenarios import _BaseCLLoader
 
 
 class InstanceIncremental(_BaseCLLoader):
-    """Continual Loader, generating datasets for the consecutive tasks.
+    """Continual Loader, generating instance incremental consecutive tasks.
 
     Scenario: Classes are always the same but instances change (NI scenario)
 
     :param cl_dataset: A continual dataset.
-    :param nb_tasks: The desired number of tasks. If left to 0, it will try to use
-                     the dataset's default number of tasks.
-    :param base_transformations: List of transformation to apply to all tasks.
-    :param random_seed: A random seed which can be used if the task ids are randomly
-                        generated.
+    :param nb_tasks: The scenario number of tasks.
+    :param base_transformations: List of transformations to apply to all tasks.
+    :param random_seed: A random seed to init random processes.
     """
 
     def __init__(
@@ -34,6 +32,7 @@ class InstanceIncremental(_BaseCLLoader):
         self._random_state = np.random.RandomState(seed=random_seed)
 
         self._nb_tasks = self._setup(nb_tasks)
+
 
     def _setup(self, nb_tasks: int) -> int:
         x, y, t = self.cl_dataset.get_data()
