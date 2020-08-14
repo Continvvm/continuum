@@ -52,8 +52,8 @@ class TransformationIncremental(InstanceIncremental):
         return transforms.Compose(self.inc_trsf[task_index] + self.trsf.transforms)
 
     def update_task_indexes(self, task_index):
-        new_t_ = np.ones(len(self.dataset[1])) * task_index
-        self.dataset = (self.dataset[0], self.dataset[1], new_t_)
+        new_t = np.ones(len(self.dataset[1])) * task_index
+        self.dataset = (self.dataset[0], self.dataset[1], new_t)
 
     def __getitem__(self, task_index):
         """Returns a task by its unique index.
