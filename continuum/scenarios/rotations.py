@@ -27,7 +27,8 @@ class Rotations(TransformationIncremental):
     ):
 
         if len(list_degrees) != nb_tasks:
-            raise ValueError("The nb of tasks != with number of angles tuples set in the list")
+            raise ValueError(f"The nb of tasks ({nb_tasks}) != with number of angles tuples ({len(list_degrees)})"
+                             f" set in the list")
 
         list_transformations = []
         min, max = None, None
@@ -40,8 +41,8 @@ class Rotations(TransformationIncremental):
             else:
                 # list_degrees should contain list of rotations with:
                 # only one angle or with (min,max)
-                raise ValueError("list_degrees is wrong [{}]: list_degrees should contain list of rotations with"
-                                 "only one angle or with (min,max)".format(list_degrees))
+                raise ValueError(f"list_degrees is wrong ({list_degrees}): list_degrees should contain list of rotations with"
+                                 "only one angle or with (min,max)")
 
             list_transformations.append([transforms.RandomAffine(degrees=[min, max])])
 
