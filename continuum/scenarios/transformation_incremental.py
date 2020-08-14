@@ -1,12 +1,11 @@
 from typing import Callable, List
 
 import numpy as np
+from torchvision import transforms
 
-from continuum.task_set import TaskSet
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import InstanceIncremental
-
-from torchvision import transforms
+from continuum.task_set import TaskSet
 
 
 class TransformationIncremental(InstanceIncremental):
@@ -24,16 +23,14 @@ class TransformationIncremental(InstanceIncremental):
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            nb_tasks: int,
-            incremental_transformations: List[List[Callable]],
-            base_transformations: List[Callable] = None
+        self,
+        cl_dataset: _ContinuumDataset,
+        nb_tasks: int,
+        incremental_transformations: List[List[Callable]],
+        base_transformations: List[Callable] = None
     ):
         super().__init__(
-            cl_dataset=cl_dataset,
-            nb_tasks=nb_tasks,
-            base_transformations=base_transformations
+            cl_dataset=cl_dataset, nb_tasks=nb_tasks, base_transformations=base_transformations
         )
         if incremental_transformations is None:
             raise ValueError("For this scenario a list transformation should be set")
@@ -61,6 +58,15 @@ class TransformationIncremental(InstanceIncremental):
         :param task_index: The unique index of a task, between 0 and len(loader) - 1.
         :return: A train PyTorch's Datasets.
         """
+        if isinstance(task_index, slice):
+            raise ValueError(
+                "Incremental training based on transformations "
+                "does not support slice, please provide only integer."
+            )
+        elif task_index < 0:  # Support for negative index, e.g. -1 == last
+            while task_index < 0:
+                task_index += len(self)
+
         self.update_task_indexes(task_index)
         train = self._select_data_by_task(task_index)
         trsf = self.get_task_transformation(task_index)
