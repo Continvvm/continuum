@@ -39,7 +39,7 @@ class Permutations(TransformationIncremental):
         for s_ in list_seed:
             list_transformations.append([PermutationTransform(s_.item())])
 
-        super(Permutations, self).__init__(cl_dataset=cl_dataset,
+        super().__init__(cl_dataset=cl_dataset,
                                            nb_tasks=nb_tasks,
                                            incremental_transformations=list_transformations,
                                            base_transformations=base_transformations)

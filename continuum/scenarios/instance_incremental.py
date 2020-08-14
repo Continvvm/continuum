@@ -25,7 +25,7 @@ class InstanceIncremental(_BaseCLLoader):
             base_transformations: List[Callable] = None,
             random_seed: int = 1
     ):
-        super(InstanceIncremental, self).__init__(cl_dataset=cl_dataset,
+        super().__init__(cl_dataset=cl_dataset,
                                                   nb_tasks=nb_tasks,
                                                   base_transformations=base_transformations)
 

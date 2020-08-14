@@ -9,7 +9,7 @@ from continuum.scenarios import ClassIncremental
 class InMemoryDatasetTest(InMemoryDataset):
 
     def __init__(self, *args, class_order=None, **kwargs):
-        super(InMemoryDatasetTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._class_order = class_order
 
     @property

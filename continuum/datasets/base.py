@@ -85,7 +85,7 @@ class InMemoryDataset(_ContinuumDataset):
             data_type: str = "image_array",
             **kwargs
     ):
-        super(InMemoryDataset, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         assert x_.shape[0] == y_.shape[0]
         self.data = (x_, y_, t_)
@@ -113,7 +113,7 @@ class ImageFolderDataset(_ContinuumDataset):
     """
 
     def __init__(self, data_folder: str, train: bool, download: bool = True, **kwargs):
-        super(ImageFolderDataset, self).__init__(download=download, **kwargs)
+        super().__init__(download=download, **kwargs)
 
         self.data_folder = data_folder
         self.dataset = torchdata.ImageFolder(data_folder)

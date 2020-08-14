@@ -30,7 +30,7 @@ class TransformationIncremental(InstanceIncremental):
             incremental_transformations: List[List[Callable]],
             base_transformations: List[Callable] = None
     ):
-        super(TransformationIncremental, self).__init__(
+        super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
             base_transformations=base_transformations

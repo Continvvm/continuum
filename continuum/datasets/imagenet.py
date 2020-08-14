@@ -44,10 +44,10 @@ class ImageNet100(ImageNet1000):
             **kwargs
     ):
         self.data_subset = data_subset
-        super(ImageNet100, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _download(self):
-        super(ImageNet100, self)._download()
+        super()._download()
 
         filename = "val_100.txt"
         self.subset_url = test_subset_url

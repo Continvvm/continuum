@@ -33,7 +33,7 @@ class ClassIncremental(_BaseCLLoader):
             class_order=None
     ) -> None:
 
-        super(ClassIncremental, self).__init__(
+        super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
             base_transformations=base_transformations
