@@ -1,9 +1,9 @@
 from typing import Callable, List, Tuple, Union
 
+from torchvision import transforms
+
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import TransformationIncremental
-
-from torchvision import transforms
 
 
 class Rotations(TransformationIncremental):
@@ -19,36 +19,44 @@ class Rotations(TransformationIncremental):
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            nb_tasks: int,
-            list_degrees: Union[List[Tuple], List[int]],
-            base_transformations: List[Callable] = None
+        self,
+        cl_dataset: _ContinuumDataset,
+        list_degrees: Union[List[Tuple], List[int]],
+        nb_tasks: Union[int, None] = None,
+        base_transformations: List[Callable] = None
     ):
 
-        if len(list_degrees) != nb_tasks:
-            raise ValueError(f"The nb of tasks ({nb_tasks}) != with number of angles tuples ({len(list_degrees)})"
-                             f" set in the list")
+        if nb_tasks is not None and len(list_degrees) != nb_tasks:
+            raise ValueError(
+                f"The nb of tasks ({nb_tasks}) != number of angles "
+                f"tuples ({len(list_degrees)}) set in the list"
+            )
 
-        list_transformations = []
-        min, max = None, None
-        for tuple_ in list_degrees:
-            if isinstance(tuple_, int):
-                min = tuple_
-                max = tuple_
-            elif len(tuple_) == 2:
-                min, max = tuple_
-            else:
-                # list_degrees should contain list of rotations with:
-                # only one angle or with (min,max)
-                raise ValueError(f"list_degrees is wrong ({list_degrees}): list_degrees should contain list of rotations with"
-                                 "only one angle or with (min,max)")
-
-            list_transformations.append([transforms.RandomAffine(degrees=[min, max])])
+        trsfs = self._generate_transformations(list_degrees)
 
         super().__init__(
             cl_dataset=cl_dataset,
             nb_tasks=nb_tasks,
-            incremental_transformations=list_transformations,
+            incremental_transformations=trsfs,
             base_transformations=base_transformations
         )
+
+    def _generate_transformations(self, degrees):
+        trsfs = []
+        min_deg, max_deg = None, None
+
+        for deg in degrees:
+            if isinstance(deg, int):
+                min_deg, max_deg = deg, deg
+            elif len(deg) == 2:
+                min_deg, max_deg = deg
+            else:
+                raise ValueError(
+                    f"Invalid list of degrees ({degrees}). "
+                    "It should contain either integers (-deg, +deg) or "
+                    "tuples (range) of integers (deg_a, deg_b)."
+                )
+
+            trsfs.append([transforms.RandomAffine(degrees=[min_deg, max_deg])])
+
+        return trsfs
