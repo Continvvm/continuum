@@ -1,9 +1,10 @@
 import numpy as np
 import pytest
-from continuum.scenarios import Permutations
-from tests.test_classorder import InMemoryDatasetTest
 import torch
 from torchvision.transforms import transforms
+
+from continuum.scenarios import Permutations
+from tests.test_classorder import InMemoryDatasetTest
 
 
 @pytest.fixture
@@ -13,7 +14,9 @@ def numpy_data():
 
     x_train = []
     y_train = []
-    x_train.append(np.array([np.random.randint(100, size=(2, 2, 3)).astype(dtype=np.uint8)] * nb_data))
+    x_train.append(
+        np.array([np.random.randint(100, size=(2, 2, 3)).astype(dtype=np.uint8)] * nb_data)
+    )
     y_train.append(np.random.randint(nb_classes, size=(nb_data)))
     x_train = np.concatenate(x_train)
     y_train = np.concatenate(y_train)
@@ -49,8 +52,8 @@ def test_init(numpy_data, seed):
     for task_id, train_dataset in enumerate(clloader):
         assert task_id < n_tasks
 
-        samples, _, _ = train_dataset.rand_samples(10)
-        raw_samples, _, _ = train_dataset.get_raw_samples_from_ind(range(10))
+        samples, _, _ = train_dataset.get_random_samples(10)
+        raw_samples, _, _ = train_dataset.get_raw_samples(range(10))
 
         if task_id == 0:
             ref_data = samples

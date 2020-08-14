@@ -1,7 +1,7 @@
 from typing import Tuple, Union
 
-import torch
 import numpy as np
+import torch
 from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
@@ -20,12 +20,12 @@ class TaskSet(TorchDataset):
     """
 
     def __init__(
-            self,
-            x: np.ndarray,
-            y: np.ndarray,
-            t: np.ndarray,
-            trsf: transforms.Compose,
-            data_type: str = "image_array"
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        t: np.ndarray,
+        trsf: transforms.Compose,
+        data_type: str = "image_array"
     ):
 
         self._x, self._y, self._t = x, y, t
@@ -38,9 +38,7 @@ class TaskSet(TorchDataset):
         return len(np.unique(self._y))
 
     def add_memory(
-            self, x_memory: np.ndarray,
-            y_memory: np.ndarray,
-            t_memory: Union[None, np.ndarray] = None
+        self, x_memory: np.ndarray, y_memory: np.ndarray, t_memory: Union[None, np.ndarray] = None
     ):
         """Add memory for rehearsal.
 
@@ -57,11 +55,11 @@ class TaskSet(TorchDataset):
             self._t = np.concatenate((self._t, -1 * np.ones(len(x_memory))))
 
     def plot(
-            self,
-            path: Union[str, None] = None,
-            title: str = "",
-            nb_samples: int = 100,
-            shape=None
+        self,
+        path: Union[str, None] = None,
+        title: str = "",
+        nb_samples: int = 100,
+        shape=None
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -76,13 +74,12 @@ class TaskSet(TorchDataset):
         """The amount of images in the current task."""
         return self._x.shape[0]
 
-    def rand_samples(self, nb_samples):
-
+    def get_random_samples(self, nb_samples):
         nb_tot_samples = self._x.shape[0]
         indexes = np.random.randint(0, nb_tot_samples, nb_samples)
-        return self.get_samples_from_ind(indexes)
+        return self.get_samples(indexes)
 
-    def get_samples_from_ind(self, indexes):
+    def get_samples(self, indexes):
         batch = torch.zeros(0)
         labels = torch.zeros(0)
         task_id = torch.zeros(0)
@@ -138,10 +135,10 @@ class TaskSet(TorchDataset):
 
         return img, y, t
 
-
-    def get_raw_samples_from_ind(self, indexes):
+    def get_raw_samples(self, indexes):
         """Get samples without preprocessing, for split train/val for example"""
         return self._x[indexes], self._y[indexes], self._t[indexes]
+
 
 def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, TaskSet]:
     """Split train dataset into two datasets, one for training and one for validation.
@@ -157,10 +154,10 @@ def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, 
     train_indexes = indexes[int(val_split * len(indexes)):]
     val_indexes = indexes[:int(val_split * len(indexes))]
 
-    x_train, y_train, t_train = dataset.get_raw_samples_from_ind(train_indexes)
+    x_train, y_train, t_train = dataset.get_raw_samples(train_indexes)
     train_dataset = TaskSet(x_train, y_train, t_train, dataset.trsf, dataset.data_type)
 
-    x_val, y_val, t_val = dataset.get_raw_samples_from_ind(val_indexes)
+    x_val, y_val, t_val = dataset.get_raw_samples(val_indexes)
     val_dataset = TaskSet(x_val, y_val, t_val, dataset.trsf, dataset.data_type)
 
     return train_dataset, val_dataset
