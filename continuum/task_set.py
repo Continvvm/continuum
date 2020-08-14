@@ -37,22 +37,22 @@ class TaskSet(TorchDataset):
         """The number of classes contained in the current task."""
         return len(np.unique(self._y))
 
-    def add_memory(
-        self, x_memory: np.ndarray, y_memory: np.ndarray, t_memory: Union[None, np.ndarray] = None
+    def add_samples(
+        self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None
     ):
         """Add memory for rehearsal.
 
-        :param x_memory: Sampled data chosen for rehearsal.
-        :param y_memory: The associated targets of `x_memory`.
-        :param t_memory: The associated task ids. If not provided, they will be
+        :param x: Sampled data chosen for rehearsal.
+        :param y: The associated targets of `x_memory`.
+        :param t: The associated task ids. If not provided, they will be
                          defaulted to -1.
         """
-        self._x = np.concatenate((self._x, x_memory))
-        self._y = np.concatenate((self._y, y_memory))
-        if t_memory is not None:
-            self._t = np.concatenate((self._t, t_memory))
+        self._x = np.concatenate((self._x, x))
+        self._y = np.concatenate((self._y, y))
+        if t is not None:
+            self._t = np.concatenate((self._t, t))
         else:
-            self._t = np.concatenate((self._t, -1 * np.ones(len(x_memory))))
+            self._t = np.concatenate((self._t, -1 * np.ones(len(x))))
 
     def plot(
         self,
