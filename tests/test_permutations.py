@@ -1,9 +1,10 @@
 import numpy as np
 import pytest
-from continuum.scenarios import Permutations
-from tests.test_classorder import InMemoryDatasetTest
 import torch
 from torchvision.transforms import transforms
+
+from continuum.scenarios import Permutations
+from tests.test_classorder import InMemoryDatasetTest
 
 
 @pytest.fixture
@@ -13,7 +14,9 @@ def numpy_data():
 
     x_train = []
     y_train = []
-    x_train.append(np.array([np.random.randint(100, size=(2, 2, 3)).astype(dtype=np.uint8)] * nb_data))
+    x_train.append(
+        np.array([np.random.randint(100, size=(2, 2, 3)).astype(dtype=np.uint8)] * nb_data)
+    )
     y_train.append(np.random.randint(nb_classes, size=(nb_data)))
     x_train = np.concatenate(x_train)
     y_train = np.concatenate(y_train)
@@ -29,48 +32,35 @@ Test the initialization with three tasks
 '''
 
 
-@pytest.mark.parametrize("seed", [0, 42, 1664])
+@pytest.mark.parametrize("seed", [0, 42, 1664, [0, 1, 2], [0, 1, 2, 3]])
 def test_init(numpy_data, seed):
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train)
-    n_tasks = 3
 
-    clloader = Permutations(cl_dataset=dummy, nb_tasks=n_tasks, seed=seed)
+    nb_tasks = 3
+    if isinstance(seed, list):
+        nb_tasks = len(seed) + 1
 
-    # we recreate the list of seeds that Permutations class should have done
-    g_cpu = torch.Generator()
-    g_cpu.manual_seed(seed)
-    list_seed = torch.randperm(1000, generator=g_cpu)[:n_tasks]
-    list_seed[0] = 0  # first seed is always 0
+    clloader_1 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
+    clloader_2 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
 
-    raw_samples = None
-    ref_data = None
+    previous_x = []
+    if isinstance(seed, list):
+        assert len(clloader_1) == len(clloader_2) == len(seed) + 1
 
-    for task_id, train_dataset in enumerate(clloader):
-        assert task_id < n_tasks
+    for task_id, (train_dataset_1, train_dataset_2) in enumerate(zip(clloader_1, clloader_2)):
+        assert task_id < nb_tasks
 
-        samples, _, _ = train_dataset.rand_samples(10)
-        raw_samples, _, _ = train_dataset.get_raw_samples_from_ind(range(10))
+        assert len(train_dataset_1) == len(train_dataset_2)
+        indexes = list(range(len(train_dataset_1)))
 
-        if task_id == 0:
-            ref_data = samples
-            raw_ref_data = raw_samples
-        else:
-            assert not torch.all(ref_data.eq(samples))
+        x_1, y_1, t_1 = train_dataset_1.get_samples(indexes)
+        x_2, y_2, t_2 = train_dataset_2.get_samples(indexes)
 
-            # we verify that raw data are the same for all tasks
-            assert (raw_ref_data == raw_samples).all()
+        assert (x_1 == x_2).all()
+        assert (y_1 == y_2).all()
+        assert (t_1 == t_2).all()
 
-            # we apply permutation manually
-            x = transforms.ToTensor()(raw_samples[0])
-
-            g_cpu.manual_seed(list_seed[task_id].item())
-            shape = list(x.shape)
-
-            x = x.reshape(-1)
-            perm = torch.randperm(x.numel(), generator=g_cpu).long()
-            x = x[perm]
-            x = x.reshape(shape)
-
-            # we compare manual permutation and permutation done by the class
-            assert torch.all(samples[0].eq(x))
+        for x in previous_x:
+            assert not (x == x_1).all()
+        previous_x.append(x_1.clone())

@@ -15,10 +15,7 @@ class _BaseCLLoader(abc.ABC):
 
     :param cl_dataset: A Continuum dataset.
     :param nb_tasks: The number of tasks to do.
-    :param train_transformations: The PyTorch transformations exclusive to the
-                                  train set.
-    :param common_transformations: The PyTorch transformations common to the
-                                   train set and the test set.
+    :param transformations: The PyTorch transformations.
     :param train: Boolean flag whether to use the train or test subset.
     """
 
@@ -26,15 +23,15 @@ class _BaseCLLoader(abc.ABC):
             self,
             cl_dataset: _ContinuumDataset,
             nb_tasks: int,
-            base_transformations: List[Callable] = None
+            transformations: List[Callable] = None
     ) -> None:
 
         self.cl_dataset = cl_dataset
         self._nb_tasks = nb_tasks
 
-        if base_transformations is None:
-            base_transformations = self.cl_dataset.transformations
-        self.trsf = transforms.Compose(base_transformations)
+        if transformations is None:
+            transformations = self.cl_dataset.transformations
+        self.trsf = transforms.Compose(transformations)
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
@@ -78,8 +75,8 @@ class _BaseCLLoader(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
-        _x, _y, _t = self._select_data_by_task(task_index)
-        return TaskSet(_x, _y, _t, self.trsf, data_type=self.cl_dataset.data_type)
+        x, y, t = self._select_data_by_task(task_index)
+        return TaskSet(x, y, t, self.trsf, data_type=self.cl_dataset.data_type)
 
     def _select_data_by_task(self, task_index: Union[int, slice]):
         """Selects a subset of the whole data for a given task.
