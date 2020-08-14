@@ -20,14 +20,16 @@ class TransformationIncremental(InstanceIncremental):
     :param nb_tasks: Number of tasks in the continuum.
     :param incremental_transformations: list of transformations to apply to specific tasks
     :param base_transformations: List of transformation to apply to all tasks.
+    :param shared_label_space: If true same data with different transformation have same label
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-        nb_tasks: int,
-        incremental_transformations: List[List[Callable]],
-        base_transformations: List[Callable] = None
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: int,
+            incremental_transformations: List[List[Callable]],
+            base_transformations: List[Callable] = None,
+            shared_label_space=True
     ):
         super().__init__(
             cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=base_transformations
@@ -40,6 +42,8 @@ class TransformationIncremental(InstanceIncremental):
 
         self.inc_trsf = incremental_transformations
         self._nb_tasks = self._setup(nb_tasks)
+        self.shared_label_space = shared_label_space
+        self.num_classes = np.unique(self.dataset[1])  # the num of classes is the same for all task is this scenario
 
     def get_task_index(self, nb_tasks, y):
         # all tasks have all labels, only the transformation change
@@ -51,6 +55,10 @@ class TransformationIncremental(InstanceIncremental):
     def update_task_indexes(self, task_index):
         new_t = np.ones(len(self.dataset[1])) * task_index
         self.dataset = (self.dataset[0], self.dataset[1], new_t)
+
+    def update_labels(self, task_index):
+        new_y = self.dataset[1] + task_index * self.num_classes
+        self.dataset = (self.dataset[0], new_y, self.dataset[2])
 
     def __getitem__(self, task_index):
         """Returns a task by its unique index.
@@ -68,6 +76,8 @@ class TransformationIncremental(InstanceIncremental):
                 task_index += len(self)
 
         self.update_task_indexes(task_index)
+        if not self.shared_label_space:
+            self.update_labels(task_index)
         train = self._select_data_by_task(task_index)
         trsf = self.get_task_transformation(task_index)
 
