@@ -138,9 +138,6 @@ class TaskSet(TorchDataset):
 
         return img, y, t
 
-    def get_image(self, index):
-        return self[index]
-
 
     def get_raw_samples_from_ind(self, indexes):
         """Get samples without preprocessing, for split train/val for example"""
