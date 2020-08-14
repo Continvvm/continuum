@@ -40,8 +40,8 @@ class Rotations(TransformationIncremental):
             else:
                 # list_degrees should contain list of rotations with:
                 # only one angle or with (min,max)
-                raise ValueError("list_degrees is wrong: list_degrees should contain list of rotations with"
-                                 "only one angle or with (min,max)")
+                raise ValueError("list_degrees is wrong [{}]: list_degrees should contain list of rotations with"
+                                 "only one angle or with (min,max)".format(list_degrees))
 
             list_transformations.append([transforms.RandomAffine(degrees=[min, max])])
 
