@@ -30,7 +30,7 @@ class TransformationIncremental(InstanceIncremental):
         base_transformations: List[Callable] = None
     ):
         super().__init__(
-            cl_dataset=cl_dataset, nb_tasks=nb_tasks, base_transformations=base_transformations
+            cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=base_transformations
         )
         if incremental_transformations is None:
             raise ValueError("For this scenario a list transformation should be set")

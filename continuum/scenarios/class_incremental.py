@@ -19,25 +19,21 @@ class ClassIncremental(_BaseCLLoader):
                      (e.g. increment=[5,1,1,1,1]).
     :param initial_increment: A different task size applied only for the first task.
                               Desactivated if `increment` is a list.
-    :param base_transformations: A list of transformations applied to all tasks.
+    :param transformations: A list of transformations applied to all tasks.
     :param class_order: An optional custom class order, used for NC.
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            nb_tasks: int = 0,
-            increment: Union[List[int], int] = 0,
-            initial_increment: int = 0,
-            base_transformations: List[Callable] = None,
-            class_order=None
+        self,
+        cl_dataset: _ContinuumDataset,
+        nb_tasks: int = 0,
+        increment: Union[List[int], int] = 0,
+        initial_increment: int = 0,
+        transformations: List[Callable] = None,
+        class_order=None
     ) -> None:
 
-        super().__init__(
-            cl_dataset=cl_dataset,
-            nb_tasks=nb_tasks,
-            base_transformations=base_transformations
-        )
+        super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)
 
         self.increment = increment
         self.initial_increment = initial_increment
@@ -99,10 +95,7 @@ class ClassIncremental(_BaseCLLoader):
         return t
 
     def _define_increments(
-            self,
-            increment: Union[List[int], int],
-            initial_increment: int,
-            unique_classes: List[int]
+        self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
     ) -> List[int]:
 
         if isinstance(increment, list):

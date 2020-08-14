@@ -14,25 +14,22 @@ class InstanceIncremental(_BaseCLLoader):
 
     :param cl_dataset: A continual dataset.
     :param nb_tasks: The scenario number of tasks.
-    :param base_transformations: List of transformations to apply to all tasks.
+    :param transformations: List of transformations to apply to all tasks.
     :param random_seed: A random seed to init random processes.
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            nb_tasks: int = 0,
-            base_transformations: List[Callable] = None,
-            random_seed: int = 1
+        self,
+        cl_dataset: _ContinuumDataset,
+        nb_tasks: int = 0,
+        transformations: List[Callable] = None,
+        random_seed: int = 1
     ):
-        super().__init__(cl_dataset=cl_dataset,
-                                                  nb_tasks=nb_tasks,
-                                                  base_transformations=base_transformations)
+        super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)
 
         self._random_state = np.random.RandomState(seed=random_seed)
 
         self._nb_tasks = self._setup(nb_tasks)
-
 
     def _setup(self, nb_tasks: int) -> int:
         x, y, t = self.cl_dataset.get_data()
