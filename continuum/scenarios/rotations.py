@@ -38,9 +38,8 @@ class Rotations(TransformationIncremental):
             elif len(tuple_) == 2:
                 min, max = tuple_
             else:
-                # list_degrees should contains list of rotations with:
-                # only one angle
-                # or with (min,max)
+                # list_degrees should contain list of rotations with:
+                # only one angle or with (min,max)
                 raise ValueError("list_degrees is wrong")
 
             list_transformations.append([transforms.RandomAffine(degrees=[min, max])])
