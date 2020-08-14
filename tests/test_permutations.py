@@ -42,6 +42,7 @@ def test_init(numpy_data, seed):
     clloader_1 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
     clloader_2 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
 
+    previous_x = []
     if isinstance(seed, list):
         assert len(clloader_1) == len(clloader_2) == len(seed) + 1
         nb_tasks = len(seed) + 1
@@ -58,3 +59,7 @@ def test_init(numpy_data, seed):
         assert (x_1 == x_2).all()
         assert (y_1 == y_2).all()
         assert (t_1 == t_2).all()
+
+        for x in previous_x:
+            assert not (x == x_1).all()
+        previous_x.append(x_1.clone())
