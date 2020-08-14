@@ -32,7 +32,6 @@ class Permutations(TransformationIncremental):
 
         super().__init__(
             cl_dataset=cl_dataset,
-            nb_tasks=len(trsfs),
             incremental_transformations=trsfs,
             base_transformations=base_transformations
         )

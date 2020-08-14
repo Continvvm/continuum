@@ -17,7 +17,6 @@ class TransformationIncremental(InstanceIncremental):
     Classic transformation incremental scenarios are "permutations" and "rotations".
 
     :param cl_dataset: A continual dataset.
-    :param nb_tasks: Number of tasks in the continuum.
     :param incremental_transformations: list of transformations to apply to specific tasks
     :param base_transformations: List of transformation to apply to all tasks.
     :param shared_label_space: If true same data with different transformation have same label

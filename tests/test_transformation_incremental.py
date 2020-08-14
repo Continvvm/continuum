@@ -41,7 +41,7 @@ def test_init(numpy_data):
     list_transf = [Trsf_0, Trsf_1, Trsf_2]
 
     continuum = TransformationIncremental(
-        cl_dataset=dummy, nb_tasks=3, incremental_transformations=list_transf
+        cl_dataset=dummy, incremental_transformations=list_transf
     )
 
     ref_data = None
@@ -87,24 +87,8 @@ def test_init_range(numpy_data):
     list_transf = [Trsf_0, Trsf_1, Trsf_2]
 
     continuum = TransformationIncremental(
-        cl_dataset=dummy, nb_tasks=3, incremental_transformations=list_transf
+        cl_dataset=dummy, incremental_transformations=list_transf
     )
-
-
-def test_init_fail(numpy_data):
-    train = numpy_data
-    dummy = InMemoryDataset(*train)
-
-    Trsf_0 = []
-    Trsf_1 = [transforms.RandomAffine(degrees=[40, 50])]
-    Trsf_2 = [transforms.RandomAffine(degrees=[85, 95])]
-
-    list_transf = [Trsf_0, Trsf_1, Trsf_2]
-
-    with pytest.raises(ValueError):
-        TransformationIncremental(
-            cl_dataset=dummy, nb_tasks=2, incremental_transformations=list_transf
-        )
 
 
 def test_init_fail2(numpy_data):
@@ -113,4 +97,4 @@ def test_init_fail2(numpy_data):
 
     # No transformation is set
     with pytest.raises(TypeError):
-        clloader = TransformationIncremental(cl_dataset=dummy, nb_tasks=3)
+        clloader = TransformationIncremental(cl_dataset=dummy)
