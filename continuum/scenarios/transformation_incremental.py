@@ -64,6 +64,5 @@ class TransformationIncremental(InstanceIncremental):
         self.update_task_indexes(task_index)
         train = self._select_data_by_task(task_index)
         trsf = self.get_task_transformation(task_index)
-        train_dataset = TaskSet(*train, trsf, data_type=self.cl_dataset.data_type)
 
-        return train_dataset
+        return TaskSet(*train, trsf, data_type=self.cl_dataset.data_type)
