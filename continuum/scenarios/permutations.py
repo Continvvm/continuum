@@ -1,11 +1,12 @@
-from typing import Callable, List
+import warnings
+from typing import Callable, List, Union
 
+import numpy as np
 import torch
+from torchvision import transforms
 
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import TransformationIncremental
-
-from torchvision import transforms
 
 
 class Permutations(TransformationIncremental):
@@ -21,32 +22,38 @@ class Permutations(TransformationIncremental):
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            nb_tasks: int,
-            base_transformations: List[Callable] = None,
-            seed=0
+        self,
+        cl_dataset: _ContinuumDataset,
+        nb_tasks: Union[int, None] = None,
+        base_transformations: List[Callable] = None,
+        seed: Union[int, List[int]] = 0
     ):
-        list_transformations = []
-        self.seed = seed
-        g_cpu = torch.Generator()
-        g_cpu.manual_seed(self.seed)
-        list_seed = torch.randperm(1000, generator=g_cpu)[:nb_tasks]
+        trsfs = self._generate_transformations(seed, nb_tasks)
 
-        # first task is not permuted, therefore first seed is 0
-        list_seed[0] = 0
+        super().__init__(
+            cl_dataset=cl_dataset,
+            nb_tasks=len(trsfs),
+            incremental_transformations=trsfs,
+            base_transformations=base_transformations
+        )
 
-        for s_ in list_seed:
-            list_transformations.append([PermutationTransform(s_.item())])
+    def _generate_transformations(self, seed, nb_tasks):
+        if isinstance(seed, int):
+            if nb_tasks is None:
+                raise ValueError("You must specify a number of tasks if a single seed is provided.")
+            rng = np.random.RandomState(seed=seed)
+            seed = rng.permutation(100000)[:nb_tasks - 1]
+        elif nb_tasks is not None and nb_tasks != len(seed) + 1:
+            warnings.warn(
+                f"Because a list of seed was provided {seed}, "
+                f"the number of tasks is automatically set to "
+                f"len(number of seeds) + 1 = {len(seed) + 1}"
+            )
 
-        super().__init__(cl_dataset=cl_dataset,
-                                           nb_tasks=nb_tasks,
-                                           incremental_transformations=list_transformations,
-                                           base_transformations=base_transformations)
+        return [PermutationTransform(seed=None)] + [PermutationTransform(seed=int(s)) for s in seed]
 
-    # We inverse permutation is after self.trsf because it is done an torch tensor
     def get_task_transformation(self, task_index):
-        return transforms.Compose(self.trsf.transforms + self.inc_trsf[task_index])
+        return transforms.Compose(self.trsf.transforms + [self.inc_trsf[task_index]])
 
 
 class PermutationTransform:
@@ -58,15 +65,15 @@ class PermutationTransform:
     :param seed: seed to initialize the random number generator
     """
 
-    def __init__(self, seed):
+    def __init__(self, seed: Union[int, None]):
         self.seed = seed
         self.g_cpu = torch.Generator()
 
     def __call__(self, x):
         shape = list(x.shape)
         x = x.reshape(-1)
-        # if seed is 0, no permutations
-        if self.seed != 0:
+        # if seed is None, no permutations
+        if self.seed is not None:
             self.g_cpu.manual_seed(self.seed)
             perm = torch.randperm(x.numel(), generator=self.g_cpu).long()
             x = x[perm]
