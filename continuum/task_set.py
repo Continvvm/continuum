@@ -80,28 +80,17 @@ class TaskSet(TorchDataset):
         return self.get_samples(indexes)
 
     def get_samples(self, indexes):
-        batch = torch.zeros(0)
-        labels = torch.zeros(0)
-        task_id = torch.zeros(0)
+        images, targets, tasks = [], [], []
 
-        for i, ind in enumerate(indexes):
-            # we need to use get item to have the transform used
-            img, y, t = self.__getitem__(ind)
+        for index in indexes:
+            # we need to use __getitem__ to have the transform used
+            img, y, t = self[index]
 
-            if i == 0:
-                if len(list(img.shape)) == 2:
-                    size_image = [1] + list(img.shape)
-                else:
-                    size_image = list(img.shape)
-                batch = torch.zeros(([len(indexes)] + size_image))
-                labels = np.zeros(len(indexes))
-                task_id = np.zeros(len(indexes))
+            images.append(img)
+            targets.append(y)
+            tasks.append(t)
 
-            batch[i] = img.clone()
-            labels[i] = y
-            task_id[i] = t
-
-        return batch, labels, task_id
+        return torch.stack(images), torch.tensor(targets), torch.tensor(tasks)
 
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
