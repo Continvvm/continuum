@@ -26,19 +26,16 @@ class TransformationIncremental(InstanceIncremental):
     def __init__(
             self,
             cl_dataset: _ContinuumDataset,
-            nb_tasks: int,
             incremental_transformations: List[List[Callable]],
             base_transformations: List[Callable] = None,
             shared_label_space=True
     ):
+        nb_tasks = len(incremental_transformations)
         super().__init__(
             cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=base_transformations
         )
         if incremental_transformations is None:
             raise ValueError("For this scenario a list transformation should be set")
-
-        if nb_tasks != len(incremental_transformations):
-            raise ValueError("The number of tasks is not equal to the number of transformation")
 
         self.inc_trsf = incremental_transformations
         self._nb_tasks = self._setup(nb_tasks)
