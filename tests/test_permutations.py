@@ -38,6 +38,8 @@ def test_init(numpy_data, seed):
     dummy = InMemoryDatasetTest(*train)
 
     nb_tasks = 3
+    if isinstance(seed, list):
+        nb_tasks = len(seed) + 1
 
     clloader_1 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
     clloader_2 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
@@ -45,7 +47,6 @@ def test_init(numpy_data, seed):
     previous_x = []
     if isinstance(seed, list):
         assert len(clloader_1) == len(clloader_2) == len(seed) + 1
-        nb_tasks = len(seed) + 1
 
     for task_id, (train_dataset_1, train_dataset_2) in enumerate(zip(clloader_1, clloader_2)):
         assert task_id < nb_tasks
