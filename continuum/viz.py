@@ -5,7 +5,7 @@ import imageio
 
 
 def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
-    batch, _, _ = dataset.rand_samples(nb_samples)
+    batch, _, _ = dataset.get_random_samples(nb_samples)
     filename = os.path.join(path, title)
 
     if shape is None:
