@@ -42,7 +42,7 @@ for task_id, train_dataset in enumerate(clloader):
 ### Supported Scenarios
 
 |Name | Acronym | Supported | Scenario |
-|:----|:---|:---:|
+|:----|:---|:---:|:---:|
 | **New Instances** | NI | :white_check_mark: | [Instances Incremental](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#)|
 | **New Classes** | NC | :white_check_mark: |[Classes Incremental](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#instance-incremental)|
 | **New Instances & Classes** | NIC | :white_check_mark: | [Data Incremental](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#)|
