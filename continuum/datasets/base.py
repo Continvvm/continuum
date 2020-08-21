@@ -58,7 +58,7 @@ class PyTorchDataset(_ContinuumDataset):
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(self, *args, dataset_type, train: bool, **kwargs):
-        super().__init__(*args, train=train, **kwargs)
+        super(PyTorchDataset, self).__init__(*args, train, **kwargs)
 
         self.dataset_type = dataset_type
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)

@@ -16,6 +16,7 @@ class Rotations(TransformationIncremental):
     :param nb_tasks: The scenario's number of tasks.
     :param list_degrees: list of rotation in degree (int) or list of range. e.g. (0, (40,45), 90).
     :param base_transformations: Preprocessing transformation to applied to data before rotation.
+    :param shared_label_space: If true same data with different transformation have same label
     """
 
     def __init__(
@@ -23,7 +24,8 @@ class Rotations(TransformationIncremental):
         cl_dataset: _ContinuumDataset,
         list_degrees: Union[List[Tuple], List[int]],
         nb_tasks: Union[int, None] = None,
-        base_transformations: List[Callable] = None
+        base_transformations: List[Callable] = None,
+        shared_label_space=True
     ):
 
         if nb_tasks is not None and len(list_degrees) != nb_tasks:
@@ -37,7 +39,8 @@ class Rotations(TransformationIncremental):
         super().__init__(
             cl_dataset=cl_dataset,
             incremental_transformations=trsfs,
-            base_transformations=base_transformations
+            base_transformations=base_transformations,
+            shared_label_space=shared_label_space
         )
 
     def _generate_transformations(self, degrees):
