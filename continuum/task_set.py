@@ -37,6 +37,10 @@ class TaskSet(TorchDataset):
         """The number of classes contained in the current task."""
         return len(np.unique(self._y))
 
+    def get_classes(self):
+        """Array of all classes contained in the current task."""
+        return np.unique(self._y)
+
     def add_samples(
         self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None
     ):
