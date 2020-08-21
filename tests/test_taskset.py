@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from continuum import TaskSet, split_train_val
+from continuum.tasks import TaskSet, split_train_val
 
 
 @pytest.mark.parametrize("val_split,nb_val", [(0., 0), (0.1, 1), (0.8, 8), (0.99, 9), (1.0, 10)])

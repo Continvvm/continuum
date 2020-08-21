@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from continuum.scenarios import Rotations
 from tests.test_classorder import InMemoryDatasetTest
-from torchvision.transforms import transforms
 
 @pytest.fixture
 def numpy_data():
