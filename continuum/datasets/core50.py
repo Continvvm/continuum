@@ -28,11 +28,12 @@ class Core50(_ContinuumDataset):
     def __init__(
         self,
         data_path: str,
+        train: bool = True,
         train_image_ids: Union[str, Iterable[str], None] = None,
         download: bool = True
     ):
         self.train_image_ids = train_image_ids
-        super().__init__(data_path, download)
+        super().__init__(data_path=data_path, train=train, download=download)
 
         if isinstance(self.train_image_ids, str):
             self.train_image_ids = self._read_csv(self.train_image_ids)
@@ -71,7 +72,7 @@ class Core50(_ContinuumDataset):
 
         return train_images_ids
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate the CORe50 data.
 
         CORe50, in one of its many iterations, is made of 50 objects, each present
@@ -102,8 +103,8 @@ class Core50(_ContinuumDataset):
                     image_id = path.split(".")[0]
 
                     if (
-                        (train and image_id not in self.train_image_ids) or  # type: ignore
-                        (not train and image_id in self.train_image_ids)  # type: ignore
+                        (self.train and image_id not in self.train_image_ids) or  # type: ignore
+                        (not self.train and image_id in self.train_image_ids)  # type: ignore
                     ):
                         continue
 
@@ -130,7 +131,7 @@ class Core50v2_79(_ContinuumDataset):
     splits_url = "https://vlomonaco.github.io/core50/data/batches_filelists_NICv2.zip"
     nb_tasks = 79
 
-    def __init__(self, data_path: str, download: bool = True, run_id: int = 0):
+    def __init__(self, data_path: str, train: bool = True, download: bool = True, run_id: int = 0):
         if run_id > 9 or run_id < 0:
             raise ValueError(
                 "CORe50 v2 only provides split for 10 runs (ids 0 to 9),"
@@ -138,7 +139,7 @@ class Core50v2_79(_ContinuumDataset):
             )
         self.run_id = run_id
 
-        super().__init__(data_path, download)
+        super().__init__(data_path=data_path, train=train, download=download)
 
     def _download(self):
         if os.path.exists(os.path.join(self.data_path, "core50_128x128")):
@@ -155,8 +156,8 @@ class Core50v2_79(_ContinuumDataset):
             download.unzip(path)
             print("Split info extracted.")
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        if train:
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if self.train:
             return self._train_init()
         return self._test_init()
 
