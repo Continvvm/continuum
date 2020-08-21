@@ -139,5 +139,5 @@ Note that Continuum already provide pre-made Fellowship:
 You may want datasets that have a different transformation for each new task, e.g.
 MNIST with different rotations or pixel permutations. Continuum also handles it!
 However it's a scenario's speficic, not dataset, thus look over the
-`Scenario doc<https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#transformed-incremental>`_.
+`Scenario doc <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#transformed-incremental>`__.
 
