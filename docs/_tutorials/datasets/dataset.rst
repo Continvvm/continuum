@@ -21,11 +21,11 @@ Existing Datasets
 | **MultiNLI** | 5 | | :white_check_mark: | :book: |
 
 All datasets have for arguments `train` and `download`, like a
-[torchvision.dataset](https://pytorch.org/docs/stable/torchvision/datasets.html). Those datasets are then modified to create [continuum scenarios](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html).
+`torchvision.dataset<https://pytorch.org/docs/stable/torchvision/datasets.html>`_. Those datasets are then modified to create [continuum scenarios](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html).
 
-Once a dataset is created, it is fed to a scenario which will split in multiple tasks.
+Once a dataset is created, it is fed to a scenario that will split it in multiple tasks.
 
-We support many datasets implemented in torchvision in such as **MNIST**, or **CIFAR100**:
+Continuum supports many datasets implemented in torchvision in such as **MNIST**, or **CIFAR100**:
 
 .. code-block:: python
 
@@ -51,7 +51,7 @@ initialization differ:
     ImageNet1000("/my/data/folder/imagenet/train/", train=True)
     ImageNet1000("/my/data/folder/imagenet/val/", train=False)
 
-Note that we cannot download ImageNet's data, it's on you! We also provide ImageNet100,
+Note that Continuum cannot download ImageNet's data, it's on you! We also provide ImageNet100,
 a subset of 100 classes of ImageNet. The subset meta-data are automatically downloaded,
 or you can provide them with the option `data_subset`.
 
@@ -70,7 +70,7 @@ be downloaded:
 Refer to the datatset [official webpage](https://vlomonaco.github.io/core50/) for
 more information about the different versions.
 
-In addition to Computer Vision dataset, we also provide one NLP dataset:
+In addition to Computer Vision dataset, Continuum also provide one NLP dataset:
 
 .. code-block:: python
 
@@ -127,7 +127,7 @@ For example, the type of scenarios are easy to use with others dataset:
 
     Fellowship(data_path="/my/data/folder", dataset_list=[CIFAR10, CIFAR100])
 
-Note that we already provide pre-made Fellowship:
+Note that Continuum already provide pre-made Fellowship:
 
 .. code-block:: python
 
@@ -139,5 +139,5 @@ Note that we already provide pre-made Fellowship:
 You may want datasets that have a different transformation for each new task, e.g.
 MNIST with different rotations or pixel permutations. Continuum also handles it!
 However it's a scenario's speficic, not dataset, thus look over the
-`Scenario odc<https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#transformed-incremental>`_.
+`Scenario doc<https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#transformed-incremental>`_.
 
