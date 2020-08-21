@@ -58,8 +58,8 @@ class PyTorchDataset(_ContinuumDataset):
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(self, *args, dataset_type, train: bool, **kwargs):
-        super(PyTorchDataset, self).__init__(*args, train, **kwargs)
-        
+        super().__init__(*args, train=train, **kwargs)
+
         self.dataset_type = dataset_type
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
 
@@ -78,12 +78,12 @@ class InMemoryDataset(_ContinuumDataset):
     """
 
     def __init__(
-            self,
-            x_: np.ndarray,
-            y_: np.ndarray,
-            t_: Union[None, np.ndarray] = None,
-            data_type: str = "image_array",
-            **kwargs
+        self,
+        x_: np.ndarray,
+        y_: np.ndarray,
+        t_: Union[None, np.ndarray] = None,
+        data_type: str = "image_array",
+        **kwargs
     ):
         super().__init__(**kwargs)
 
@@ -112,10 +112,10 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, data_folder: str, train: bool, download: bool = True, **kwargs):
-        super().__init__(download=download, **kwargs)
-
+    def __init__(self, data_folder: str, train: bool = True, download: bool = True, **kwargs):
         self.data_folder = data_folder
+        super().__init__(train=train, download=download, **kwargs)
+
         self.dataset = torchdata.ImageFolder(data_folder)
 
     @property
