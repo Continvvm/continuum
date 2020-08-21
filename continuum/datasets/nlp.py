@@ -32,8 +32,8 @@ class MultiNLI(_ContinuumDataset):
 
     data_url = "https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip"
 
-    def __init__(self, data_path: str = "", download: bool = True) -> None:
-        super().__init__(data_path, download)
+    def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
+        super().__init__(data_path=data_path, train=train, download=download)
 
     def _download(self):
         if os.path.exists(os.path.join(self.data_path, "multinli_1.0")):
@@ -54,7 +54,7 @@ class MultiNLI(_ContinuumDataset):
     def original_targets(self) -> List[str]:
         return ["contradiction", "entailment", "neutral"]
 
-    def init(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate the MultiNLI data.
 
         The dataset has several domains, but always the same targets
@@ -82,7 +82,7 @@ class MultiNLI(_ContinuumDataset):
             "verbatim"  # /test
         ]
 
-        if train:
+        if self.train:
             json_path = os.path.join(self.data_path, "multinli_1.0", "multinli_1.0_train.jsonl")
         else:
             json_path = os.path.join(
