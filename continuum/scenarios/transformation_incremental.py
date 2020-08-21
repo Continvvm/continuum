@@ -39,11 +39,20 @@ class TransformationIncremental(InstanceIncremental):
         self.inc_trsf = incremental_transformations
         self._nb_tasks = self._setup(nb_tasks)
         self.shared_label_space = shared_label_space
-        self.num_classes = np.unique(self.dataset[1])  # the num of classes is the same for all task is this scenario
+        self.num_classes_per_task = len(np.unique(self.dataset[1]))  # the num of classes is the same for all task is this scenario
 
     def get_task_index(self, nb_tasks, y):
         # all tasks have all labels, only the transformation change
         return y
+
+    @property
+    def nb_classes(self) -> int:
+        """Total number of classes in the whole continual setting."""
+        if self.shared_label_space:
+            nb_classes = len(np.unique(self.dataset[1]))
+        else:
+            nb_classes = len(np.unique(self.dataset[1])) * self._nb_tasks
+        return nb_classes
 
     def get_task_transformation(self, task_index):
         return transforms.Compose(self.inc_trsf[task_index] + self.trsf.transforms)
@@ -53,8 +62,12 @@ class TransformationIncremental(InstanceIncremental):
         self.dataset = (self.dataset[0], self.dataset[1], new_t)
 
     def update_labels(self, task_index):
-        new_y = self.dataset[1] + task_index * self.num_classes
-        self.dataset = (self.dataset[0], new_y, self.dataset[2])
+        # wrong
+        #new_y = self.dataset[1] + task_index * self.num_classes_per_task
+        # we update incrementally then update is simply:
+        if task_index > 0:
+            new_y = self.dataset[1] + self.num_classes_per_task
+            self.dataset = (self.dataset[0], new_y, self.dataset[2])
 
     def __getitem__(self, task_index):
         """Returns a task by its unique index.

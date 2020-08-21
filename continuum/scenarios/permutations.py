@@ -19,6 +19,7 @@ class Permutations(TransformationIncremental):
     :param nb_tasks: The scenario's number of tasks.
     :param base_transformations: List of transformations to apply to all tasks.
     :param seed: initialization seed for the permutations.
+    :param shared_label_space: If true same data with different transformation have same label
     """
 
     def __init__(
@@ -26,14 +27,16 @@ class Permutations(TransformationIncremental):
         cl_dataset: _ContinuumDataset,
         nb_tasks: Union[int, None] = None,
         base_transformations: List[Callable] = None,
-        seed: Union[int, List[int]] = 0
+        seed: Union[int, List[int]] = 0,
+        shared_label_space=True
     ):
         trsfs = self._generate_transformations(seed, nb_tasks)
 
         super().__init__(
             cl_dataset=cl_dataset,
             incremental_transformations=trsfs,
-            base_transformations=base_transformations
+            base_transformations=base_transformations,
+            shared_label_space=shared_label_space
         )
 
     def _generate_transformations(self, seed, nb_tasks):
