@@ -1,11 +1,65 @@
 
-The continual learning (CL) aim is to learn without forgetting in the most "satisfying" way. To evaluate the capacity of different CL algorithms the community use different type of benchmarks scenarios. 
+Continual learning (CL) aim is to learn without forgetting in the most "satisfying" way. To evaluate the capacity of different CL algorithms the community use different type of benchmarks scenarios. 
 
 In Continuum, we implemented the four main types of scenarios used in the community: Class Incremental, Instance Incremental, New Class and Instance Incremental, and, Transformed Incremental. Those scenarios are originally suited for classification but they might be adapted for unsupervised learning, self-supervised learning or reinforcement learning. 
 
 For each scenario, there is a finite set of tasks and the goal is to learn the tasks one by one and to be able to generalize at the end to a test set composed of data from all tasks.
 
 For clear evaluation purpose, the data from each tasks can not be found in another tasks. The idea is to be able to assess precisely what the CL algorithms is able to remember or not. Those benchmarks purpose is not to mimic real-life scenarios but to evaluate properly algorithms capabilities.
+
+Scenarios consist in learning from a sequence of tasks we call continuum. Here is roughly how continuum are created and used:
+
+
+.. code-block:: python
+	
+    # First we get a dataset that will be used to compose tasks and the continuum
+    continual_daset = MyContinualDataset()
+
+    # Then the dataset is provided to a continuum class that will process it to create the sequence of tasks
+    # the continuum might get specific argument, such as number of tasks.
+    continuum = MyContinuumClass(
+        continual_dataset, SomeOtherArgumetns
+    )
+
+    # The continuum can then be enumerate tasks
+    for task_id, dataset in enumerate(continuum):
+          # train dataset is a normal data loader like in pytorch that can be used to load the task data
+          for x, y, t in dataset:
+                # data, label, task index
+                # train on the task here
+
+A practical example with split MNIST:
+
+.. code-block:: python
+
+   from continuum.datasets import MNIST
+   from continuum.tasks import Taskset, split_train_val
+   dataset=MNIST("my/data/path", download=True, train=True)
+
+   # split MNIST with 2 classes per tasks -> 5 tasks
+   continuum = ClassIncremental(dataset, increment=2)
+
+    # The continuum can then be enumerate tasks
+    for task_id, dataset in enumerate(continuum):
+
+        # We use here a cool function to split the dataset into train/val with 90% train
+        train_dataset, val_dataset = split_train_val(dataset, split_val = 0.1)
+
+         # train dataset is a normal data loader like in pytorch that can be used to load the task data
+         for x, y, t in train_dataset:
+                # data, label, task index
+                # train on the task here
+
+    # For testing we need to create another loader (It is importan to keep test a train separate)
+    dataset_test=MNIST("my/data/path", download=True, train=False)
+
+    # Choice 1: Test can be used as simple dataset
+    for x, y in dataset_test:
+        # data, label
+
+    # Choice 2:  we can also create a test continuum to frame test data as train data.
+    continuum_test = ClassIncremental(dataset, increment=2)
+
 
 Classes Incremental
 --------------------
@@ -35,18 +89,31 @@ tasks, each with new classes. See there some example arguments:
 
     from continuum import ClassIncremental
 
+    # first use case
+    # first 2 classes per tasks
+    continuum = ClassIncremental(
+        train_continual_dataset,
+        increment=2,
+        transformations=[Transforms.ToTensor()]
+    )
+
+    # second use case
+    # first task with 2 classes then 10 classes per tasks until the end
     continuum = ClassIncremental(
         train_continual_dataset,
         increment=10,
         initial_increment=2,
-        transformations=[
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
-        ]
+        transformations=[Transforms.ToTensor()]
     )
 
-Here the first task is made of 2 classes, then all following tasks of 10 classes. You can have a more finegrained increment by providing a list of `increment=[2, 10, 5, 10]`.
-If you want a clloader for the test data, you'll need to create another one with a test continual dataset.
+    # third use case
+    # first task with 2, second task 10, third 5, ...
+    continuum = ClassIncremental(
+        train_continual_dataset,
+        increment=[2, 10, 5, 10],
+        transformations=[Transforms.ToTensor()]
+    )
+
 
 Instance Incremental
 --------------------
@@ -72,9 +139,8 @@ with 10 different domains. Each domain represents a new task.
     from continuum import InstanceIncremental
     from continuum.datasets import MultiNLI
 
-    continuum = InstanceIncremental(
-        MultiNLI("/my/path/where/to/download")
-    )
+    dataset = MultiNLI("/my/path/where/to/download")
+    continuum = InstanceIncremental(dataset=dataset)
 
 Transformed Incremental
 -----------------------
@@ -87,13 +153,53 @@ Transformed Incremental
 The main difference with instance incremental, is that the scenarios builder has control of the different transformation spaces.
 It is then easier to evaluate in which transformation space the algorithm is still able to generalize or not.
 
+NB: the transformation used are pytorch.transforms classes (https://pytorch.org/docs/stable/torchvision/transforms.html)
+
+.. code-block:: python
+
+    from continuum import TransformationIncremental
+
+    list_of_transformation = [Trsf_0, Trsf_1, Trsf_2]
+
+    # three tasks continuum, tasks 0 with Trsf_0 transformation
+    continuum = TransformationIncremental(dataset=my_continual_dataset,
+        incremental_transformations=list_transf
+    )
+
+
+
 - Permutations Incremental [source](https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/permutations.py)
 is a famous case of TransformationIncremental class, in this case the transformation is a fixed pixel permutation. Each task has a specific permutation.
 The scenarios is then to learn a same task in various permutation spaces.
 
+.. code-block:: python
+
+    from continuum.datasets import MNIST
+    from continuum.scenarios import Permutations
+
+    dataset=MNIST("my/data/path", download=True, train=True)
+
+    # A sequence of permutations is initialized from seed `seed` each task is with different pixel permutation
+    # shared_label_space=True means that all classes use the same label space
+    # ex: an image of the zeros digit will be always be labelized as a 0 ( if shared_label_space=False, zeros digit image permutated will got another label than the original one)
+    continuum = Permutations(cl_dataset=dataset, nb_tasks=nb_tasks, seed=seed, shared_label_space=True)
+
 - Rotations Incremental [source](https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/rotations.py)
 is also a famous case of TransformationIncremental class, in this case the transformation is a rotation of image. Each task has a specific rotation or range of rotation.
 The scenarios is then to learn a same task in various rotations spaces.
+
+.. code-block:: python
+
+    from continuum.datasets import MNIST
+    from continuum.scenarios import Rotations
+
+    # first example with 3 tasks with fixed rotations
+    list_degrees = [0, 45, 90]
+    # second example with 3 tasks with ranges of rotations
+    list_degrees = [0, (40,50), (85,95)]
+
+    dataset=MNIST("my/data/path", download=True, train=True)
+    continuum = Rotations(cl_dataset=dataset, nb_tasks=nb_tasks, list_degrees=list_degrees)
 
 New Class and Instance Incremental
 ----------------------------------
@@ -108,7 +214,9 @@ New Class and Instance Incremental
 NIC setting is a special case of NI setting. For now, only the CORe50 dataset
 supports this setting.
 
+.. code-block:: python
 
+    # Not implemented yet
 
 Adding Your Own Scenarios
 ----------------------------------
