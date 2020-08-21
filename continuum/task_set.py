@@ -20,12 +20,12 @@ class TaskSet(TorchDataset):
     """
 
     def __init__(
-        self,
-        x: np.ndarray,
-        y: np.ndarray,
-        t: np.ndarray,
-        trsf: transforms.Compose,
-        data_type: str = "image_array"
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            t: np.ndarray,
+            trsf: transforms.Compose,
+            data_type: str = "image_array"
     ):
 
         self._x, self._y, self._t = x, y, t
@@ -42,7 +42,7 @@ class TaskSet(TorchDataset):
         return np.unique(self._y)
 
     def add_samples(
-        self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None
+            self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None
     ):
         """Add memory for rehearsal.
 
@@ -59,11 +59,11 @@ class TaskSet(TorchDataset):
             self._t = np.concatenate((self._t, -1 * np.ones(len(x))))
 
     def plot(
-        self,
-        path: Union[str, None] = None,
-        title: str = "",
-        nb_samples: int = 100,
-        shape=None
+            self,
+            path: Union[str, None] = None,
+            title: str = "",
+            nb_samples: int = 100,
+            shape=None
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -94,7 +94,7 @@ class TaskSet(TorchDataset):
             targets.append(y)
             tasks.append(t)
 
-        return torch.stack(images), torch.tensor(targets), torch.tensor(tasks)
+        return torch.stack(images), torch.Tensor(targets), torch.Tensor(tasks)
 
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
@@ -123,13 +123,13 @@ class TaskSet(TorchDataset):
             img = self.trsf(img)
 
         # we impose output data to be Tensor
-        if not type(img) == torch.Tensor:
+        if not isinstance(img, torch.Tensor):
             img = transforms.ToTensor()(img)
 
         return img, y, t
 
     def get_raw_samples(self, indexes):
-        """Get samples without preprocessing, for split train/val for example"""
+        """Get samples without preprocessing, for split train/val for example."""
         return self._x[indexes], self._y[indexes], self._t[indexes]
 
 

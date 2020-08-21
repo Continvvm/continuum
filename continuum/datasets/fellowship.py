@@ -9,17 +9,16 @@ from continuum.datasets.pytorch import (CIFAR10, CIFAR100, KMNIST, MNIST, Fashio
 class Fellowship(_ContinuumDataset):
 
     def __init__(
-        self,
-        dataset_list: List[Type[_ContinuumDataset]],
-        data_path: str = "",
-        download: bool = True,
+            self,
+            dataset_list: List[Type[_ContinuumDataset]],
+            data_path: str = "",
+            download: bool = True,
     ):
         super().__init__(data_path, download)
 
         self.datasets = [dataset(data_path, download) for dataset in dataset_list]
 
-
-    def get_data(self) -> Tuple[np.ndarray, np.ndarray,  np.ndarray]:
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y, t = [], [], []
         class_counter = 0
 
@@ -28,7 +27,7 @@ class Fellowship(_ContinuumDataset):
 
             x.append(data[0])
             y.append(data[1] + class_counter)
-            t.append(np.ones(len(data[0])*i))
+            t.append(np.ones(len(data[0]) * i))
 
             class_counter += len(np.unique(data[1]))
 

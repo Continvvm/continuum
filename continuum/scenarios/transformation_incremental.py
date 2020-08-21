@@ -41,10 +41,6 @@ class TransformationIncremental(InstanceIncremental):
         self.shared_label_space = shared_label_space
         self.num_classes_per_task = len(np.unique(self.dataset[1]))  # the num of classes is the same for all task is this scenario
 
-    def get_task_index(self, nb_tasks, y):
-        # all tasks have all labels, only the transformation change
-        return y
-
     @property
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
@@ -63,7 +59,7 @@ class TransformationIncremental(InstanceIncremental):
 
     def update_labels(self, task_index):
         # wrong
-        #new_y = self.dataset[1] + task_index * self.num_classes_per_task
+        # new_y = self.dataset[1] + task_index * self.num_classes_per_task
         # we update incrementally then update is simply:
         if task_index > 0:
             new_y = self.dataset[1] + self.num_classes_per_task
