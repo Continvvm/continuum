@@ -91,7 +91,7 @@ any loaders like you would do with Python's List.
 
    _autogen/continuum*
 
-This library was developped by `Arthur Douillard <https://arthurdouillard.com/>`
-and `Timothée Lesort <https://tlesort.github.io/>`. If you have any new feature
-request or want to report a bug, please open an issue `here <https://github.com/Continvvm/continuum/issues>`.
-We are also open to `pull requests <https://github.com/Continvvm/continuum/pulls>`!
+This library was developped by `Arthur Douillard<https://arthurdouillard.com/>`_
+and `Timothée Lesort<https://tlesort.github.io/>`_. If you have any new feature
+request or want to report a bug, please open an issue `here<https://github.com/Continvvm/continuum/issues>`_.
+We are also open to `pull requests<https://github.com/Continvvm/continuum/pulls>`_!
