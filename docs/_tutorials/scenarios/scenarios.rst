@@ -18,7 +18,7 @@ Scenarios consist in learning from a sequence of tasks we call continuum. Here i
 
     # Then the dataset is provided to a continuum class that will process it to create the sequence of tasks
     # the continuum might get specific argument, such as number of tasks.
-    continuum = MyContinuumClass(
+    continuum = MyContinuumScenario(
         continual_dataset, SomeOtherArguments
     )
 
@@ -35,26 +35,30 @@ A practical example with split MNIST:
 
 .. code-block:: python
 
-   from continuum.datasets import MNIST
-   from continuum.tasks import Taskset, split_train_val
-   dataset=MNIST("my/data/path", download=True, train=True)
+    from torch.utils.data import DataLoader
+    from continuum.datasets import MNIST
+    from continuum import ClassIncremental
+    from continuum.tasks import Taskset, split_train_val
 
-   # split MNIST with 2 classes per tasks -> 5 tasks
-   continuum = ClassIncremental(dataset, increment=2)
+    dataset=MNIST("my/data/path", download=True, train=True)
+
+    # split MNIST with 2 classes per tasks -> 5 tasks
+    continuum = ClassIncremental(dataset, increment=2)
 
     # The continuum can then be enumerate tasks
     for task_id, dataset in enumerate(continuum):
 
         # We use here a cool function to split the dataset into train/val with 90% train
         train_dataset, val_dataset = split_train_val(dataset, split_val = 0.1)
+        train_loader = DataLoader(train_dataset)
 
          # train dataset is a normal data loader like in pytorch that can be used to load the task data
-         for x, y, t in train_dataset:
+         for x, y, t in train_loader:
                 # data, label, task index
                 # train on the task here
 
     # For testing we need to create another loader (It is importan to keep test a train separate)
-    dataset_test=MNIST("my/data/path", download=True, train=False)
+    dataset_test = MNIST("my/data/path", download=True, train=False)
 
     # Choice 1: you can just get the test data and evaluate you model with it
     x,y,_ = dataset_test.get_data()
@@ -178,9 +182,9 @@ The scenarios is then to learn a same task in various permutation spaces.
 .. code-block:: python
 
     from continuum.datasets import MNIST
-    from continuum.scenarios import Permutations
+    from continuum import Permutations
 
-    dataset=MNIST("my/data/path", download=True, train=True)
+    dataset = MNIST("my/data/path", download=True, train=True)
 
     # A sequence of permutations is initialized from seed `seed` each task is with different pixel permutation
     # shared_label_space=True means that all classes use the same label space
@@ -194,14 +198,14 @@ The scenarios is then to learn a same task in various rotations spaces.
 .. code-block:: python
 
     from continuum.datasets import MNIST
-    from continuum.scenarios import Rotations
+    from continuum import Rotations
 
     # first example with 3 tasks with fixed rotations
     list_degrees = [0, 45, 90]
     # second example with 3 tasks with ranges of rotations
     list_degrees = [0, (40,50), (85,95)]
 
-    dataset=MNIST("my/data/path", download=True, train=True)
+    dataset = MNIST("my/data/path", download=True, train=True)
     continuum = Rotations(cl_dataset=dataset, nb_tasks=nb_tasks, list_degrees=list_degrees)
 
 New Class and Instance Incremental
