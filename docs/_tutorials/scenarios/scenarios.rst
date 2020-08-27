@@ -53,9 +53,9 @@ A practical example with split MNIST:
     # For testing we need to create another loader (It is importan to keep test a train separate)
     dataset_test=MNIST("my/data/path", download=True, train=False)
 
-    # Choice 1: Test can be used as simple dataset
-    for x, y in dataset_test:
-        # data, label
+    # Choice 1: you can just get the test data and evaluate you model with it
+    x,y,_ = dataset_test.get_data()
+
 
     # Choice 2:  we can also create a test continuum to frame test data as train data.
     continuum_test = ClassIncremental(dataset, increment=2)
