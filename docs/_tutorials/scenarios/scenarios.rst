@@ -11,20 +11,23 @@ Scenarios consist in learning from a sequence of tasks we call continuum. Here i
 
 
 .. code-block:: python
-	
+	from torch.utils.data import DataLoader
+
     # First we get a dataset that will be used to compose tasks and the continuum
-    continual_daset = MyContinualDataset()
+    continual_dataset = MyContinualDataset()
 
     # Then the dataset is provided to a continuum class that will process it to create the sequence of tasks
     # the continuum might get specific argument, such as number of tasks.
     continuum = MyContinuumClass(
-        continual_dataset, SomeOtherArgumetns
+        continual_dataset, SomeOtherArguments
     )
 
     # The continuum can then be enumerate tasks
     for task_id, dataset in enumerate(continuum):
-          # train dataset is a normal data loader like in pytorch that can be used to load the task data
-          for x, y, t in dataset:
+          # dataset is a normal Pytorch Dataset can be used to load the task data
+          loader = DataLoader(dataset)
+
+          for x, y, t in loader:
                 # data, label, task index
                 # train on the task here
 
