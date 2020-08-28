@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Tuple, Union
 
 import numpy as np
@@ -5,7 +6,6 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
-from copy import copy
 
 from continuum.viz import plot_samples
 
@@ -21,20 +21,18 @@ class TaskSet(TorchDataset):
     """
 
     def __init__(
-            self,
-            x: np.ndarray,
-            y: np.ndarray,
-            t: np.ndarray,
-            trsf: transforms.Compose,
-            data_type: str = "image_array"
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        t: np.ndarray,
+        trsf: transforms.Compose,
+        data_type: str = "image_array"
     ):
-
         self._x, self._y, self._t = x, y, t
 
         # if task index are not provided t is always -1
         if self._t is None:
-            self._t = copy(self._y)
-            self._t.fill(-1)
+            self._t = -1 * np.ones_like(y)
 
         self.trsf = trsf
         self.data_type = data_type
@@ -48,9 +46,7 @@ class TaskSet(TorchDataset):
         """Array of all classes contained in the current task."""
         return np.unique(self._y)
 
-    def add_samples(
-            self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None
-    ):
+    def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
         """Add memory for rehearsal.
 
         :param x: Sampled data chosen for rehearsal.
@@ -66,11 +62,11 @@ class TaskSet(TorchDataset):
             self._t = np.concatenate((self._t, -1 * np.ones(len(x))))
 
     def plot(
-            self,
-            path: Union[str, None] = None,
-            title: str = "",
-            nb_samples: int = 100,
-            shape=None
+        self,
+        path: Union[str, None] = None,
+        title: str = "",
+        nb_samples: int = 100,
+        shape=None
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
