@@ -32,6 +32,7 @@ Scenarios consist in learning from a sequence of tasks we call continuum. Here i
           for x, y, t in loader:
                 # data, label, task index
                 # train on the task here
+                break
 
 A practical example with split MNIST:
 
@@ -40,9 +41,10 @@ A practical example with split MNIST:
     from torch.utils.data import DataLoader
     from continuum.datasets import MNIST
     from continuum import ClassIncremental
-    from continuum.tasks import Taskset, split_train_val
+    from continuum.tasks import split_train_val
 
-    dataset=MNIST("my/data/path", download=True, train=True)
+
+    dataset=MNIST(data_path="my/data/path", download=True, train=True)
 
     # split MNIST with 2 classes per tasks -> 5 tasks
     continuum = ClassIncremental(dataset, increment=2)
@@ -51,25 +53,23 @@ A practical example with split MNIST:
     for task_id, dataset in enumerate(continuum):
 
         # We use here a cool function to split the dataset into train/val with 90% train
-        train_dataset, val_dataset = split_train_val(dataset, split_val = 0.1)
+        train_dataset, val_dataset = split_train_val(dataset, val_split = 0.1)
         train_loader = DataLoader(train_dataset)
 
          # train dataset is a normal data loader like in pytorch that can be used to load the task data
-         for x, y, t in train_loader:
-                # data, label, task index
-                # train on the task here
+        for x, y, t in train_loader:
+            # data, label, task index
+            # train on the task here
+            break
 
     # For testing we need to create another loader (It is importan to keep test a train separate)
-    dataset_test = MNIST("my/data/path", download=True, train=False)
+    dataset_test = MNIST(data_path="my/data/path", download=True, train=False)
 
-    # Choice 1: you can just get the test data and evaluate you model with it
-    test_loader = DataLoader(dataset_test)
-    for x, y, t in test_loader:
-        # something
-        break
 
-    # Choice 2:  we can also create a test continuum to frame test data as train data.
-    continuum_test = ClassIncremental(dataset, increment=2)
+    # You can also create a test continuum to frame test data as train data.
+    continuum_test = ClassIncremental(dataset_test, increment=2)
+
+    # then iterate through tasks
     for task_id, test_dataset in enumerate(continuum):
         test_loader = DataLoader(test_dataset)
         for x, y, t in test_loader:
@@ -78,6 +78,7 @@ A practical example with split MNIST:
 
     # you can also select specific task(s) in the continuum
     # select task i
+    i=2
     dataset_task = continuum_test[i]
 
     # select tasks i to i+2
@@ -113,30 +114,33 @@ tasks, each with new classes. See there some example arguments:
 .. code-block:: python
 
     from continuum import ClassIncremental
+    from torchvision.transforms import transforms
+
+    continual_dataset=MNIST(data_path="my/data/path", download=True, train=True)
 
     # first use case
     # first 2 classes per tasks
     continuum = ClassIncremental(
-        train_continual_dataset,
+        continual_dataset,
         increment=2,
-        transformations=[Transforms.ToTensor()]
+        transformations=[transforms.ToTensor()]
     )
 
     # second use case
-    # first task with 2 classes then 10 classes per tasks until the end
+    # first task with 2 classes then 4 classes per tasks until the end
     continuum = ClassIncremental(
-        train_continual_dataset,
-        increment=10,
+        continual_dataset,
+        increment=4,
         initial_increment=2,
-        transformations=[Transforms.ToTensor()]
+        transformations=[transforms.ToTensor()]
     )
 
     # third use case
-    # first task with 2, second task 10, third 5, ...
+    # first task with 2, second task 3, third 1, ...
     continuum = ClassIncremental(
-        train_continual_dataset,
-        increment=[2, 10, 5, 10],
-        transformations=[Transforms.ToTensor()]
+        continual_dataset,
+        increment=[2, 3, 1, 4],
+        transformations=[transforms.ToTensor()]
     )
 
 
@@ -188,7 +192,7 @@ NB: the transformation used are pytorch.transforms classes (https://pytorch.org/
 
     # three tasks continuum, tasks 0 with Trsf_0 transformation
     continuum = TransformationIncremental(dataset=my_continual_dataset,
-        incremental_transformations=list_transf
+        incremental_transformations=list_of_transformation
     )
 
 
@@ -202,7 +206,9 @@ The scenarios is then to learn a same task in various permutation spaces.
     from continuum.datasets import MNIST
     from continuum import Permutations
 
-    dataset = MNIST("my/data/path", download=True, train=True)
+    dataset = MNIST(data_path="my/data/path", download=True, train=True)
+    nb_tasks=5
+    seed = 0
 
     # A sequence of permutations is initialized from seed `seed` each task is with different pixel permutation
     # shared_label_space=True means that all classes use the same label space
@@ -218,12 +224,13 @@ The scenarios is then to learn a same task in various rotations spaces.
     from continuum.datasets import MNIST
     from continuum import Rotations
 
+    nb_tasks = 3
     # first example with 3 tasks with fixed rotations
     list_degrees = [0, 45, 90]
     # second example with 3 tasks with ranges of rotations
     list_degrees = [0, (40,50), (85,95)]
 
-    dataset = MNIST("my/data/path", download=True, train=True)
+    dataset = MNIST(data_path="my/data/path", download=True, train=True)
     continuum = Rotations(cl_dataset=dataset, nb_tasks=nb_tasks, list_degrees=list_degrees)
 
 New Class and Instance Incremental

@@ -65,4 +65,4 @@ Useful functions
     task_set = MyTaskSet()
 
     # split the task_set such as 10% of the data, randomly selected, are used for validation.
-    task_set_train, task_set_valid = (task_set, split_val = 0.1)
+    task_set_train, task_set_valid = (task_set, val_split = 0.1)
