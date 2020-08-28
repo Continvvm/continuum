@@ -1,3 +1,5 @@
+Continuum Scenarios
+-----------------
 
 Continual learning (CL) aim is to learn without forgetting in the most "satisfying" way. To evaluate the capacity of different CL algorithms the community use different type of benchmarks scenarios. 
 
@@ -61,12 +63,28 @@ A practical example with split MNIST:
     dataset_test = MNIST("my/data/path", download=True, train=False)
 
     # Choice 1: you can just get the test data and evaluate you model with it
-    x,y,_ = dataset_test.get_data()
-
+    test_loader = DataLoader(dataset_test)
+    for x, y, t in test_loader:
+        # something
+        break
 
     # Choice 2:  we can also create a test continuum to frame test data as train data.
     continuum_test = ClassIncremental(dataset, increment=2)
+    for task_id, test_dataset in enumerate(continuum):
+        test_loader = DataLoader(test_dataset)
+        for x, y, t in test_loader:
+            # something
+            break
 
+    # you can also select specific task(s) in the continuum
+    # select task i
+    dataset_task = continuum_test[i]
+
+    # select tasks i to i+2
+    dataset_tasks = continuum_test[i:i+2]
+
+    # select all tasks
+    dataset_all_tasks = continuum_test[:]
 
 Classes Incremental
 --------------------
