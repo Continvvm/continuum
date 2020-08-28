@@ -5,6 +5,7 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
+from copy import copy
 
 from continuum.viz import plot_samples
 
@@ -29,6 +30,12 @@ class TaskSet(TorchDataset):
     ):
 
         self._x, self._y, self._t = x, y, t
+
+        # if task index are not provided t is always -1
+        if self._t is None:
+            self._t = copy(self._y)
+            self._t.fill(-1)
+
         self.trsf = trsf
         self.data_type = data_type
 
