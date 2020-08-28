@@ -5,8 +5,8 @@ When the learning scenario jumps from one task to another it means that somethin
 In Continuum the task_set class is a set of data that can be loaded with pytorch loader and sampled to feed data to an algorithm.
 The scenarios are composed then by a sequence of task_set. Each task_set defines then a learning problem that the algorithm will have to solve one by one.
 
-
 In Continuum, the user doesn't have to create tasks with task_set class, the tasks are created with the scenarios classes.
+Thus we don't recommend you to play directly with this API if you're unsure about what you're doing.
 
 Nevertheless, even if it is not very useful, it is still possible to create a task.
 

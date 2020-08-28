@@ -1,9 +1,9 @@
 Continuum Scenarios
 -----------------
 
-Continual learning (CL) aim is to learn without forgetting in the most "satisfying" way. To evaluate the capacity of different CL algorithms the community use different type of benchmarks scenarios. 
+Continual learning (CL) aim is to learn without forgetting in the most "satisfying" way. To evaluate the capacity of different CL algorithms the community use different type of benchmarks scenarios.
 
-In Continuum, we implemented the four main types of scenarios used in the community: Class Incremental, Instance Incremental, New Class and Instance Incremental, and, Transformed Incremental. Those scenarios are originally suited for classification but they might be adapted for unsupervised learning, self-supervised learning or reinforcement learning. 
+In Continuum, we implemented the four main types of scenarios used in the community: Class Incremental, Instance Incremental, New Class and Instance Incremental, and, Transformed Incremental. Those scenarios are originally suited for classification but they might be adapted for unsupervised learning, self-supervised learning or reinforcement learning.
 
 For each scenario, there is a finite set of tasks and the goal is to learn the tasks one by one and to be able to generalize at the end to a test set composed of data from all tasks.
 
@@ -13,6 +13,7 @@ Scenarios consist in learning from a sequence of tasks we call continuum. Here i
 
 
 .. code-block:: python
+
 	from torch.utils.data import DataLoader
 
     # First we get a dataset that will be used to compose tasks and the continuum
@@ -34,17 +35,19 @@ Scenarios consist in learning from a sequence of tasks we call continuum. Here i
                 # train on the task here
                 break
 
+
 A practical example with split MNIST:
 
 .. code-block:: python
 
     from torch.utils.data import DataLoader
-    from continuum.datasets import MNIST
+
     from continuum import ClassIncremental
+    from continuum.datasets import MNIST
     from continuum.tasks import split_train_val
 
 
-    dataset=MNIST(data_path="my/data/path", download=True, train=True)
+    dataset = MNIST(data_path="my/data/path", download=True, train=True)
 
     # split MNIST with 2 classes per tasks -> 5 tasks
     continuum = ClassIncremental(dataset, increment=2)
@@ -77,8 +80,9 @@ A practical example with split MNIST:
             break
 
     # you can also select specific task(s) in the continuum
+    # It's just python slicing!
     # select task i
-    i=2
+    i = 2
     dataset_task = continuum_test[i]
 
     # select tasks i to i+2
@@ -87,19 +91,20 @@ A practical example with split MNIST:
     # select all tasks
     dataset_all_tasks = continuum_test[:]
 
+
 Classes Incremental
 --------------------
 
-*In short:* 
+*In short:*
 
 Each new task bring instances from new classes only.
 
-*Aim:* 
+*Aim:*
 
 Evaluate the capability of an algorithms to learn concept sequentially, i.e. create representaion able to distinguish concepts and find the right decision boundaries without access to all past data.
 
 *Some Details:*
- 
+
 The continuum of data is composed of several tasks. Each task contains class(es) that is/are specific to this task. One class can not be in several tasks.
 
 One example, MNIST class incremental with five balanced tasks, MNIST has 10 classes then:
@@ -113,10 +118,11 @@ tasks, each with new classes. See there some example arguments:
 
 .. code-block:: python
 
-    from continuum import ClassIncremental
     from torchvision.transforms import transforms
 
-    continual_dataset=MNIST(data_path="my/data/path", download=True, train=True)
+    from continuum import ClassIncremental
+
+    continual_dataset = MNIST(data_path="my/data/path", download=True, train=True)
 
     # first use case
     # first 2 classes per tasks
@@ -147,11 +153,11 @@ tasks, each with new classes. See there some example arguments:
 Instance Incremental
 --------------------
 
-*In short:* 
+*In short:*
 
 Each new tasks bring new instances from known classes.
 
-*Aim:* 
+*Aim:*
 
 Evaluate the capability of an algorithms to improve its generalization capabilities through new data points, i.e. improve representation without access to all past data.
 
@@ -170,6 +176,7 @@ with 10 different domains. Each domain represents a new task.
 
     dataset = MultiNLI("/my/path/where/to/download")
     continuum = InstanceIncremental(dataset=dataset)
+
 
 Transformed Incremental
 -----------------------
@@ -191,7 +198,8 @@ NB: the transformation used are pytorch.transforms classes (https://pytorch.org/
     list_of_transformation = [Trsf_0, Trsf_1, Trsf_2]
 
     # three tasks continuum, tasks 0 with Trsf_0 transformation
-    continuum = TransformationIncremental(dataset=my_continual_dataset,
+    continuum = TransformationIncremental(
+        dataset=my_continual_dataset,
         incremental_transformations=list_of_transformation
     )
 
@@ -203,11 +211,11 @@ The scenarios is then to learn a same task in various permutation spaces.
 
 .. code-block:: python
 
-    from continuum.datasets import MNIST
     from continuum import Permutations
+    from continuum.datasets import MNIST
 
     dataset = MNIST(data_path="my/data/path", download=True, train=True)
-    nb_tasks=5
+    nb_tasks = 5
     seed = 0
 
     # A sequence of permutations is initialized from seed `seed` each task is with different pixel permutation
@@ -221,8 +229,8 @@ The scenarios is then to learn a same task in various rotations spaces.
 
 .. code-block:: python
 
-    from continuum.datasets import MNIST
     from continuum import Rotations
+    from continuum.datasets import MNIST
 
     nb_tasks = 3
     # first example with 3 tasks with fixed rotations
@@ -231,7 +239,12 @@ The scenarios is then to learn a same task in various rotations spaces.
     list_degrees = [0, (40,50), (85,95)]
 
     dataset = MNIST(data_path="my/data/path", download=True, train=True)
-    continuum = Rotations(cl_dataset=dataset, nb_tasks=nb_tasks, list_degrees=list_degrees)
+    continuum = Rotations(
+        cl_dataset=dataset,
+        nb_tasks=nb_tasks,
+        list_degrees=list_degrees
+    )
+
 
 New Class and Instance Incremental
 ----------------------------------
@@ -249,6 +262,7 @@ supports this setting.
 .. code-block:: python
 
     # Not implemented yet
+
 
 Adding Your Own Scenarios
 ----------------------------------
