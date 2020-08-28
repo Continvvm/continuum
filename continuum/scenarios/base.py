@@ -5,7 +5,7 @@ import numpy as np
 from torchvision import transforms
 
 from continuum.datasets import _ContinuumDataset
-from continuum.task_set import TaskSet
+from continuum.tasks import TaskSet
 
 
 class _BaseCLLoader(abc.ABC):

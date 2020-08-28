@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from torch.utils.data import DataLoader
 
-from continuum import split_train_val
+from continuum.tasks import split_train_val
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import ClassIncremental
 
