@@ -1,27 +1,44 @@
 Existing Datasets
 -----------------
 
++-----+------------+------------+--------------------+------+
 |Name | Nb classes | Image Size | Automatic Download | Type |
-|:----|:---:|:----:|:---:|:---:|
-| **MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
-| **Fashion MNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
-| **KMNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
-| **EMNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
-| **QMNIST** | 10 | 28x28x1 | :white_check_mark: | :eyes: |
-| **MNIST Fellowship** | 30 | 28x28x1 | :white_check_mark: | :eyes: |
-| **CIFAR10** | 10 | 32x32x3 | :white_check_mark: | :eyes: |
-| **CIFAR100** | 100 | 32x32x3 | :white_check_mark: | :eyes: |
-| **CIFAR Fellowship** | 110 | 32x32x3 | :white_check_mark: | :eyes: |
-| **ImageNet100** | 100 | 224x224x3 | :x: | :eyes: |
-| **ImageNet1000** | 1000 | 224x224x3 | :x: | :eyes: |
-| **CORe50** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
-| **CORe50-v2-79** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
-| **CORe50-v2-196** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
-| **CORe50-v2-391** | 50 | 224x224x3 | :white_check_mark: | :eyes: |
-| **MultiNLI** | 5 | | :white_check_mark: | :book: |
++=====+============+============+====================+======+
+| **MNIST** | 10 | 28x28x1 | YES | Images |
++-----------+----+---------+-----+--------+
+| **Fashion MNIST** | 10 | 28x28x1 | YES | Images |
++-----------+----+---------+-----+--------+
+| **KMNIST** | 10 | 28x28x1 | YES | Images |
++-----------+----+---------+-----+--------+
+| **EMNIST** | 10 | 28x28x1 | YES | Images |
++-----------+----+---------+-----+--------+
+| **QMNIST** | 10 | 28x28x1 | YES | Images |
++-----------+----+---------+-----+--------+
+| **MNIST Fellowship** | 30 | 28x28x1 | YES | Images |
++-----------+----+---------+-----+--------+
+| **CIFAR10** | 10 | 32x32x3 | YES | Images |
++-----------+----+---------+-----+--------+
+| **CIFAR100** | 100 | 32x32x3 | YES | Images |
++-----------+----+---------+-----+--------+
+| **CIFAR Fellowship** | 110 | 32x32x3 | YES | Images |
++-----------+----+---------+-----+--------+
+| **ImageNet100** | 100 | 224x224x3 | NO | Images |
++-----------+----+---------+-----+--------+
+| **ImageNet1000** | 1000 | 224x224x3 | NO | Images |
++-----------+----+---------+-----+--------+
+| **CORe50** | 50 | 224x224x3 | YES | Images |
++-----------+----+---------+-----+--------+
+| **CORe50-v2-79** | 50 | 224x224x3 | YES | Images |
++-----------+----+---------+-----+--------+
+| **CORe50-v2-196** | 50 | 224x224x3 | YES | Images |
++-----------+----+---------+-----+--------+
+| **CORe50-v2-391** | 50 | 224x224x3 | YES | Images |
++-----------+----+---------+-----+--------+
+| **MultiNLI** | 5 | | YES | Text |
++-----------+----+---------+-----+--------+
 
 All datasets have for arguments `train` and `download`, like a
-`torchvision.dataset<https://pytorch.org/docs/stable/torchvision/datasets.html>`_. Those datasets are then modified to create [continuum scenarios](https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html).
+`torchvision.dataset <https://pytorch.org/docs/stable/torchvision/datasets.html>`__. Those datasets are then modified to create `continuum scenarios <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html>`__.
 
 Once a dataset is created, it is fed to a scenario that will split it in multiple tasks.
 
@@ -139,5 +156,5 @@ Note that Continuum already provide pre-made Fellowship:
 You may want datasets that have a different transformation for each new task, e.g.
 MNIST with different rotations or pixel permutations. Continuum also handles it!
 However it's a scenario's speficic, not dataset, thus look over the
-`Scenario doc <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenario.html#transformed-incremental>`__.
+`Scenario doc <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html#transformed-incremental>`__.
 
