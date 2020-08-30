@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="continuum",
-    version="0.1.1",
+    version="0.2.0",
     author="Arthur Douillard, Timothée Lesort",
     author_email="ar.douillard@gmail.com",
     description="A clean and simple library for Continual Learning in PyTorch.",
