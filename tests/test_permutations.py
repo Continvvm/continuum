@@ -5,6 +5,7 @@ from torchvision.transforms import transforms
 
 from continuum.scenarios import Permutations
 from tests.test_classorder import InMemoryDatasetTest
+from continuum.datasets import MNIST, CIFAR100
 
 
 @pytest.fixture
@@ -64,3 +65,20 @@ def test_init(numpy_data, seed):
         for x in previous_x:
             assert not (x == x_1).all()
         previous_x.append(x_1.clone())
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("shared_label_space", [True, False])
+@pytest.mark.parametrize("dataset", [MNIST, CIFAR100])
+def test_with_dataset(dataset, shared_label_space):
+    dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
+    continuum = Permutations(cl_dataset=dataset, nb_tasks=5, seed=0, shared_label_space=shared_label_space)
+
+    for task_id, dataset in enumerate(continuum):
+
+        classes = dataset.get_classes()
+
+        if shared_label_space:
+            assert len(classes) == classes.max() + 1
+        else:
+            assert len(classes) == classes.max() + 1 - (task_id * len(classes))

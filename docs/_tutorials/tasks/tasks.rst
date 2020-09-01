@@ -45,20 +45,20 @@ In real-life scenarios, the separation of the learning process might be impossib
 Useful methods
 --------------------
 
-- `get_random_samples(nb_samples)` provide random samples from the task, useful for visualization and control.
+- ``get_random_samples(nb_samples)`` provide random samples from the task, useful for visualization and control.
 
-- `get_raw_samples(indexes)` provide samples from the task without applying any transformation, useful for visualization and control.
+- ``get_raw_samples(indexes)`` provide samples from the task without applying any transformation, useful for visualization and control.
 
-- `get_classes()` provide an array containing all the classes from the task_set object.
+- ``get_classes()`` provide an array containing all the classes from the task_set object.
 
-- `nb_classes()` provide the number of classes.
+- ``nb_classes()`` provide the number of classes.
 
-- `add_samples(x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None` makes possible to add manually data into the training set, might be useful for rehearsal strategies.
+- ``add_samples(x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None)`` makes possible to add manually data into the training set, might be useful for rehearsal strategies.
 
 Useful functions
 --------------------
 
-- `split_train_val(dataset, split_val = 0.1)` split a task_set into two for validation purpose
+- ``split_train_val(dataset, split_val = 0.1)`` split a task_set into two for validation purpose
 
 .. code-block:: python
 
