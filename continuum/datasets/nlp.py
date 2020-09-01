@@ -99,7 +99,7 @@ class MultiNLI(_ContinuumDataset):
                 texts.append((line_parsed["sentence1"], line_parsed["sentence2"]))
                 targets.append(available_targets.index(line_parsed["gold_label"]))
 
-                if train:  # We add a new domain id for the train set.
+                if self.train:  # We add a new domain id for the train set.
                     genres.append(available_genres.index(line_parsed["genre"]))
                 else:  # Test set is fixed, therefore we artificially give a unique domain.
                     genres.append(0)
