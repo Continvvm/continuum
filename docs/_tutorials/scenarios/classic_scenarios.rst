@@ -26,8 +26,6 @@ We propose here a list of classic continual learning scenarios used in the liter
 .. code-block:: python
     from continuum import Permutations
     from continuum.datasets import MNIST
-
-    dataset = MNIST(data_path="my/data/path", download=True, train=True)
     continuum = Permutations(
                              MNIST(data_path="my/data/path", download=True, train=True),
                              nb_tasks=5,
@@ -40,7 +38,6 @@ We propose here a list of classic continual learning scenarios used in the liter
 
     from continuum import Rotations
     from continuum.datasets import MNIST
-
     continuum = Rotations(
         MNIST(data_path="my/data/path", download=True, train=True),
         nb_tasks=3,
