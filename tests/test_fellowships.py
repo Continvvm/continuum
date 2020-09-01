@@ -1,46 +1,46 @@
-import numpy as np
 import pytest
-import os
-
-from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST
-from continuum.datasets import Fellowship, CIFARFellowship, MNISTFellowship
 
 from continuum import ClassIncremental
+from continuum.datasets import (
+    CIFAR10, CIFAR100, KMNIST, MNIST, CIFARFellowship, FashionMNIST, Fellowship, MNISTFellowship
+)
+
 
 @pytest.mark.slow
 def test_MNIST_Fellowship():
     cl_dataset = MNISTFellowship(data_path="./tests/Datasets", train=True, download=True)
+    cl_dataset.get_data()
+    continuum = ClassIncremental(cl_dataset, increment=10)
+    assert len(continuum) == 3
 
 
 @pytest.mark.slow
 def test_CIFAR_Fellowship():
     cl_dataset = CIFARFellowship(data_path="./tests/Datasets", train=True, download=True)
-
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("list_datasets", [[MNIST, FashionMNIST],
-                                           [KMNIST, MNIST, FashionMNIST],
-                                           [CIFAR10, CIFAR100],
-                                           [KMNIST, MNIST, FashionMNIST, CIFAR10, CIFAR100]])
-def test_Fellowship(list_datasets):
-    cl_dataset = Fellowship(data_path="./tests/Datasets", dataset_list=list_datasets)
+    continuum = ClassIncremental(cl_dataset, increment=10)
+    assert len(continuum) == 11
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("list_datasets", [[MNIST, FashionMNIST],
-                                           [KMNIST, MNIST, FashionMNIST]])
+@pytest.mark.parametrize(
+    "list_datasets,nb_tasks", [
+        ([MNIST, FashionMNIST], 2),
+        ([KMNIST, MNIST, FashionMNIST], 3),
+        ([CIFAR10, CIFAR100], 11),
+    ]
+)
 #@pytest.mark.parametrize("shared_label_space", [True, False])
-def test_Fellowship_classes(list_datasets):
+def test_Fellowship_classes(list_datasets, nb_tasks):
     cl_dataset = Fellowship(data_path="./tests/Datasets", dataset_list=list_datasets)
     continuum = ClassIncremental(cl_dataset, increment=10)
 
+    assert len(continuum) == nb_tasks
     for task_id, taskset in enumerate(continuum):
-
         classes = taskset.get_classes()
 
         # we check if all classes are here
-        assert len(classes) == (classes.max()-classes.min()+1)
+        assert len(classes) == (classes.max() - classes.min() + 1)
+
 
 @pytest.mark.slow
 @pytest.mark.parametrize("list_datasets", [[MNIST, CIFAR10]])
