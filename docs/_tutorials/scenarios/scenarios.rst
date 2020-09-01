@@ -95,16 +95,13 @@ A practical example with split MNIST:
 Classes Incremental
 --------------------
 
-*In short:*
-
+**In short:**
 Each new task bring instances from new classes only.
 
-*Aim:*
-
+**Aim:**
 Evaluate the capability of an algorithms to learn concept sequentially, i.e. create representaion able to distinguish concepts and find the right decision boundaries without access to all past data.
 
-*Some Details:*
-
+**Some Details:**
 The continuum of data is composed of several tasks. Each task contains class(es) that is/are specific to this task. One class can not be in several tasks.
 
 One example, MNIST class incremental with five balanced tasks, MNIST has 10 classes then:
@@ -113,7 +110,7 @@ One example, MNIST class incremental with five balanced tasks, MNIST has 10 clas
 ...
 - task 4 contains data points labelled as 8 and 9
 
-The Continual Loader `ClassIncremental` loads the data and batch it in several
+The Continual Loader *ClassIncremental* loads the data and batch it in several
 tasks, each with new classes. See there some example arguments:
 
 .. code-block:: python
@@ -153,19 +150,16 @@ tasks, each with new classes. See there some example arguments:
 Instance Incremental
 --------------------
 
-*In short:*
-
+**In short:**
 Each new tasks bring new instances from known classes.
 
-*Aim:*
-
+**Aim:**
 Evaluate the capability of an algorithms to improve its generalization capabilities through new data points, i.e. improve representation without access to all past data.
 
-*Some Details:*
-
+**Some Details:**
 Tasks are made of new instances. By default the samples images are randomly
-shuffled in different tasks, but some datasets provide, in addition of the data `x` and labels `y`,
-a task id `t` per sample. For example `MultiNLI`, a NLP dataset, has 5 classes but
+shuffled in different tasks, but some datasets provide, in addition of the data ``x`` and labels ``y``,
+a task id ``t`` per sample. For example ``MultiNLI``, a NLP dataset, has 5 classes but
 with 10 different domains. Each domain represents a new task.
 
 
@@ -181,15 +175,15 @@ with 10 different domains. Each domain represents a new task.
 Transformed Incremental
 -----------------------
 
-*In short:* Similar to instance incremental, each new tasks bring same instance with a different transformation (ex: images rotations, pixels permutations, ...)
+**In short:** Similar to instance incremental, each new tasks bring same instance with a different transformation (ex: images rotations, pixels permutations, ...)
 
-*Aim:* Evaluate the capability of an algorithms to improve its generalization capabilities through new data points, i.e. improve representation without access to all past data.
+**Aim:** Evaluate the capability of an algorithms to improve its generalization capabilities through new data points, i.e. improve representation without access to all past data.
 
-*Some Details:*
+**Some Details:**
 The main difference with instance incremental, is that the scenarios builder has control of the different transformation spaces.
 It is then easier to evaluate in which transformation space the algorithm is still able to generalize or not.
 
-NB: the transformation used are pytorch.transforms classes (https://pytorch.org/docs/stable/torchvision/transforms.html)
+NB: the transformation used are `pytorch.transforms classes <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
 
 .. code-block:: python
 
@@ -205,7 +199,7 @@ NB: the transformation used are pytorch.transforms classes (https://pytorch.org/
 
 
 
-- Permutations Incremental [source](https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/permutations.py)
+- Permutations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/permutations.py>`_
 is a famous case of TransformationIncremental class, in this case the transformation is a fixed pixel permutation. Each task has a specific permutation.
 The scenarios is then to learn a same task in various permutation spaces.
 
@@ -223,7 +217,7 @@ The scenarios is then to learn a same task in various permutation spaces.
     # ex: an image of the zeros digit will be always be labelized as a 0 ( if shared_label_space=False, zeros digit image permutated will got another label than the original one)
     continuum = Permutations(cl_dataset=dataset, nb_tasks=nb_tasks, seed=seed, shared_label_space=True)
 
-- Rotations Incremental [source](https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/rotations.py)
+- Rotations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/rotations.py>`_
 is also a famous case of TransformationIncremental class, in this case the transformation is a rotation of image. Each task has a specific rotation or range of rotation.
 The scenarios is then to learn a same task in various rotations spaces.
 
@@ -249,13 +243,11 @@ The scenarios is then to learn a same task in various rotations spaces.
 New Class and Instance Incremental
 ----------------------------------
 
-*In short:* Each new task bring both instances from new classes and new instances from known classes.
+**In short:** Each new task bring both instances from new classes and new instances from known classes.
 
-*Aim:* Evaluate the capability of an algorithms to both create new representation and improve existing ones.
+**Aim:** Evaluate the capability of an algorithms to both create new representation and improve existing ones.
 
-
-*Some Details:*
-
+**Some Details:**
 NIC setting is a special case of NI setting. For now, only the CORe50 dataset
 supports this setting.
 
@@ -273,4 +265,4 @@ You can also create a new class to create your own scenario with your own rules 
 
 You can add it in the scenarios folder in the continuum project and make a pull request!
 
-Scenarios can be seen as a list of [tasks](https://continuum.readthedocs.io/en/latest/_tutorials/datasets/tasks.html), the main thing to define is to define the content of each task to create a meaningful scenario.
+Scenarios can be seen as a list of `tasks <https://continuum.readthedocs.io/en/latest/_tutorials/datasets/tasks.html>`_ , the main thing to define is to define the content of each task to create a meaningful scenario.
