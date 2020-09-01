@@ -110,7 +110,7 @@ class Core50(_ContinuumDataset):
 
                     x.append(os.path.join(object_folder, path))
                     y.append(object_id)
-                    if train:  # We add a new domain id for the train set.
+                    if self.train:  # We add a new domain id for the train set.
                         t.append(domain_counter)
                     else:  # Test set is fixed, therefore we artificially give a unique domain.
                         t.append(0)
