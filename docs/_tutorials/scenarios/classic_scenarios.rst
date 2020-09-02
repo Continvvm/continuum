@@ -45,4 +45,4 @@ We propose here a list of classic continual learning scenarios used in the liter
     )
 
 
-For more info `scenarios documentation <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html>`_.
+For more info `scenarios documentation <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html>`__.

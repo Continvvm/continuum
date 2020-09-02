@@ -183,7 +183,7 @@ Transformed Incremental
 The main difference with instance incremental, is that the scenarios builder has control of the different transformation spaces.
 It is then easier to evaluate in which transformation space the algorithm is still able to generalize or not.
 
-NB: the transformation used are `pytorch.transforms classes <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
+NB: the transformation used are `pytorch.transforms classes <https://pytorch.org/docs/stable/torchvision/transforms.html>`__
 
 .. code-block:: python
 
@@ -199,7 +199,7 @@ NB: the transformation used are `pytorch.transforms classes <https://pytorch.org
 
 
 
-- Permutations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/permutations.py>`_
+- Permutations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/permutations.py>`__
 is a famous case of TransformationIncremental class, in this case the transformation is a fixed pixel permutation. Each task has a specific permutation.
 The scenarios is then to learn a same task in various permutation spaces.
 
@@ -217,7 +217,7 @@ The scenarios is then to learn a same task in various permutation spaces.
     # ex: an image of the zeros digit will be always be labelized as a 0 ( if shared_label_space=False, zeros digit image permutated will got another label than the original one)
     continuum = Permutations(cl_dataset=dataset, nb_tasks=nb_tasks, seed=seed, shared_label_space=True)
 
-- Rotations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/rotations.py>`_
+- Rotations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/rotations.py>`__
 is also a famous case of TransformationIncremental class, in this case the transformation is a rotation of image. Each task has a specific rotation or range of rotation.
 The scenarios is then to learn a same task in various rotations spaces.
 
@@ -265,4 +265,4 @@ You can also create a new class to create your own scenario with your own rules 
 
 You can add it in the scenarios folder in the continuum project and make a pull request!
 
-Scenarios can be seen as a list of `tasks <https://continuum.readthedocs.io/en/latest/_tutorials/datasets/tasks.html>`_ , the main thing to define is to define the content of each task to create a meaningful scenario.
+Scenarios can be seen as a list of `tasks <https://continuum.readthedocs.io/en/latest/_tutorials/datasets/tasks.html>`__ , the main thing to define is to define the content of each task to create a meaningful scenario.
