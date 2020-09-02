@@ -57,8 +57,10 @@ class PyTorchDataset(_ContinuumDataset):
     """
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
-    def __init__(self, *args, dataset_type, data_path: str = "", train: bool, **kwargs):
-        super().__init__(*args, data_path, train, **kwargs)
+    def __init__(
+        self, data_path: str = "", dataset_type=None, train: bool = True, download: bool = True
+    ):
+        super().__init__(data_path=data_path, train=train, download=download)
 
         self.dataset_type = dataset_type
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
@@ -83,9 +85,10 @@ class InMemoryDataset(_ContinuumDataset):
         y_: np.ndarray,
         t_: Union[None, np.ndarray] = None,
         data_type: str = "image_array",
-        **kwargs
+        train: bool = True,
+        download: bool = True,
     ):
-        super().__init__(**kwargs)
+        super().__init__(train=train, download=download)
 
         assert x_.shape[0] == y_.shape[0]
         self.data = (x_, y_, t_)
@@ -112,9 +115,9 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, data_folder: str, train: bool = True, download: bool = True, **kwargs):
+    def __init__(self, data_folder: str, train: bool = True, download: bool = True):
         self.data_folder = data_folder
-        super().__init__(train=train, download=download, **kwargs)
+        super().__init__(train=train, download=download)
 
         self.dataset = torchdata.ImageFolder(data_folder)
 

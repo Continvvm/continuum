@@ -33,7 +33,7 @@ class CIFAR100(PyTorchDataset):
 class MNIST(PyTorchDataset):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, dataset_type=torchdata.MNIST, **kwargs)
+        super().__init__(*args, **kwargs, dataset_type=torchdata.MNIST)
 
 
 class FashionMNIST(PyTorchDataset):
