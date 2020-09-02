@@ -1,6 +1,6 @@
 # Continuum
 
-[![PyPI version](https://badge.fury.io/py/continuum.svg)](https://badge.fury.io/py/continuum) [![Build Status](https://travis-ci.com/Continvvm/continuum.svg?branch=master)](https://travis-ci.com/Continvvm/continuum) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c3a31475bebc4036a13e6048c24eb3e0)](https://www.codacy.com/gh/Continvvm/continuum?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Continvvm/continuum&amp;utm_campaign=Badge_Grade) [![DOI](https://zenodo.org/badge/254864913.svg)](https://zenodo.org/badge/latestdoi/254864913) [![Documentation Status](https://readthedocs.org/projects/continuum/badge/?version=latest)](https://continuum.readthedocs.io/en/latest/?badge=latest) 
+[![PyPI version](https://badge.fury.io/py/continuum.svg)](https://badge.fury.io/py/continuum) [![Build Status](https://travis-ci.com/Continvvm/continuum.svg?branch=master)](https://travis-ci.com/Continvvm/continuum) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c3a31475bebc4036a13e6048c24eb3e0)](https://www.codacy.com/gh/Continvvm/continuum?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Continvvm/continuum&amp;utm_campaign=Badge_Grade) [![DOI](https://zenodo.org/badge/254864913.svg)](https://zenodo.org/badge/latestdoi/254864913) [![Documentation Status](https://readthedocs.org/projects/continuum/badge/?version=latest)](https://continuum.readthedocs.io/en/latest/?badge=latest)
 [![coverage](coverage.svg)]()
 
 ## A library for PyTorch's loading of datasets in the field of Continual Learning
@@ -20,16 +20,19 @@ And run!
 ```python
 from torch.utils.data import DataLoader
 
-from continuum import ClassIncremental, split_train_val
+from continuum import ClassIncremental
 from continuum.datasets import MNIST
+from continuum.tasks import split_train_val
 
-clloader = ClassIncremental(
+
+scenario = ClassIncremental(
     MNIST("my/data/path", download=True, train=True),
     increment=1,
-    initial_increment=5)
+    initial_increment=5
+)
 
-print(f"Number of classes: {clloader.nb_classes}.")
-print(f"Number of tasks: {clloader.nb_tasks}.")
+print(f"Number of classes: {scenario.nb_classes}.")
+print(f"Number of tasks: {scenario.nb_tasks}.")
 
 for task_id, train_taskset in enumerate(clloader):
     train_taskset, val_taskset = split_train_val(train_taskset, val_split=0.1)

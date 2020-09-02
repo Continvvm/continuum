@@ -83,13 +83,16 @@ A practical example with split MNIST:
     # It's just python slicing!
     # select task i
     i = 2
-    dataset_task = continuum_test[i]
+    test_taskset = continuum_test[i]
 
     # select tasks i to i+2
-    dataset_tasks = continuum_test[i:i+2]
+    test_taskset = continuum_test[i:i+2]
+
+    # select all seen tasks up to the i-th task
+    test_taskset = continuum_test[:i + 1]
 
     # select all tasks
-    dataset_all_tasks = continuum_test[:]
+    test_taskset = continuum_test[:]
 
 
 Classes Incremental
@@ -215,7 +218,7 @@ The scenarios is then to learn a same task in various permutation spaces.
     # A sequence of permutations is initialized from seed `seed` each task is with different pixel permutation
     # shared_label_space=True means that all classes use the same label space
     # ex: an image of the zeros digit will be always be labelized as a 0 ( if shared_label_space=False, zeros digit image permutated will got another label than the original one)
-    continuum = Permutations(cl_dataset=dataset, nb_tasks=nb_tasks, seed=seed, shared_label_space=True)
+    scenario = Permutations(cl_dataset=dataset, nb_tasks=nb_tasks, seed=seed, shared_label_space=True)
 
 - Rotations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/rotations.py>`__
 is also a famous case of TransformationIncremental class, in this case the transformation is a rotation of image. Each task has a specific rotation or range of rotation.
@@ -260,7 +263,7 @@ Adding Your Own Scenarios
 ----------------------------------
 
 Continuum is developed to be flexible and easily adapted to new settings.
-Then you can create a new scenario by providing simply a new dataset framed in an existing scenatio such as Classes Incremental, Instance Incremental ...
+Then you can create a new scenario by providing simply a new dataset framed in an existing scenario such as Classes Incremental, Instance Incremental ...
 You can also create a new class to create your own scenario with your own rules !
 
 You can add it in the scenarios folder in the continuum project and make a pull request!
