@@ -34,7 +34,7 @@ scenario = ClassIncremental(
 print(f"Number of classes: {scenario.nb_classes}.")
 print(f"Number of tasks: {scenario.nb_tasks}.")
 
-for task_id, train_taskset in enumerate(clloader):
+for task_id, train_taskset in enumerate(scenario):
     train_taskset, val_taskset = split_train_val(train_taskset, val_split=0.1)
     train_loader = DataLoader(train_taskset)
     val_loader = DataLoader(val_taskset)
