@@ -9,7 +9,7 @@ For each scenario, there is a finite set of tasks and the goal is to learn the t
 
 For clear evaluation purpose, the data from each tasks can not be found in another tasks. The idea is to be able to assess precisely what the CL algorithms is able to remember or not. Those benchmarks purpose is not to mimic real-life scenarios but to evaluate properly algorithms capabilities.
 
-Scenarios consist in learning from a sequence of tasks we call continuum. Here is roughly how continuum are created and used:
+Here is roughly how continual learning scenarios are created and used:
 
 
 .. code-block:: python
@@ -19,16 +19,16 @@ Scenarios consist in learning from a sequence of tasks we call continuum. Here i
     # First we get a dataset that will be used to compose tasks and the continuum
     continual_dataset = MyContinualDataset()
 
-    # Then the dataset is provided to a continuum class that will process it to create the sequence of tasks
+    # Then the dataset is provided to a scenario class that will process it to create the sequence of tasks
     # the continuum might get specific argument, such as number of tasks.
-    continuum = MyContinuumScenario(
+    scenario = MyContinuumScenario(
         continual_dataset, SomeOtherArguments
     )
 
     # The continuum can then be enumerate tasks
-    for task_id, dataset in enumerate(continuum):
-          # dataset is a normal Pytorch Dataset can be used to load the task data
-          loader = DataLoader(dataset)
+    for task_id, taskset in enumerate(scenario):
+          # taskset can be used as a Pytorch Dataset to load the task data
+          loader = DataLoader(taskset)
 
           for x, y, t in loader:
                 # data, label, task index
@@ -50,14 +50,14 @@ A practical example with split MNIST:
     dataset = MNIST(data_path="my/data/path", download=True, train=True)
 
     # split MNIST with 2 classes per tasks -> 5 tasks
-    continuum = ClassIncremental(dataset, increment=2)
+    scenario = ClassIncremental(dataset, increment=2)
 
     # The continuum can then be enumerate tasks
-    for task_id, dataset in enumerate(continuum):
+    for task_id, taskset in enumerate(scenario):
 
         # We use here a cool function to split the dataset into train/val with 90% train
-        train_dataset, val_dataset = split_train_val(dataset, val_split = 0.1)
-        train_loader = DataLoader(train_dataset)
+        train_taskset, val_taskset = split_train_val(taskset, val_split = 0.1)
+        train_loader = DataLoader(train_taskset)
 
          # train dataset is a normal data loader like in pytorch that can be used to load the task data
         for x, y, t in train_loader:
@@ -69,12 +69,12 @@ A practical example with split MNIST:
     dataset_test = MNIST(data_path="my/data/path", download=True, train=False)
 
 
-    # You can also create a test continuum to frame test data as train data.
-    continuum_test = ClassIncremental(dataset_test, increment=2)
+    # You can also create a test scenario to frame test data as train data.
+    scenario_test = ClassIncremental(dataset_test, increment=2)
 
     # then iterate through tasks
-    for task_id, test_dataset in enumerate(continuum):
-        test_loader = DataLoader(test_dataset)
+    for task_id, test_taskset in enumerate(scenario_test):
+        test_loader = DataLoader(test_taskset)
         for x, y, t in test_loader:
             # something
             break
@@ -123,7 +123,7 @@ tasks, each with new classes. See there some example arguments:
 
     # first use case
     # first 2 classes per tasks
-    continuum = ClassIncremental(
+    scenario = ClassIncremental(
         continual_dataset,
         increment=2,
         transformations=[transforms.ToTensor()]
@@ -131,7 +131,7 @@ tasks, each with new classes. See there some example arguments:
 
     # second use case
     # first task with 2 classes then 4 classes per tasks until the end
-    continuum = ClassIncremental(
+    scenario = ClassIncremental(
         continual_dataset,
         increment=4,
         initial_increment=2,
@@ -140,7 +140,7 @@ tasks, each with new classes. See there some example arguments:
 
     # third use case
     # first task with 2, second task 3, third 1, ...
-    continuum = ClassIncremental(
+    scenario = ClassIncremental(
         continual_dataset,
         increment=[2, 3, 1, 4],
         transformations=[transforms.ToTensor()]
@@ -169,7 +169,7 @@ with 10 different domains. Each domain represents a new task.
     from continuum.datasets import MultiNLI
 
     dataset = MultiNLI("/my/path/where/to/download")
-    continuum = InstanceIncremental(dataset=dataset)
+    scenario = InstanceIncremental(dataset=dataset)
 
 
 Transformed Incremental
@@ -192,7 +192,7 @@ NB: the transformation used are `pytorch.transforms classes <https://pytorch.org
     list_of_transformation = [Trsf_0, Trsf_1, Trsf_2]
 
     # three tasks continuum, tasks 0 with Trsf_0 transformation
-    continuum = TransformationIncremental(
+    scenario = TransformationIncremental(
         dataset=my_continual_dataset,
         incremental_transformations=list_of_transformation
     )
@@ -233,7 +233,7 @@ The scenarios is then to learn a same task in various rotations spaces.
     list_degrees = [0, (40,50), (85,95)]
 
     dataset = MNIST(data_path="my/data/path", download=True, train=True)
-    continuum = Rotations(
+    scenario = Rotations(
         cl_dataset=dataset,
         nb_tasks=nb_tasks,
         list_degrees=list_degrees

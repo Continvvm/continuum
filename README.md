@@ -31,10 +31,10 @@ clloader = ClassIncremental(
 print(f"Number of classes: {clloader.nb_classes}.")
 print(f"Number of tasks: {clloader.nb_tasks}.")
 
-for task_id, train_dataset in enumerate(clloader):
-    train_dataset, val_dataset = split_train_val(train_dataset, val_split=0.1)
-    train_loader = DataLoader(train_dataset)
-    val_loader = DataLoader(val_dataset)
+for task_id, train_taskset in enumerate(clloader):
+    train_taskset, val_taskset = split_train_val(train_taskset, val_split=0.1)
+    train_loader = DataLoader(train_taskset)
+    val_loader = DataLoader(val_taskset)
 
     for x, y, t in train_loader:
         # Do your cool stuff here

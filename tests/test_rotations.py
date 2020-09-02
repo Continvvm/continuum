@@ -39,9 +39,9 @@ def test_init(numpy_data):
 
     list_degrees = [Trsf_0, Trsf_1, Trsf_2]
 
-    clloader = Rotations(cl_dataset=dummy, nb_tasks=3, list_degrees=list_degrees)
+    scenario = Rotations(cl_dataset=dummy, nb_tasks=3, list_degrees=list_degrees)
 
-    for task_id, train_dataset in enumerate(clloader):
+    for task_id, train_dataset in enumerate(scenario):
         continue
 
 
@@ -51,10 +51,10 @@ def test_shared_labels(numpy_data, shared_label_space):
     dummy = InMemoryDatasetTest(*train)
     list_degrees = [0, 15, 45]
 
-    clloader = Rotations(cl_dataset=dummy, nb_tasks=3, list_degrees=list_degrees, shared_label_space=shared_label_space)
+    scenario = Rotations(cl_dataset=dummy, nb_tasks=3, list_degrees=list_degrees, shared_label_space=shared_label_space)
 
     previous_classes = None
-    for task_id, taskset in enumerate(clloader):
+    for task_id, taskset in enumerate(scenario):
         classes = taskset.get_classes()
         if task_id > 0:
             if shared_label_space:
@@ -86,12 +86,12 @@ def test_fail_init(numpy_data):
 def test_with_dataset(dataset, shared_label_space):
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
     list_degrees = [0, 45, 90]
-    continuum = Rotations(cl_dataset=dataset,
+    scenario = Rotations(cl_dataset=dataset,
                           nb_tasks=3,
                           list_degrees=list_degrees,
                           shared_label_space=shared_label_space)
 
-    for task_id, taskset in enumerate(continuum):
+    for task_id, taskset in enumerate(scenario):
 
         classes = taskset.get_classes()
 

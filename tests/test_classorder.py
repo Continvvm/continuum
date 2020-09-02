@@ -46,21 +46,21 @@ def numpy_data():
 def test_increments(numpy_data, classes, default_class_order, class_order):
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train, class_order=default_class_order)
-    clloader = ClassIncremental(dummy, 2, 5, class_order=class_order)
+    scenario = ClassIncremental(dummy, 2, 5, class_order=class_order)
 
     gt_new_targets = [np.arange(5), np.arange(5) + 5]
-    for task_id, train_dataset in enumerate(clloader):
-        for _ in DataLoader(train_dataset):
+    for task_id, taskset in enumerate(scenario):
+        for _ in DataLoader(taskset):
             pass
 
-        unique_classes = np.sort(np.unique(train_dataset._x))
+        unique_classes = np.sort(np.unique(taskset._x))
         ans = (unique_classes == np.array(classes[task_id]))
         assert ans.all(), (task_id, unique_classes, np.array(classes[task_id]))
 
-        original_targets = np.sort(np.unique(clloader.get_original_targets(train_dataset._y)))
+        original_targets = np.sort(np.unique(scenario.get_original_targets(taskset._y)))
         ans = (original_targets == np.array(classes[task_id]))
         assert ans.all(), (task_id, original_targets, np.array(classes[task_id]))
 
-        new_targets = np.sort(np.unique(train_dataset._y))
+        new_targets = np.sort(np.unique(taskset._y))
         ans = (new_targets == gt_new_targets[task_id])
         assert ans.all(), (task_id, new_targets, gt_new_targets[task_id])

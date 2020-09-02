@@ -42,21 +42,21 @@ def test_init(numpy_data, seed):
     if isinstance(seed, list):
         nb_tasks = len(seed) + 1
 
-    clloader_1 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
-    clloader_2 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
+    scenario_1 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
+    scenario_2 = Permutations(cl_dataset=dummy, nb_tasks=nb_tasks, seed=seed)
 
     previous_x = []
     if isinstance(seed, list):
-        assert len(clloader_1) == len(clloader_2) == len(seed) + 1
+        assert len(scenario_1) == len(scenario_2) == len(seed) + 1
 
-    for task_id, (train_dataset_1, train_dataset_2) in enumerate(zip(clloader_1, clloader_2)):
+    for task_id, (train_taskset_1, train_taskset_2) in enumerate(zip(scenario_1, scenario_2)):
         assert task_id < nb_tasks
 
-        assert len(train_dataset_1) == len(train_dataset_2)
-        indexes = list(range(len(train_dataset_1)))
+        assert len(train_taskset_1) == len(train_taskset_2)
+        indexes = list(range(len(train_taskset_1)))
 
-        x_1, y_1, t_1 = train_dataset_1.get_samples(indexes)
-        x_2, y_2, t_2 = train_dataset_2.get_samples(indexes)
+        x_1, y_1, t_1 = train_taskset_1.get_samples(indexes)
+        x_2, y_2, t_2 = train_taskset_2.get_samples(indexes)
 
         assert (x_1 == x_2).all()
         assert (y_1 == y_2).all()
@@ -72,11 +72,11 @@ def test_init(numpy_data, seed):
 @pytest.mark.parametrize("dataset", [MNIST, CIFAR100])
 def test_with_dataset(dataset, shared_label_space):
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
-    continuum = Permutations(cl_dataset=dataset, nb_tasks=5, seed=0, shared_label_space=shared_label_space)
+    scenario = Permutations(cl_dataset=dataset, nb_tasks=5, seed=0, shared_label_space=shared_label_space)
 
-    for task_id, dataset in enumerate(continuum):
+    for task_id, taskset in enumerate(scenario):
 
-        classes = dataset.get_classes()
+        classes = taskset.get_classes()
 
         if shared_label_space:
             assert len(classes) == classes.max() + 1

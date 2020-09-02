@@ -9,12 +9,12 @@ from continuum import ClassIncremental
 
 @pytest.mark.slow
 def test_MNIST_Fellowship():
-    cl_dataset = MNISTFellowship(data_path="./tests/Datasets", train=True, download=True)
+    scenario = MNISTFellowship(data_path="./tests/Datasets", train=True, download=True)
 
 
 @pytest.mark.slow
 def test_CIFAR_Fellowship():
-    cl_dataset = CIFARFellowship(data_path="./tests/Datasets", train=True, download=True)
+    scenario = CIFARFellowship(data_path="./tests/Datasets", train=True, download=True)
 
 
 
@@ -24,7 +24,7 @@ def test_CIFAR_Fellowship():
                                            [CIFAR10, CIFAR100],
                                            [KMNIST, MNIST, FashionMNIST, CIFAR10, CIFAR100]])
 def test_Fellowship(list_datasets):
-    cl_dataset = Fellowship(data_path="./tests/Datasets", dataset_list=list_datasets)
+    scenario = Fellowship(data_path="./tests/Datasets", dataset_list=list_datasets)
 
 
 @pytest.mark.slow
@@ -33,9 +33,9 @@ def test_Fellowship(list_datasets):
 #@pytest.mark.parametrize("shared_label_space", [True, False])
 def test_Fellowship_classes(list_datasets):
     cl_dataset = Fellowship(data_path="./tests/Datasets", dataset_list=list_datasets)
-    continuum = ClassIncremental(cl_dataset, increment=10)
+    scenario = ClassIncremental(cl_dataset, increment=10)
 
-    for task_id, taskset in enumerate(continuum):
+    for task_id, taskset in enumerate(scenario):
 
         classes = taskset.get_classes()
 

@@ -35,15 +35,15 @@ def test_increments(increment, initial_increment, nb_tasks):
         gen_imagefolder(train_path)
         gen_imagefolder(test_path)
 
-        clloader = ClassIncremental(
+        scenario = ClassIncremental(
             ImageFolderDataset(train_path, test_path),
             increment=increment,
             initial_increment=initial_increment
         )
 
-        assert clloader.nb_tasks == nb_tasks
+        assert scenario.nb_tasks == nb_tasks
         seen_tasks = 0
-        for task_id, train_dataset in enumerate(clloader):
+        for task_id, taskset in enumerate(scenario):
             seen_tasks += 1
 
             if isinstance(increment, list):
@@ -56,9 +56,9 @@ def test_increments(increment, initial_increment, nb_tasks):
                 max_class = increment * (task_id + 1)
                 min_class = increment * task_id
 
-            for _ in DataLoader(train_dataset):
+            for _ in DataLoader(taskset):
                 pass
 
-            assert np.max(train_dataset._y) == max_class - 1
-            assert np.min(train_dataset._y) == min_class
+            assert np.max(taskset._y) == max_class - 1
+            assert np.min(taskset._y) == min_class
     assert seen_tasks == nb_tasks

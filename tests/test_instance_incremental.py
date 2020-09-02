@@ -36,12 +36,12 @@ def test_instance_auto_nb_tasks(numpy_data, nb_tasks, nb_tasks_gt):
     any default number of tasks."""
     train, test = numpy_data
     dummy = InMemoryDataset(*train)
-    clloader = InstanceIncremental(dummy, nb_tasks=nb_tasks)
+    scenario = InstanceIncremental(dummy, nb_tasks=nb_tasks)
 
-    nb_classes = clloader.nb_classes
+    nb_classes = scenario.nb_classes
 
-    assert len(clloader) == nb_tasks_gt
-    for task_id, train_dataset in enumerate(clloader):
+    assert len(scenario) == nb_tasks_gt
+    for task_id, train_dataset in enumerate(scenario):
         assert nb_classes == len(np.unique(train_dataset._y))
 
 
@@ -87,7 +87,7 @@ def test_instance_default_nb_tasks(numpy_data_per_task, nb_tasks, nb_tasks_gt, c
 
     has_raised = False
     try:
-        clloader = InstanceIncremental(dummy, nb_tasks=nb_tasks)
+        scenario = InstanceIncremental(dummy, nb_tasks=nb_tasks)
     except Exception:
         has_raised = True
 
@@ -97,10 +97,10 @@ def test_instance_default_nb_tasks(numpy_data_per_task, nb_tasks, nb_tasks_gt, c
     else:
         assert not has_raised
 
-    nb_classes = clloader.nb_classes
+    nb_classes = scenario.nb_classes
 
-    assert len(clloader) == nb_tasks_gt
-    for task_id, train_dataset in enumerate(clloader):
+    assert len(scenario) == nb_tasks_gt
+    for task_id, train_dataset in enumerate(scenario):
         assert nb_classes == len(np.unique(train_dataset._y))
 
         unique_pixels = np.unique(train_dataset._x)

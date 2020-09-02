@@ -52,12 +52,12 @@ def gen_bad_data():
 def test_increments(increment, initial_increment, nb_tasks):
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
-    clloader = ClassIncremental(dummy, increment=increment, initial_increment=initial_increment)
+    scenario = ClassIncremental(dummy, increment=increment, initial_increment=initial_increment)
 
-    assert clloader.nb_tasks == nb_tasks
+    assert scenario.nb_tasks == nb_tasks
     seen_tasks = 0
 
-    for task_id, train_dataset in enumerate(clloader):
+    for task_id, taskset in enumerate(scenario):
         seen_tasks += 1
 
         if isinstance(increment, list):
@@ -70,11 +70,11 @@ def test_increments(increment, initial_increment, nb_tasks):
             max_class = increment * (task_id + 1)
             min_class = increment * task_id
 
-        for _ in DataLoader(train_dataset):
+        for _ in DataLoader(taskset):
             pass
 
-        assert np.max(train_dataset._y) == max_class - 1
-        assert np.min(train_dataset._y) == min_class
+        assert np.max(taskset._y) == max_class - 1
+        assert np.min(taskset._y) == min_class
     assert seen_tasks == nb_tasks
 
 
@@ -88,9 +88,9 @@ def test_bad_data():
 def test_split_train_val(val_split):
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
-    clloader = ClassIncremental(dummy, increment=5)
+    scenario = ClassIncremental(dummy, increment=5)
 
-    for dataset in clloader:
-        train_dataset, val_dataset = split_train_val(dataset, val_split=val_split)
-        assert int(val_split * len(dataset)) == len(val_dataset)
-        assert len(val_dataset) + len(train_dataset) == len(dataset)
+    for taskset in scenario:
+        train_taskset, val_taskset = split_train_val(taskset, val_split=val_split)
+        assert int(val_split * len(taskset)) == len(val_taskset)
+        assert len(val_taskset) + len(train_taskset) == len(taskset)

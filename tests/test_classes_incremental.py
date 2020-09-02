@@ -17,13 +17,13 @@ from torchvision.transforms import transforms
                                                 (CIFAR100, 10)])
 def test_with_dataset_simple_increment(dataset, increment):
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
-    continuum = ClassIncremental(cl_dataset=dataset,
+    scenario = ClassIncremental(cl_dataset=dataset,
                                  increment=increment,
                                  transformations=[transforms.ToTensor()]
                                  )
 
-    for task_id, dataset in enumerate(continuum):
-        classes = dataset.get_classes()
+    for task_id, taskset in enumerate(scenario):
+        classes = taskset.get_classes()
 
         assert len(classes) == increment
 
@@ -39,13 +39,13 @@ def test_with_dataset_simple_increment(dataset, increment):
                                                 (CIFAR100, [50, 10, 20, 20])])
 def test_with_dataset_composed_increment(dataset, increment):
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
-    continuum = ClassIncremental(cl_dataset=dataset,
+    scenario = ClassIncremental(cl_dataset=dataset,
                                  increment=increment,
                                  transformations=[transforms.ToTensor()]
                                  )
 
-    for task_id, dataset in enumerate(continuum):
-        classes = dataset.get_classes()
+    for task_id, taskset in enumerate(scenario):
+        classes = taskset.get_classes()
 
         assert len(classes) == increment[task_id]
 

@@ -38,9 +38,9 @@ def gen_data():
 def test_slicing_nc(index, classes):
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
-    clloader = ClassIncremental(dummy, increment=2)
-    dataset = clloader[index]
-    targets = np.sort(np.unique(dataset._y))
+    scenario = ClassIncremental(dummy, increment=2)
+    taskset = scenario[index]
+    targets = np.sort(np.unique(taskset._y))
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
 
@@ -54,9 +54,9 @@ def test_slicing_nc(index, classes):
 def test_slicing_nc_no_end(start_index, classes):
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
-    clloader = ClassIncremental(dummy, increment=2)
-    dataset = clloader[start_index:]
-    targets = np.sort(np.unique(dataset._y))
+    scenario = ClassIncremental(dummy, increment=2)
+    taskset = scenario[start_index:]
+    targets = np.sort(np.unique(taskset._y))
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
 
@@ -64,9 +64,9 @@ def test_slicing_nc_no_end(start_index, classes):
 def test_slicing_nc_no_index():
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
-    clloader = ClassIncremental(dummy, increment=2)
-    dataset = clloader[:]
-    targets = np.sort(np.unique(dataset._y))
+    scenario = ClassIncremental(dummy, increment=2)
+    taskset = scenario[:]
+    targets = np.sort(np.unique(taskset._y))
 
     classes = list(range(10))
 

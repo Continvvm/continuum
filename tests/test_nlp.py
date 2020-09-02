@@ -39,12 +39,12 @@ def test_nlp_class_incremental(numpy_data):
 
     dummy = InMemoryDataset(x_train, y_train, data_type="text")
 
-    clloader = ClassIncremental(dummy, increment=2)
+    scenario = ClassIncremental(dummy, increment=2)
 
-    assert len(clloader) == clloader.nb_tasks == 3
-    assert clloader.nb_classes == 6
+    assert len(scenario) == scenario.nb_tasks == 3
+    assert scenario.nb_classes == 6
 
-    for _ in clloader:
+    for _ in scenario:
         pass
 
 
@@ -57,10 +57,10 @@ def test_nlp_instance_incremental(numpy_data):
         x_train, y_train, t_=t_train, data_type="text"
     )
 
-    clloader = InstanceIncremental(dummy)
+    scenario = InstanceIncremental(dummy)
 
-    assert len(clloader) == clloader.nb_tasks == 3
-    assert clloader.nb_classes == 6
+    assert len(scenario) == scenario.nb_tasks == 3
+    assert scenario.nb_classes == 6
 
-    for _ in clloader:
+    for _ in scenario:
         pass

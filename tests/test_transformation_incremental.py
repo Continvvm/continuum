@@ -41,17 +41,17 @@ def test_init(numpy_data):
 
     list_transf = [Trsf_0, Trsf_1, Trsf_2]
 
-    continuum = TransformationIncremental(
+    scenario = TransformationIncremental(
         cl_dataset=dummy, incremental_transformations=list_transf
     )
 
     ref_data = None
     raw_ref_data = None
-    for task_id, train_dataset in enumerate(continuum):
+    for task_id, taskset in enumerate(scenario):
 
-        samples, _, _ = train_dataset.get_random_samples(10)
+        samples, _, _ = taskset.get_random_samples(10)
         # we need raw data to apply same transformation as the TransformationIncremental class
-        raw_samples, _, _ = train_dataset.get_raw_samples(range(10))
+        raw_samples, _, _ = taskset.get_raw_samples(range(10))
 
         if task_id == 0:
             ref_data = samples
@@ -87,7 +87,7 @@ def test_init_range(numpy_data):
 
     list_transf = [Trsf_0, Trsf_1, Trsf_2]
 
-    continuum = TransformationIncremental(
+    scenario = TransformationIncremental(
         cl_dataset=dummy, incremental_transformations=list_transf
     )
 
@@ -103,15 +103,15 @@ def test_init_shared_label_space(numpy_data, shared_label_space):
 
     dummy_transf = [Trsf_0, Trsf_1, Trsf_2]
 
-    continuum = TransformationIncremental(
+    scenario = TransformationIncremental(
         cl_dataset=dummy,
         incremental_transformations=dummy_transf,
         shared_label_space=shared_label_space
     )
 
-    for task_id, train_dataset in enumerate(continuum):
-        assert train_dataset.nb_classes == NB_CLASSES
-        classes = train_dataset.get_classes()
+    for task_id, taskset in enumerate(scenario):
+        assert taskset.nb_classes == NB_CLASSES
+        classes = taskset.get_classes()
         if shared_label_space:
             assert classes.max() == NB_CLASSES - 1
             assert classes.min() == 0
@@ -136,18 +136,18 @@ def test_get_task_transformation(numpy_data):
         transforms.Normalize((0.1307,), (0.3081,))
     ]
 
-    continuum = TransformationIncremental(
+    scenario = TransformationIncremental(
         cl_dataset=dummy,
         incremental_transformations=dummy_transf,
         base_transformations=base_transformations
     )
 
-    for task_id, train_dataset in enumerate(continuum):
+    for task_id, taskset in enumerate(scenario):
         # first task specific transformation then base_transformation
         tot_transf_task = transforms.Compose(dummy_transf[task_id] + base_transformations)
 
         # we compare the str representation of the composition
-        assert tot_transf_task.__repr__() == continuum.get_task_transformation(task_id).__repr__()
+        assert tot_transf_task.__repr__() == scenario.get_task_transformation(task_id).__repr__()
 
 
 def test_init_fail2(numpy_data):
@@ -156,4 +156,4 @@ def test_init_fail2(numpy_data):
 
     # No transformation is set
     with pytest.raises(TypeError):
-        clloader = TransformationIncremental(cl_dataset=dummy)
+        scenario = TransformationIncremental(cl_dataset=dummy)

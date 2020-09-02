@@ -7,7 +7,7 @@ We propose here a list of classic continual learning scenarios used in the liter
 .. code-block:: python
     from continuum.datasets import MNIST
     from continuum import ClassIncremental
-    continuum = ClassIncremental(
+    scenario = ClassIncremental(
                                  MNIST(data_path="my/data/path", download=True, train=True),
                                  increment=2
      )
@@ -16,7 +16,7 @@ We propose here a list of classic continual learning scenarios used in the liter
 .. code-block:: python
     from continuum.datasets import CIFAR100
     from continuum import ClassIncremental
-    continuum = ClassIncremental(
+    scenario = ClassIncremental(
                                  CIFAR100(data_path="my/data/path", download=True, train=True),
                                  increment=10,
                                  initial_increment=50
@@ -26,7 +26,7 @@ We propose here a list of classic continual learning scenarios used in the liter
 .. code-block:: python
     from continuum import Permutations
     from continuum.datasets import MNIST
-    continuum = Permutations(
+    scenario = Permutations(
                              MNIST(data_path="my/data/path", download=True, train=True),
                              nb_tasks=5,
                              seed=0,
@@ -38,7 +38,7 @@ We propose here a list of classic continual learning scenarios used in the liter
 
     from continuum import Rotations
     from continuum.datasets import MNIST
-    continuum = Rotations(
+    scenario = Rotations(
         MNIST(data_path="my/data/path", download=True, train=True),
         nb_tasks=3,
         list_degrees=[0,45,90]
