@@ -1,12 +1,20 @@
+import os
+
+import imageio
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-import imageio
 
 
 def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
-    batch, _, _ = dataset.get_random_samples(nb_samples)
-    filename = os.path.join(path, title)
+    batch, y, _ = dataset.get_random_samples(nb_samples)
+
+    y, order = y.sort()
+    batch = batch[order]
+
+    if path is not None:
+        filename = os.path.join(path, title)
+    else:
+        filename = None
 
     if shape is None:
         shape = batch[0].shape
@@ -21,29 +29,40 @@ def visualize_batch(batch, number, shape, path):
 
     if shape[2] == 1:
         data_np = batch.numpy().reshape(number, shape[0], shape[1], shape[2])
-        save_images(data_np[:image_frame_dim * image_frame_dim, :, :, :],
-                    [image_frame_dim, image_frame_dim],
-                    path)
+        save_images(
+            data_np[:image_frame_dim * image_frame_dim, :, :, :],
+            [image_frame_dim, image_frame_dim], path
+        )
     elif shape[2] == 3:
         data = batch.numpy().reshape(number, shape[2], shape[1], shape[0])
+        data = img_stretch(data)
         make_samples_batche(data[:number], number, path)
     else:
-        save_images(batch[:image_frame_dim * image_frame_dim, :, :, :],
-                    [image_frame_dim, image_frame_dim],
-                    path)
+        save_images(
+            batch[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
+            path
+        )
 
 
 def save_images(images, size, image_path):
-    return imsave(images, size, image_path)
+    images = np.array(images)
+    if images.shape[1] in (1, 3):  # When channel axis is before spatial axis.
+        images = images.transpose(0, 2, 3, 1)
 
-
-def imsave(images, size, path):
     image = np.squeeze(merge(images, size))
     image -= np.min(image)
     image /= np.max(image) + 1e-12
     image = 255 * image  # Now scale by 255
     image = image.astype(np.uint8)
-    return imageio.imwrite(path, image)
+
+    if image_path is not None:
+        return imageio.imwrite(image_path, image)
+    else:
+        cmap = None
+        if len(image.shape) == 2:
+            cmap = "gray"
+        plt.axis('off')
+        plt.imshow(image, cmap=cmap)
 
 
 def merge(images, size):
@@ -63,8 +82,11 @@ def merge(images, size):
             j = idx // size[1]
             img[j * h:j * h + h, i * w:i * w + w] = image[:, :, 0]
     else:
-        raise ValueError('in merge(images,size) images parameter '
-                         'must have dimensions: HxW or HxWx3 or HxWx4')
+        raise ValueError(
+            'in merge(images,size) images parameter '
+            'must have dimensions: BxHxW or BxHxWx3 or BxHxWx4 '
+            f'not {images.shape}'
+        )
 
     return img
 
@@ -82,12 +104,10 @@ def make_samples_batche(prediction, batch_size, filename_dest):
     input_channel = prediction[0].shape[0]
     input_dim = prediction[0].shape[1]
     prediction = np.clip(prediction, 0, 1)
-    pred = np.rollaxis(prediction.reshape((batch_size_sqrt,
-                                           batch_size_sqrt,
-                                           input_channel,
-                                           input_dim, input_dim)),
-                       2,
-                       5)
+    pred = np.rollaxis(
+        prediction.reshape((batch_size_sqrt, batch_size_sqrt, input_channel, input_dim, input_dim)),
+        2, 5
+    )
     pred = pred.swapaxes(2, 1)
     pred = pred.reshape((batch_size_sqrt * input_dim, batch_size_sqrt * input_dim, input_channel))
     fig, ax = plt.subplots(figsize=(batch_size_sqrt, batch_size_sqrt))
