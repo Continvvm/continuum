@@ -35,6 +35,9 @@ class Core50(_ContinuumDataset):
         self.train_image_ids = train_image_ids
         super().__init__(data_path=data_path, train=train, download=download)
 
+        if self.train_image_ids is None:
+            self.train_image_ids = os.path.join(self.data_path, "core50_train.csv")
+
         if isinstance(self.train_image_ids, str):
             self.train_image_ids = self._read_csv(self.train_image_ids)
         elif isinstance(self.train_image_ids, list):
