@@ -6,7 +6,11 @@ import numpy as np
 
 
 def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
-    batch, _, _ = dataset.get_random_samples(nb_samples)
+    batch, y, _ = dataset.get_random_samples(nb_samples)
+
+    y, order = y.sort()
+    batch = batch[order]
+
     if path is not None:
         filename = os.path.join(path, title)
     else:
