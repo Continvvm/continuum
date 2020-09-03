@@ -36,8 +36,6 @@ def test_visualization_ClassIncremental(dataset, name, shape):
 '''
 Test the visualization with three tasks for rotations tasks
 '''
-
-
 @pytest.mark.slow
 def test_visualization_rotations():
     scenario = Rotations(cl_dataset=MNIST(data_path="./tests/Datasets", download=True, train=True),

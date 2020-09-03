@@ -35,6 +35,7 @@ def visualize_batch(batch, number, shape, path):
         )
     elif shape[2] == 3:
         data = batch.numpy().reshape(number, shape[2], shape[1], shape[0])
+        data = img_stretch(data)
         make_samples_batche(data[:number], number, path)
     else:
         save_images(
