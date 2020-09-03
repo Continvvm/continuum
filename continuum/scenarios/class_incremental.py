@@ -1,3 +1,4 @@
+import warnings
 from copy import copy
 from typing import Callable, List, Union
 
@@ -57,11 +58,22 @@ class ClassIncremental(_BaseCLLoader):
 
         # Increments setup
         self.class_order = np.array(self.class_order)
-        if nb_tasks == 0:
+        if nb_tasks <= 0:
+            # The number of tasks is left unspecified, thus it will be determined
+            # by the specified increments.
             self.increments = self._define_increments(
                 self.increment, self.initial_increment, unique_classes
             )
         else:
+            # A fixed number of tasks is required, thus the all increments will
+            # be equal among tasks.
+            if self.increment > 0:
+                warnings.warn(
+                    f"When both `nb_tasks` (given value = {nb_tasks}) and "
+                    f"`increment` (given value = {increment} are both set, "
+                    "we only consider the number of tasks. The `increment` "
+                    "argument is ignored."
+                )
             increment = len(unique_classes) / nb_tasks
             if not increment.is_integer():
                 raise Exception(
