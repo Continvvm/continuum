@@ -36,8 +36,8 @@ print(f"Number of tasks: {scenario.nb_tasks}.")
 
 for task_id, train_taskset in enumerate(scenario):
     train_taskset, val_taskset = split_train_val(train_taskset, val_split=0.1)
-    train_loader = DataLoader(train_taskset, batch_size=32)
-    val_loader = DataLoader(val_taskset, batch_size=32)
+    train_loader = DataLoader(train_taskset, batch_size=32, shuffle=True)
+    val_loader = DataLoader(val_taskset, batch_size=32, shuffle=True)
 
     for x, y, t in train_loader:
         # Do your cool stuff here
