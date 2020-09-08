@@ -70,7 +70,7 @@ class ClassIncremental(_BaseCLLoader):
             if self.increment > 0:
                 warnings.warn(
                     f"When both `nb_tasks` (given value = {nb_tasks}) and "
-                    f"`increment` (given value = {increment} are both set, "
+                    f"`increment` (given value = {self.increment} are both set, "
                     "we only consider the number of tasks. The `increment` "
                     "argument is ignored."
                 )
