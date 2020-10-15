@@ -1,6 +1,6 @@
 import os
 
-import imageio
+from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -56,7 +56,7 @@ def save_images(images, size, image_path):
     image = image.astype(np.uint8)
 
     if image_path is not None:
-        return imageio.imwrite(image_path, image)
+        return Image.fromarray(image).save(image_path)
     else:
         cmap = None
         if len(image.shape) == 2:
