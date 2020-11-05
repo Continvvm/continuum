@@ -33,9 +33,24 @@ class MultiNLI(_ContinuumDataset):
     data_url = "https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip"
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            data_path: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         super().__init__(data_path=data_path, train=train, download=download)
 
     def _download(self):
+        """
+        Download the downloader.
+
+        Args:
+            self: (todo): write your description
+        """
         if os.path.exists(os.path.join(self.data_path, "multinli_1.0")):
             print("Dataset already extracted.")
         else:
@@ -45,13 +60,31 @@ class MultiNLI(_ContinuumDataset):
 
     @property
     def data_type(self) -> str:
+        """
+        Return the data type.
+
+        Args:
+            self: (todo): write your description
+        """
         return "text"
 
     @property
     def transformations(self):
+        """
+        Returns a list of all the transformations of - placeations.
+
+        Args:
+            self: (todo): write your description
+        """
         return []
 
     def original_targets(self) -> List[str]:
+        """
+        A list of original targets.
+
+        Args:
+            self: (todo): write your description
+        """
         return ["contradiction", "entailment", "neutral"]
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:

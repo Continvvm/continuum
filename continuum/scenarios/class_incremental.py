@@ -33,6 +33,19 @@ class ClassIncremental(_BaseCLLoader):
         transformations: List[Callable] = None,
         class_order=None
     ) -> None:
+        """
+        Initialize the classes.
+
+        Args:
+            self: (todo): write your description
+            cl_dataset: (todo): write your description
+            nb_tasks: (str): write your description
+            increment: (todo): write your description
+            Union: (todo): write your description
+            initial_increment: (str): write your description
+            transformations: (todo): write your description
+            class_order: (todo): write your description
+        """
 
         super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)
 
@@ -43,6 +56,13 @@ class ClassIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
+        """
+        Setup the dataset.
+
+        Args:
+            self: (todo): write your description
+            nb_tasks: (str): write your description
+        """
 
         x, y, _ = self.cl_dataset.get_data()
         unique_classes = np.unique(y)
@@ -109,6 +129,16 @@ class ClassIncremental(_BaseCLLoader):
     def _define_increments(
         self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
     ) -> List[int]:
+        """
+        Return a list of integers.
+
+        Args:
+            self: (todo): write your description
+            increment: (todo): write your description
+            Union: (str): write your description
+            initial_increment: (bool): write your description
+            unique_classes: (todo): write your description
+        """
 
         if isinstance(increment, list):
             # Check if the total number of classes is compatible

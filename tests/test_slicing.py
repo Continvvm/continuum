@@ -6,6 +6,11 @@ from continuum.scenarios import ClassIncremental, InstanceIncremental
 
 
 def gen_data():
+    """
+    Generate training dataset.
+
+    Args:
+    """
     x_train = np.random.randint(0, 255, size=(20, 32, 32, 3))
     y_train = []
     for i in range(10):
@@ -36,6 +41,13 @@ def gen_data():
     (-20, [0, 1]),  # full loop
 ])
 def test_slicing_nc(index, classes):
+    """
+    Test to test_slicing dataset.
+
+    Args:
+        index: (int): write your description
+        classes: (todo): write your description
+    """
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
     scenario = ClassIncremental(dummy, increment=2)
@@ -52,6 +64,13 @@ def test_slicing_nc(index, classes):
     (12, [])
 ])
 def test_slicing_nc_no_end(start_index, classes):
+    """
+    Test for the test dataset.
+
+    Args:
+        start_index: (int): write your description
+        classes: (todo): write your description
+    """
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
     scenario = ClassIncremental(dummy, increment=2)
@@ -62,6 +81,11 @@ def test_slicing_nc_no_end(start_index, classes):
 
 
 def test_slicing_nc_no_index():
+    """
+    Generate index ising dataset.
+
+    Args:
+    """
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
     scenario = ClassIncremental(dummy, increment=2)

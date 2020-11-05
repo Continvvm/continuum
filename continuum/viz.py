@@ -6,6 +6,16 @@ import numpy as np
 
 
 def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
+    """
+    Plot samples.
+
+    Args:
+        dataset: (todo): write your description
+        title: (str): write your description
+        path: (str): write your description
+        nb_samples: (int): write your description
+        shape: (int): write your description
+    """
     batch, y, _ = dataset.get_random_samples(nb_samples)
 
     y, order = y.sort()
@@ -23,6 +33,15 @@ def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
 
 
 def visualize_batch(batch, number, shape, path):
+    """
+    Visualize a batch of images.
+
+    Args:
+        batch: (todo): write your description
+        number: (int): write your description
+        shape: (int): write your description
+        path: (str): write your description
+    """
     batch = batch.cpu().data
 
     image_frame_dim = int(np.floor(np.sqrt(number)))
@@ -45,6 +64,14 @@ def visualize_batch(batch, number, shape, path):
 
 
 def save_images(images, size, image_path):
+    """
+    Save an image to a png file.
+
+    Args:
+        images: (array): write your description
+        size: (int): write your description
+        image_path: (str): write your description
+    """
     images = np.array(images)
     if images.shape[1] in (1, 3):  # When channel axis is before spatial axis.
         images = images.transpose(0, 2, 3, 1)
@@ -66,6 +93,13 @@ def save_images(images, size, image_path):
 
 
 def merge(images, size):
+    """
+    Merge image into one or more dimensions.
+
+    Args:
+        images: (str): write your description
+        size: (int): write your description
+    """
     img = None
     h, w = images.shape[1], images.shape[2]
     if (images.shape[3] in (3, 4)):
@@ -92,6 +126,12 @@ def merge(images, size):
 
 
 def img_stretch(img):
+    """
+    Convert an image to an image
+
+    Args:
+        img: (array): write your description
+    """
     img = img.astype(float)
     img -= np.min(img)
     img /= np.max(img) + 1e-12
@@ -99,6 +139,14 @@ def img_stretch(img):
 
 
 def make_samples_batche(prediction, batch_size, filename_dest):
+    """
+    Makes a batch of samples.
+
+    Args:
+        prediction: (array): write your description
+        batch_size: (int): write your description
+        filename_dest: (str): write your description
+    """
     plt.figure()
     batch_size_sqrt = int(np.sqrt(batch_size))
     input_channel = prediction[0].shape[0]

@@ -32,6 +32,16 @@ class Core50(_ContinuumDataset):
         train_image_ids: Union[str, Iterable[str], None] = None,
         download: bool = True
     ):
+        """
+        Train the dataset.
+
+        Args:
+            self: (todo): write your description
+            data_path: (str): write your description
+            train: (todo): write your description
+            train_image_ids: (str): write your description
+            download: (todo): write your description
+        """
         self.train_image_ids = train_image_ids
         super().__init__(data_path=data_path, train=train, download=download)
 
@@ -45,9 +55,21 @@ class Core50(_ContinuumDataset):
 
     @property
     def data_type(self):
+        """
+        Return the data type.
+
+        Args:
+            self: (todo): write your description
+        """
         return "image_path"
 
     def _download(self):
+        """
+        Downloads the mnist.
+
+        Args:
+            self: (todo): write your description
+        """
         if os.path.exists(os.path.join(self.data_path, "core50_128x128")):
             print("Dataset already extracted.")
         else:
@@ -135,6 +157,16 @@ class Core50v2_79(_ContinuumDataset):
     nb_tasks = 79
 
     def __init__(self, data_path: str, train: bool = True, download: bool = True, run_id: int = 0):
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            data_path: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+            run_id: (str): write your description
+        """
         if run_id > 9 or run_id < 0:
             raise ValueError(
                 "CORe50 v2 only provides split for 10 runs (ids 0 to 9),"
@@ -145,6 +177,12 @@ class Core50v2_79(_ContinuumDataset):
         super().__init__(data_path=data_path, train=train, download=download)
 
     def _download(self):
+        """
+        Downloads the dataset.
+
+        Args:
+            self: (todo): write your description
+        """
         if os.path.exists(os.path.join(self.data_path, "core50_128x128")):
             print("Dataset already extracted.")
         else:
@@ -160,11 +198,23 @@ class Core50v2_79(_ContinuumDataset):
             print("Split info extracted.")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Get the data from the data.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.train:
             return self._train_init()
         return self._test_init()
 
     def _test_init(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Test for test files.
+
+        Args:
+            self: (todo): write your description
+        """
         text_file = os.path.join(
             self.data_path, f"NIC_v2_{self.nb_tasks}", f"run{self.run_id}", "test_filelist.txt"
         )
@@ -173,6 +223,12 @@ class Core50v2_79(_ContinuumDataset):
         return paths, targets, np.zeros(len(targets))
 
     def _train_init(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Train train and test dataset.
+
+        Args:
+            self: (todo): write your description
+        """
         template = os.path.join(
             self.data_path, f"NIC_v2_{self.nb_tasks}", f"run{self.run_id}",
             "train_batch_{}_filelist.txt"

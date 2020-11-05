@@ -6,6 +6,13 @@ from continuum.tasks import TaskSet, split_train_val
 
 @pytest.mark.parametrize("val_split,nb_val", [(0., 0), (0.1, 1), (0.8, 8), (0.99, 9), (1.0, 10)])
 def test_split_train_val(val_split, nb_val):
+    """
+    Return train set.
+
+    Args:
+        val_split: (todo): write your description
+        nb_val: (todo): write your description
+    """
     x = np.random.rand(10, 2, 2, 3)
     y = np.ones((10,))
     t = np.ones((10,))
@@ -19,6 +26,12 @@ def test_split_train_val(val_split, nb_val):
 
 @pytest.mark.parametrize("nb_samples", [1, 5, 10])
 def test_get_random_samples(nb_samples):
+    """
+    Return a set of samples.
+
+    Args:
+        nb_samples: (int): write your description
+    """
     x = np.ones((10, 2, 2, 3))
     y = np.ones((10,))
     t = np.ones((10,))
@@ -30,6 +43,12 @@ def test_get_random_samples(nb_samples):
 
 @pytest.mark.parametrize("nb_samples", [1, 5, 10])
 def test_get_raw_samples(nb_samples):
+    """
+    Get raw samples.
+
+    Args:
+        nb_samples: (int): write your description
+    """
     x = np.ones((10, 2, 2, 3))
     y = np.ones((10,))
     t = np.ones((10,))

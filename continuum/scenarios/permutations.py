@@ -30,6 +30,17 @@ class Permutations(TransformationIncremental):
         seed: Union[int, List[int]] = 0,
         shared_label_space=True
     ):
+        """
+        Initialize clsfs.
+
+        Args:
+            self: (todo): write your description
+            cl_dataset: (todo): write your description
+            nb_tasks: (str): write your description
+            base_transformations: (todo): write your description
+            seed: (int): write your description
+            shared_label_space: (str): write your description
+        """
         trsfs = self._generate_transformations(seed, nb_tasks)
 
         super().__init__(
@@ -40,6 +51,14 @@ class Permutations(TransformationIncremental):
         )
 
     def _generate_transformations(self, seed, nb_tasks):
+        """
+        Generate random integers.
+
+        Args:
+            self: (todo): write your description
+            seed: (int): write your description
+            nb_tasks: (todo): write your description
+        """
         if isinstance(seed, int):
             if nb_tasks is None:
                 raise ValueError("You must specify a number of tasks if a single seed is provided.")
@@ -55,6 +74,13 @@ class Permutations(TransformationIncremental):
         return [PermutationTransform(seed=None)] + [PermutationTransform(seed=int(s)) for s in seed]
 
     def get_task_transformation(self, task_index):
+        """
+        Get a transformation for the given task_index.
+
+        Args:
+            self: (todo): write your description
+            task_index: (int): write your description
+        """
         return transforms.Compose(self.trsf.transforms + [self.inc_trsf[task_index]])
 
 
@@ -68,10 +94,24 @@ class PermutationTransform:
     """
 
     def __init__(self, seed: Union[int, None]):
+        """
+        Initialize the seed.
+
+        Args:
+            self: (todo): write your description
+            seed: (int): write your description
+        """
         self.seed = seed
         self.g_cpu = torch.Generator()
 
     def __call__(self, x):
+        """
+        Eval ( x ).
+
+        Args:
+            self: (todo): write your description
+            x: (array): write your description
+        """
         shape = list(x.shape)
         x = x.reshape(-1)
         # if seed is None, no permutations

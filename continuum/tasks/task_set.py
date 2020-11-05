@@ -28,6 +28,25 @@ class TaskSet(TorchDataset):
         trsf: transforms.Compose,
         data_type: str = "image_array"
     ):
+        """
+        Initialize the data.
+
+        Args:
+            self: (todo): write your description
+            x: (int): write your description
+            np: (int): write your description
+            ndarray: (array): write your description
+            y: (int): write your description
+            np: (int): write your description
+            ndarray: (array): write your description
+            t: (int): write your description
+            np: (int): write your description
+            ndarray: (array): write your description
+            trsf: (list): write your description
+            transforms: (str): write your description
+            Compose: (todo): write your description
+            data_type: (str): write your description
+        """
         self._x, self._y, self._t = x, y, t
 
         # if task index are not provided t is always -1
@@ -82,11 +101,25 @@ class TaskSet(TorchDataset):
         return self._x.shape[0]
 
     def get_random_samples(self, nb_samples):
+        """
+        Return a list of samples.
+
+        Args:
+            self: (todo): write your description
+            nb_samples: (int): write your description
+        """
         nb_tot_samples = self._x.shape[0]
         indexes = np.random.randint(0, nb_tot_samples, nb_samples)
         return self.get_samples(indexes)
 
     def get_samples(self, indexes):
+        """
+        Gets examples.
+
+        Args:
+            self: (todo): write your description
+            indexes: (int): write your description
+        """
         images, targets, tasks = [], [], []
 
         for index in indexes:

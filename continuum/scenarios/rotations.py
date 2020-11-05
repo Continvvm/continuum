@@ -27,6 +27,18 @@ class Rotations(TransformationIncremental):
         base_transformations: List[Callable] = None,
         shared_label_space=True
     ):
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            cl_dataset: (todo): write your description
+            list_degrees: (str): write your description
+            Tuple: (todo): write your description
+            nb_tasks: (str): write your description
+            base_transformations: (todo): write your description
+            shared_label_space: (str): write your description
+        """
 
         if nb_tasks is not None and len(list_degrees) != nb_tasks:
             raise ValueError(
@@ -44,6 +56,13 @@ class Rotations(TransformationIncremental):
         )
 
     def _generate_transformations(self, degrees):
+        """
+        Generate a list of transforms.
+
+        Args:
+            self: (todo): write your description
+            degrees: (todo): write your description
+        """
         trsfs = []
         min_deg, max_deg = None, None
 

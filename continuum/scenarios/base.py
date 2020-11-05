@@ -25,6 +25,15 @@ class _BaseCLLoader(abc.ABC):
             nb_tasks: int,
             transformations: List[Callable] = None
     ) -> None:
+        """
+        Initialize cl_dataset.
+
+        Args:
+            self: (todo): write your description
+            cl_dataset: (todo): write your description
+            nb_tasks: (str): write your description
+            transformations: (todo): write your description
+        """
 
         self.cl_dataset = cl_dataset
         self._nb_tasks = nb_tasks
@@ -35,6 +44,13 @@ class _BaseCLLoader(abc.ABC):
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
+        """
+        Set up the setup.
+
+        Args:
+            self: (todo): write your description
+            nb_tasks: (str): write your description
+        """
         raise NotImplementedError
 
     @property
@@ -115,6 +131,13 @@ class _BaseCLLoader(abc.ABC):
 
 
 def _handle_negative_indexes(index: int, total_len: int) -> int:
+    """
+    Handle the number of significant indexes.
+
+    Args:
+        index: (int): write your description
+        total_len: (todo): write your description
+    """
     while index < 0:
         index += total_len
     return index

@@ -16,6 +16,14 @@ from continuum.datasets import MNISTFellowship
                                                   (CIFAR10, "CIFAR10", [32, 32, 3]),
                                                   (CIFAR100, "CIFAR100", [32, 32, 3])])
 def test_visualization_ClassIncremental(dataset, name, shape):
+    """
+    Test for visualizing visual dataset.
+
+    Args:
+        dataset: (todo): write your description
+        name: (str): write your description
+        shape: (tuple): write your description
+    """
     increment = 2
     if name == "CIFAR100":
         increment = 20
@@ -38,6 +46,11 @@ Test the visualization with three tasks for rotations tasks
 '''
 @pytest.mark.slow
 def test_visualization_rotations():
+    """
+    Generate visual visual scores.
+
+    Args:
+    """
     scenario = Rotations(cl_dataset=MNIST(data_path="./tests/Datasets", download=True, train=True),
                          nb_tasks=3,
                          list_degrees=[0, 45, 92])
@@ -60,6 +73,11 @@ Test the visualization with three tasks for permutations tasks
 
 @pytest.mark.slow
 def test_visualization_permutations():
+    """
+    Test for permutations.
+
+    Args:
+    """
     scenario = Permutations(cl_dataset=MNIST(data_path="./tests/Datasets", download=True, train=True),
                             nb_tasks=3,
                             seed=0)
@@ -82,6 +100,11 @@ Test the visualization with three tasks for incremental tasks
 
 @pytest.mark.slow
 def test_visualization_MNISTFellowship():
+    """
+    Generate visualization dataset.
+
+    Args:
+    """
     cl_dataset = MNISTFellowship(data_path="./tests/Datasets", download=True, train=True)
     scenario = ClassIncremental(cl_dataset=cl_dataset,
                                 increment=10)

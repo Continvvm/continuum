@@ -9,16 +9,34 @@ from continuum.scenarios import ClassIncremental
 class InMemoryDatasetTest(InMemoryDataset):
 
     def __init__(self, *args, class_order=None, **kwargs):
+        """
+        Initialize the class.
+
+        Args:
+            self: (todo): write your description
+            class_order: (todo): write your description
+        """
         super().__init__(*args, **kwargs)
         self._class_order = class_order
 
     @property
     def class_order(self):
+        """
+        Return the order.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._class_order
 
 
 @pytest.fixture
 def numpy_data():
+    """
+    Concatenate the training data.
+
+    Args:
+    """
     x_train = []
     y_train = []
     for i in range(10):
@@ -44,6 +62,15 @@ def numpy_data():
     ([[1, 3, 5, 7, 9], [0, 2, 4, 6, 8]], list(range(10)), [1, 3, 5, 7, 9, 0, 2, 4, 6, 8])
 ])
 def test_increments(numpy_data, classes, default_class_order, class_order):
+    """
+    Test for the test tasks.
+
+    Args:
+        numpy_data: (int): write your description
+        classes: (todo): write your description
+        default_class_order: (str): write your description
+        class_order: (str): write your description
+    """
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train, class_order=default_class_order)
     scenario = ClassIncremental(dummy, 2, 5, class_order=class_order)

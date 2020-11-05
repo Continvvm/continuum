@@ -9,6 +9,11 @@ from continuum.scenarios import InstanceIncremental
 
 @pytest.fixture
 def numpy_data():
+    """
+    Concatenate training data.
+
+    Args:
+    """
     nb_classes = 6
     nb_data = 100
 
@@ -47,6 +52,11 @@ def test_instance_auto_nb_tasks(numpy_data, nb_tasks, nb_tasks_gt):
 
 @pytest.fixture
 def numpy_data_per_task():
+    """
+    Numpy.
+
+    Args:
+    """
     nb_classes = 6
     nb_tasks = 3
     nb_data = 100

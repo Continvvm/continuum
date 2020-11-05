@@ -8,6 +8,11 @@ from continuum.datasets import (
 
 @pytest.mark.slow
 def test_MNIST_Fellowship():
+    """
+    Test if the dataset.
+
+    Args:
+    """
     scenario = MNISTFellowship(data_path="./tests/Datasets", train=True, download=True)
     scenario.get_data()
     continuum = ClassIncremental(scenario, increment=10)
@@ -16,6 +21,11 @@ def test_MNIST_Fellowship():
 
 @pytest.mark.slow
 def test_CIFAR_Fellowship():
+    """
+    Test if the test dataset.
+
+    Args:
+    """
     cl_dataset = CIFARFellowship(data_path="./tests/Datasets", train=True, download=True)
     scenario = ClassIncremental(cl_dataset, increment=10)
     assert len(scenario) == 11
@@ -31,6 +41,13 @@ def test_CIFAR_Fellowship():
 )
 #@pytest.mark.parametrize("shared_label_space", [True, False])
 def test_Fellowship_classes(list_datasets, nb_tasks):
+    """
+    Test that all tasks in - memory classes.
+
+    Args:
+        list_datasets: (list): write your description
+        nb_tasks: (todo): write your description
+    """
     cl_dataset = Fellowship(data_path="./tests/Datasets", dataset_list=list_datasets)
     scenario = ClassIncremental(cl_dataset, increment=10)
 
@@ -45,6 +62,12 @@ def test_Fellowship_classes(list_datasets, nb_tasks):
 @pytest.mark.slow
 @pytest.mark.parametrize("list_datasets", [[MNIST, CIFAR10]])
 def test_Fellowship_Dimension_Fail(list_datasets):
+    """
+    Test if a list of a - dataset.
+
+    Args:
+        list_datasets: (list): write your description
+    """
     cl_dataset = Fellowship(data_path="./tests/Datasets", dataset_list=list_datasets)
 
     # This does not work since CIFAR10 and MNIST data are not same shape

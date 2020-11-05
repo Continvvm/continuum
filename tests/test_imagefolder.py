@@ -11,6 +11,14 @@ from continuum.scenarios import ClassIncremental
 
 
 def gen_imagefolder(path, nb_classes=10, nb_samples=2):
+    """
+    Generate images in folder.
+
+    Args:
+        path: (str): write your description
+        nb_classes: (todo): write your description
+        nb_samples: (int): write your description
+    """
     for class_id in range(nb_classes):
         folder = os.path.join(path, f"class_{class_id}")
         os.makedirs(folder)
@@ -31,6 +39,14 @@ def gen_imagefolder(path, nb_classes=10, nb_samples=2):
     ([5, 1, 1, 3], 0, 4)
 ])
 def test_increments(increment, initial_increment, nb_tasks):
+    """
+    Increment of the overall.
+
+    Args:
+        increment: (todo): write your description
+        initial_increment: (str): write your description
+        nb_tasks: (todo): write your description
+    """
     with tempfile.TemporaryDirectory() as train_path, tempfile.TemporaryDirectory() as test_path:
         gen_imagefolder(train_path)
         gen_imagefolder(test_path)

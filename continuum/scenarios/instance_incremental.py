@@ -25,6 +25,16 @@ class InstanceIncremental(_BaseCLLoader):
         transformations: List[Callable] = None,
         random_seed: int = 1
     ):
+        """
+        Initialize the initialization.
+
+        Args:
+            self: (todo): write your description
+            cl_dataset: (todo): write your description
+            nb_tasks: (str): write your description
+            transformations: (todo): write your description
+            random_seed: (int): write your description
+        """
         super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)
 
         self._random_state = np.random.RandomState(seed=random_seed)
@@ -32,6 +42,13 @@ class InstanceIncremental(_BaseCLLoader):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
+        """
+        Setup a dataset.
+
+        Args:
+            self: (todo): write your description
+            nb_tasks: (str): write your description
+        """
         x, y, t = self.cl_dataset.get_data()
 
         if t is None and nb_tasks <= 0:

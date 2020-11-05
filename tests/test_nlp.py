@@ -7,6 +7,11 @@ from continuum.scenarios import ClassIncremental, InstanceIncremental
 
 @pytest.fixture
 def numpy_data():
+    """
+    Concatenate training data.
+
+    Args:
+    """
     nb_classes = 6
     nb_tasks = 3
     nb_data = 100
@@ -33,6 +38,12 @@ def numpy_data():
 
 
 def test_nlp_class_incremental(numpy_data):
+    """
+    Increments the classifier.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     train, test = numpy_data
 
     x_train, y_train, t_train = train
@@ -49,6 +60,12 @@ def test_nlp_class_incremental(numpy_data):
 
 
 def test_nlp_instance_incremental(numpy_data):
+    """
+    Increments the test dataset.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     train, test = numpy_data
 
     x_train, y_train, t_train = train

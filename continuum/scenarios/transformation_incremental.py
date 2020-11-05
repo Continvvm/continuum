@@ -29,6 +29,16 @@ class TransformationIncremental(InstanceIncremental):
             base_transformations: List[Callable] = None,
             shared_label_space=True
     ):
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            cl_dataset: (todo): write your description
+            incremental_transformations: (todo): write your description
+            base_transformations: (todo): write your description
+            shared_label_space: (str): write your description
+        """
         nb_tasks = len(incremental_transformations)
         super().__init__(
             cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=base_transformations
@@ -51,13 +61,34 @@ class TransformationIncremental(InstanceIncremental):
         return nb_classes
 
     def get_task_transformation(self, task_index):
+        """
+        Return the task task for the given task_index.
+
+        Args:
+            self: (todo): write your description
+            task_index: (int): write your description
+        """
         return transforms.Compose(self.inc_trsf[task_index] + self.trsf.transforms)
 
     def update_task_indexes(self, task_index):
+        """
+        Updates the indexes.
+
+        Args:
+            self: (todo): write your description
+            task_index: (todo): write your description
+        """
         new_t = np.ones(len(self.dataset[1])) * task_index
         self.dataset = (self.dataset[0], self.dataset[1], new_t)
 
     def update_labels(self, task_index):
+        """
+        Updates labels.
+
+        Args:
+            self: (todo): write your description
+            task_index: (todo): write your description
+        """
         # wrong
         # new_y = self.dataset[1] + task_index * self.num_classes_per_task
         # we update incrementally then update is simply:

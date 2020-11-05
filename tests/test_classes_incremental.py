@@ -16,6 +16,13 @@ from torchvision.transforms import transforms
                                                 (CIFAR10, 2),
                                                 (CIFAR100, 10)])
 def test_with_dataset_simple_increment(dataset, increment):
+    """
+    Increment the test dataset.
+
+    Args:
+        dataset: (todo): write your description
+        increment: (todo): write your description
+    """
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
     scenario = ClassIncremental(cl_dataset=dataset,
                                  increment=increment,
@@ -38,6 +45,13 @@ def test_with_dataset_simple_increment(dataset, increment):
                                                 (CIFAR10, [2, 2, 2, 2, 2]),
                                                 (CIFAR100, [50, 10, 20, 20])])
 def test_with_dataset_composed_increment(dataset, increment):
+    """
+    Increment the test dataset.
+
+    Args:
+        dataset: (todo): write your description
+        increment: (todo): write your description
+    """
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
     scenario = ClassIncremental(cl_dataset=dataset,
                                  increment=increment,

@@ -15,6 +15,12 @@ class ImageNet1000(ImageFolderDataset):
     """
 
     def _download(self):
+        """
+        Downloads the folder.
+
+        Args:
+            self: (todo): write your description
+        """
         if not os.path.exists(self.data_folder):
             raise IOError(
                 "You must download yourself the ImageNet dataset."
@@ -40,10 +46,30 @@ class ImageNet100(ImageNet1000):
     def __init__(
         self, *args, data_subset: Union[Tuple[np.array, np.array], str, None] = None, **kwargs
     ):
+        """
+        Initialize data array.
+
+        Args:
+            self: (todo): write your description
+            data_subset: (str): write your description
+            Union: (todo): write your description
+            Tuple: (todo): write your description
+            np: (int): write your description
+            array: (array): write your description
+            np: (int): write your description
+            array: (array): write your description
+            str: (todo): write your description
+        """
         self.data_subset = data_subset
         super().__init__(*args, **kwargs)
 
     def _download(self):
+        """
+        Downloads the dataset.
+
+        Args:
+            self: (todo): write your description
+        """
         super()._download()
 
         filename = "val_100.txt"
@@ -57,6 +83,12 @@ class ImageNet100(ImageNet1000):
             download(self.subset_url, self.data_folder)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
+        """
+        Get the data from the dataset.
+
+        Args:
+            self: (todo): write your description
+        """
         data = self._parse_subset(self.data_subset, train=self.train)  # type: ignore
         return (*data, None)
 
@@ -65,6 +97,21 @@ class ImageNet100(ImageNet1000):
         subset: Union[Tuple[np.array, np.array], str, None],
         train: bool = True
     ) -> Tuple[np.array, np.array]:
+        """
+        Reads a subset of the dataset.
+
+        Args:
+            self: (todo): write your description
+            subset: (todo): write your description
+            Union: (str): write your description
+            Tuple: (str): write your description
+            np: (todo): write your description
+            array: (array): write your description
+            np: (todo): write your description
+            array: (array): write your description
+            str: (str): write your description
+            train: (bool): write your description
+        """
         if isinstance(subset, str):
             x, y = [], []
 

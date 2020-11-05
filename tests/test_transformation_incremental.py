@@ -12,6 +12,11 @@ NB_CLASSES = 6
 
 @pytest.fixture
 def numpy_data():
+    """
+    Concat data set.
+
+    Args:
+    """
     nb_data = 100  # not too small to have all classes
 
     x_train = []
@@ -32,6 +37,12 @@ Test the initialization with three tasks
 
 
 def test_init(numpy_data):
+    """
+    Generate a random samples.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     x, y = numpy_data
     dummy = InMemoryDataset(x, y, train='train')
 
@@ -78,6 +89,12 @@ Test the initialization with three tasks with degree range
 
 
 def test_init_range(numpy_data):
+    """
+    Initialize the maximum range for a numpy array.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     x, y = numpy_data
     dummy = InMemoryDataset(x, y)
 
@@ -94,6 +111,13 @@ def test_init_range(numpy_data):
 
 @pytest.mark.parametrize("shared_label_space", [False, True])
 def test_init_shared_label_space(numpy_data, shared_label_space):
+    """
+    Initialize the label label.
+
+    Args:
+        numpy_data: (int): write your description
+        shared_label_space: (todo): write your description
+    """
     x, y = numpy_data
     dummy = InMemoryDataset(x, y)
 
@@ -122,6 +146,12 @@ def test_init_shared_label_space(numpy_data, shared_label_space):
 
 
 def test_get_task_transformation(numpy_data):
+    """
+    Test for transformation.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     x, y = numpy_data
     dummy = InMemoryDataset(x, y)
 
@@ -151,6 +181,12 @@ def test_get_task_transformation(numpy_data):
 
 
 def test_init_fail2(numpy_data):
+    """
+    Test if the test test dataset.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     train = numpy_data
     dummy = InMemoryDataset(*train)
 

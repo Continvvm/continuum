@@ -15,6 +15,19 @@ class Fellowship(_ContinuumDataset):
         train: bool = True,
         download: bool = True,
     ):
+        """
+        Initializes dataset.
+
+        Args:
+            self: (todo): write your description
+            dataset_list: (list): write your description
+            List: (str): write your description
+            Type: (str): write your description
+            _ContinuumDataset: (int): write your description
+            data_path: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         super().__init__(data_path, download)
 
         self.datasets = [
@@ -22,6 +35,12 @@ class Fellowship(_ContinuumDataset):
         ]
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Concat data.
+
+        Args:
+            self: (todo): write your description
+        """
         x, y, t = [], [], []
         class_counter = 0
 
@@ -44,6 +63,15 @@ class Fellowship(_ContinuumDataset):
 class MNISTFellowship(Fellowship):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
+        """
+        Initialize dataset.
+
+        Args:
+            self: (todo): write your description
+            data_path: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         super().__init__(
             dataset_list=[MNIST, FashionMNIST, KMNIST],
             train=train,
@@ -55,6 +83,15 @@ class MNISTFellowship(Fellowship):
 class CIFARFellowship(Fellowship):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            data_path: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         super().__init__(
             dataset_list=[CIFAR10, CIFAR100], train=train, data_path=data_path, download=download
         )

@@ -8,6 +8,11 @@ from continuum.scenarios import ClassIncremental
 
 
 def gen_data():
+    """
+    Generate training dataset.
+
+    Args:
+    """
     x_train = np.random.randint(0, 255, size=(20, 32, 32, 3))
     y_train = []
     for i in range(10):
@@ -22,6 +27,11 @@ def gen_data():
 
 # this function create data with a mismatch between x and y shape
 def gen_bad_data():
+    """
+    Generate training data.
+
+    Args:
+    """
     nb_classes = 6
     nb_data_x = 10
     nb_data_y = 100
@@ -50,6 +60,14 @@ def gen_bad_data():
     ([5, 1, 1, 3], 0, 4)
 ])
 def test_increments(increment, initial_increment, nb_tasks):
+    """
+    Increment of the number of examples.
+
+    Args:
+        increment: (todo): write your description
+        initial_increment: (str): write your description
+        nb_tasks: (todo): write your description
+    """
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
     scenario = ClassIncremental(dummy, increment=increment, initial_increment=initial_increment)
@@ -79,6 +97,11 @@ def test_increments(increment, initial_increment, nb_tasks):
 
 
 def test_bad_data():
+    """
+    Test for bad test set.
+
+    Args:
+    """
     train, test = gen_bad_data()
     with pytest.raises(AssertionError):
         dummy = InMemoryDataset(*train)
@@ -86,6 +109,12 @@ def test_bad_data():
 
 @pytest.mark.parametrize("val_split", [0, 0.1, 0.5, 0.8, 1.0])
 def test_split_train_val(val_split):
+    """
+    Test for split split and test.
+
+    Args:
+        val_split: (todo): write your description
+    """
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
     scenario = ClassIncremental(dummy, increment=5)

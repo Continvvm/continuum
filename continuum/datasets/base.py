@@ -9,6 +9,15 @@ from torchvision import transforms
 class _ContinuumDataset(abc.ABC):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            data_path: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         self.data_path = data_path
         self.download = download
         self.train = train
@@ -17,13 +26,31 @@ class _ContinuumDataset(abc.ABC):
             self._download()
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Get the data from the numpy array.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     def _download(self):
+        """
+        Downloads the specified file.
+
+        Args:
+            self: (todo): write your description
+        """
         pass
 
     @property
     def class_order(self) -> Union[None, List[int]]:
+        """
+        The number of the class.
+
+        Args:
+            self: (todo): write your description
+        """
         return None
 
     @property
@@ -43,10 +70,22 @@ class _ContinuumDataset(abc.ABC):
 
     @property
     def data_type(self) -> str:
+        """
+        Return the data type.
+
+        Args:
+            self: (todo): write your description
+        """
         return "image_array"
 
     @property
     def transformations(self):
+        """
+        Returns a list of the transformations.
+
+        Args:
+            self: (todo): write your description
+        """
         return [transforms.ToTensor()]
 
 
@@ -60,12 +99,28 @@ class PyTorchDataset(_ContinuumDataset):
     def __init__(
         self, data_path: str = "", dataset_type=None, train: bool = True, download: bool = True
     ):
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            data_path: (str): write your description
+            dataset_type: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         super().__init__(data_path=data_path, train=train, download=download)
 
         self.dataset_type = dataset_type
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Return the data as 2darray.
+
+        Args:
+            self: (todo): write your description
+        """
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
         return x, y, None
 
@@ -88,6 +143,25 @@ class InMemoryDataset(_ContinuumDataset):
         train: bool = True,
         download: bool = True,
     ):
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            x_: (int): write your description
+            np: (int): write your description
+            ndarray: (array): write your description
+            y_: (int): write your description
+            np: (int): write your description
+            ndarray: (array): write your description
+            t_: (float): write your description
+            Union: (todo): write your description
+            np: (int): write your description
+            ndarray: (array): write your description
+            data_type: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         super().__init__(train=train, download=download)
 
         assert x_.shape[0] == y_.shape[0]
@@ -96,14 +170,33 @@ class InMemoryDataset(_ContinuumDataset):
         self._data_type = data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Return numpy.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.data
 
     @property
     def data_type(self) -> str:
+        """
+        The data_type.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._data_type
 
     @data_type.setter
     def data_type(self, data_type: str) -> None:
+        """
+        Data type.
+
+        Args:
+            self: (todo): write your description
+            data_type: (str): write your description
+        """
         self._data_type = data_type
 
 
@@ -116,6 +209,15 @@ class ImageFolderDataset(_ContinuumDataset):
     """
 
     def __init__(self, data_folder: str, train: bool = True, download: bool = True):
+        """
+        Initialize the folder.
+
+        Args:
+            self: (todo): write your description
+            data_folder: (str): write your description
+            train: (todo): write your description
+            download: (todo): write your description
+        """
         self.data_folder = data_folder
         super().__init__(train=train, download=download)
 
@@ -123,13 +225,35 @@ class ImageFolderDataset(_ContinuumDataset):
 
     @property
     def data_type(self) -> str:
+        """
+        Return the data type.
+
+        Args:
+            self: (todo): write your description
+        """
         return "image_path"
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
+        """
+        Return the numpy.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._format(self.dataset.imgs)
 
     @staticmethod
     def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:
+        """
+        Convert a list of integers
+
+        Args:
+            raw_data: (str): write your description
+            List: (list): write your description
+            Tuple: (todo): write your description
+            str: (str): write your description
+            int: (todo): write your description
+        """
         x = np.empty(len(raw_data), dtype="S255")
         y = np.empty(len(raw_data), dtype=np.int16)
 

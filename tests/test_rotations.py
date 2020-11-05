@@ -7,6 +7,11 @@ from continuum.datasets import MNIST, CIFAR100
 
 @pytest.fixture
 def numpy_data():
+    """
+    Concatenate training data.
+
+    Args:
+    """
     nb_classes = 6
     nb_data = 100
 
@@ -30,6 +35,12 @@ Test the initialization with three tasks
 
 
 def test_init(numpy_data):
+    """
+    Initialize the test dataset.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train)
 
@@ -47,6 +58,13 @@ def test_init(numpy_data):
 
 @pytest.mark.parametrize("shared_label_space", [True, False])
 def test_shared_labels(numpy_data, shared_label_space):
+    """
+    Test that train labels of - class.
+
+    Args:
+        numpy_data: (int): write your description
+        shared_label_space: (todo): write your description
+    """
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train)
     list_degrees = [0, 15, 45]
@@ -66,6 +84,12 @@ def test_shared_labels(numpy_data, shared_label_space):
 
 
 def test_fail_init(numpy_data):
+    """
+    Test for test dataset.
+
+    Args:
+        numpy_data: (int): write your description
+    """
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train)
 
@@ -84,6 +108,13 @@ def test_fail_init(numpy_data):
 @pytest.mark.parametrize("shared_label_space", [True, False])
 @pytest.mark.parametrize("dataset", [MNIST, CIFAR100])
 def test_with_dataset(dataset, shared_label_space):
+    """
+    The main dataset.
+
+    Args:
+        dataset: (todo): write your description
+        shared_label_space: (todo): write your description
+    """
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
     list_degrees = [0, 45, 90]
     scenario = Rotations(cl_dataset=dataset,

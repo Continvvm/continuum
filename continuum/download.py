@@ -4,6 +4,13 @@ import zipfile
 
 
 def download(url, path):
+    """
+    Download a file from a url.
+
+    Args:
+        url: (str): write your description
+        path: (str): write your description
+    """
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -21,6 +28,12 @@ def download(url, path):
 
 
 def unzip(path):
+    """
+    Unzip a directory.
+
+    Args:
+        path: (str): write your description
+    """
     directory_path = os.path.dirname(path)
 
     with zipfile.ZipFile(path, 'r') as zip_ref:
@@ -34,9 +47,24 @@ class ProgressBar:
     """
 
     def __init__(self):
+        """
+        Initialize the state
+
+        Args:
+            self: (todo): write your description
+        """
         self.count = 0
 
     def update(self, tmp, block_size, total_size):
+        """
+        Prints a progress bar
+
+        Args:
+            self: (todo): write your description
+            tmp: (array): write your description
+            block_size: (int): write your description
+            total_size: (int): write your description
+        """
         self.count += block_size
 
         percent = f"{int(100 * self.count / total_size)}"

@@ -10,6 +10,11 @@ from continuum.datasets import MNIST, CIFAR100
 
 @pytest.fixture
 def numpy_data():
+    """
+    Generate training dataset.
+
+    Args:
+    """
     nb_classes = 6
     nb_data = 100
 
@@ -35,6 +40,13 @@ Test the initialization with three tasks
 
 @pytest.mark.parametrize("seed", [0, 42, 1664, [0, 1, 2], [0, 1, 2, 3]])
 def test_init(numpy_data, seed):
+    """
+    Test for train of - wise.
+
+    Args:
+        numpy_data: (int): write your description
+        seed: (int): write your description
+    """
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train)
 
@@ -71,6 +83,13 @@ def test_init(numpy_data, seed):
 @pytest.mark.parametrize("shared_label_space", [True, False])
 @pytest.mark.parametrize("dataset", [MNIST, CIFAR100])
 def test_with_dataset(dataset, shared_label_space):
+    """
+    Test that the test dataset.
+
+    Args:
+        dataset: (todo): write your description
+        shared_label_space: (todo): write your description
+    """
     dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
     scenario = Permutations(cl_dataset=dataset, nb_tasks=5, seed=0, shared_label_space=shared_label_space)
 
