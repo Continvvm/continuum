@@ -10,3 +10,4 @@ Continual Learning.
 from continuum import datasets
 from continuum.scenarios import *
 from continuum.viz import plot_samples
+from continuum.metrics import MetricsLogger
