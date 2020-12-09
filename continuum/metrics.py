@@ -48,6 +48,13 @@ class MetricsLogger:
             if k.startswith("__cached_"):
                 del self.__dict__[k]
 
+    def log(self):
+        print(f"Task id={self.nb_tasks}, acc={self.accuracy}, avg-acc={self.average_incremental_accuracy}")
+
+    @property
+    def nb_tasks(self):
+        return len(self._predictions[list(self._predictions.keys())[0]])
+
     @property
     @cache
     @require_subset("test")
@@ -56,6 +63,16 @@ class MetricsLogger:
             self._predictions["test"][-1],
             self._targets["test"][-1]
         )
+
+    @property
+    @cache
+    @require_subset("test")
+    def accuracy_per_task(self):
+        """Returns all task accuracy individually."""
+        return [
+            _get_R_ij(-1, j, all_preds, all_targets, all_tasks)
+            for j in range(self.nb_tasks)
+        ]
 
     @property
     @cache
