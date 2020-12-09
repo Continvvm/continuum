@@ -1,8 +1,6 @@
 import statistics
 import collections
-
-import torch
-import numpy as np
+from functools import reduce
 
 
 def require_subset(subset):
@@ -31,16 +29,19 @@ class MetricsLogger:
         self._predictions = collections.defaultdict(list)
         self._targets = collections.defaultdict(list)
         self._tasks = collections.defaultdict(list)
+        self._model_sizes = []
 
-        self._unique_tasks = set()
-
-    def add(self, predictions, targets, task_ids, subset="test"):
+    def add(self, predictions=None, targets=None, task_ids=None, subset="test", model=None):
         if subset not in ("train", "val", "test"):
             raise ValueError(f"Subset must be train, val, or test, not {subset}.")
 
-        self._predictions[subset].append(predictions)
-        self._targets[subset].append(targets)
-        self._tasks[subset].append(task_ids)
+        if predictions is not None and targets is not None and task_ids is not None:
+            self._predictions[subset].append(predictions)
+            self._targets[subset].append(targets)
+            self._tasks[subset].append(task_ids)
+
+        if model is not None:
+            self._model_sizes.append(get_model_size(model))
 
         # Remove all cached properties
         for k in list(self.__dict__.keys()):
@@ -60,7 +61,7 @@ class MetricsLogger:
     @cache
     @require_subset("train")
     def online_cumulative_performance(self):
-        """TODO
+        """Computes the accuracy of last task on the train set.
 
         Reference:
         * Online Fast Adaptation and Knowledge Accumulation: a New Approach to Continual Learning
@@ -75,10 +76,11 @@ class MetricsLogger:
     @cache
     @require_subset("test")
     def average_incremental_accuracy(self):
-        """TODO
+        """Computes the average of the accuracies computed after each task.
 
         Reference:
-        * Rebuffi icarl
+        * iCaRL: Incremental Classifier and Representation Learning
+          Rebuffi et al. CVPR 2017
         """
         return statistics.mean([
             accuracy(self._predictions["test"][t], self._targets["test"][t])
@@ -109,9 +111,20 @@ class MetricsLogger:
     def accuracy_A(self):
         return accuracy_A(self._predictions["test"], self._targets["test"], self._tasks["test"])
 
+    @property
+    @cache
+    @require_subset("test")
+    def forgetting(self):
+        return forgetting(self._predictions["test"], self._targets["test"], self._tasks["test"])
+
+    @property
+    @cache
+    def model_size_efficiency(self):
+        return get_model_size_efficiency(self._model_sizes)
+
 
 def accuracy(task_preds, task_targets):
-    """Compute the accuracy of a given task.
+    """Computes the accuracy of a given task.
 
     :param task_preds: Predicted labels.
     :param task_targets: Ground-truth targets.
@@ -123,6 +136,15 @@ def accuracy(task_preds, task_targets):
 def accuracy_A(all_preds, all_targets, all_tasks):
     """Accuracy as defined in Diaz-Rodriguez and Lomonaco.
 
+    Note that it is slightly different from the normal accuracy as it considers
+    each task accuracy with equal weight, while the normal accuracy considers
+    the proportion of all targets.
+
+    Example:
+    - Given task 1 with 50,000 images and task 2 with 1,000 images.
+    - With normal accuracy, task 1 has more importance in the average accuracy.
+    - With this accuracy A, task 1 has as much importance as task 2.
+
     Reference:
     * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
       Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
@@ -133,7 +155,7 @@ def accuracy_A(all_preds, all_targets, all_tasks):
     :return: a float metric between 0 and 1.
     """
     T = len(all_preds)  # Number of seen tasks so far
-    # TODO if we take in account zeroshot, we should take the max of all_tasks
+    # TODO if we take in account zeroshot, we should take the max of all_tasks?
     A = 0.
 
     for i in range(T):
@@ -144,14 +166,20 @@ def accuracy_A(all_preds, all_targets, all_tasks):
 
 
 def backward_transfer(all_preds, all_targets, all_tasks):
-    """TODO
+    """Measures the influence that learning a task has on the performance on previous tasks.
 
     Reference:
-    * Lopez-paz & ranzato 2017
+    * Gradient Episodic Memory for Continual Learning
+      Lopez-paz & ranzato, NeurIPS 2017
+
+    :param all_preds: All predicted labels up to now.
+    :param all_targets: All targets up to now.
+    :param all_tasks: All task ids up to now.
+    :return: a float metric between 0 and 1.
     """
     T = len(all_preds)  # Number of seen tasks so far
-    # TODO if we take in account zeroshot, we should take the max of all_tasks
-    if T == 1:
+    # TODO if we take in account zeroshot, we should take the max of all_tasks?
+    if T <= 1:
         return 0.
     bwt = 0.
 
@@ -166,7 +194,7 @@ def backward_transfer(all_preds, all_targets, all_tasks):
 
 
 def positive_backward_transfer(all_preds, all_targets, all_tasks):
-    """TODO
+    """Computes the the positive gain of Backward transfer.
 
     Reference:
     * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
@@ -182,7 +210,7 @@ def positive_backward_transfer(all_preds, all_targets, all_tasks):
 
 
 def remembering(all_preds, all_targets, all_tasks):
-    """TODO
+    """Computes the forgetting part of Backward transfer.
 
     Reference:
     * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
@@ -198,24 +226,73 @@ def remembering(all_preds, all_targets, all_tasks):
 
 
 def forward_transfer(all_preds, all_targets, all_tasks):
-    """TODO
+    """Measures the influence that learning a task has on the performance of future tasks.
 
     Reference:
-    * Lopez-paz & ranzato 2017
+    * Gradient Episodic Memory for Continual Learning
+      Lopez-paz & ranzato, NeurIPS 2017
+
+    :param all_preds: All predicted labels up to now.
+    :param all_targets: All targets up to now.
+    :param all_tasks: All task ids up to now.
+    :return: a float metric between 0 and 1.
     """
     T = len(all_preds)  # Number of seen tasks so far
-    # TODO if we take in account zeroshot, we should take the max of all_tasks
+    # TODO if we take in account zeroshot, we should take the max of all_tasks?
+    if T <= 1:
+        return 0.
+
+    fwt = 0.
+    for i in range(T):
+        for j in range(i):
+            fwt += _get_R_ij(i, j)
+
+    return bwt / (T * (T - 1) / 2)
+
+
+def forgetting(all_preds, all_targets, all_tasks):
+    """Measures the average forgetting.
+
+    Reference:
+    * Riemannian Walk for Incremental Learning: Understanding Forgetting and Intransigence
+      Chaudhry et al. ECCV 2018
+    """
+    T = len(all_preds)  # Number of seen tasks so far
+    # TODO if we take in account zeroshot, we should take the max of all_tasks?
+    if T <= 1:
+        return 0.
+
+    f = 0.
+    for j in range(T - 1):
+        r_kj = _get_R_ij(T - 1, j, all_preds, all_targets, all_tasks)
+        r_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(T - 1))
+        f += (r_lj - r_kj)
+
+    return f / (T - 1)
 
 
 def _get_R_ij(i, j, all_preds, all_targets, all_tasks):
-    """TODO
+    """Computes an accuracy after task i on task j.
+
+    R matrix:
+
+          || T_e1 | T_e2 | T_e3
+    ============================|
+     T_r1 || R*  | R_ij  | R_ij |
+    ----------------------------|
+     T_r1 || R*  | R_ij  | R_ij |
+    ----------------------------|
+     T_r1 || R*  | R_ij  | R_ij |
+    ============================|
+
+    R_13 is the R of the first column and the third row.
 
     Reference:
     * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
       Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
 
-    :param i: TODO
-    :param j: TODO
+    :param i: Task id after which a model was trained.
+    :param j: Task id of the test data.
     :param all_preds: All predicted labels up to now.
     :param all_targets: All targets up to now.
     :param all_tasks: All task ids up to now.
@@ -227,3 +304,41 @@ def _get_R_ij(i, j, all_preds, all_targets, all_tasks):
 
     indexes = tasks == j
     return (preds[indexes] == targets[indexes]).mean()
+
+
+def get_model_size(model):
+    """Computes the total number of parameters.
+
+    :param model: A Pytorch's nn.Module model.
+    :return: The number of parameters.
+    """
+    nb_params = 0
+
+    for w in model.parameters():
+        if len(w.shape) > 0:  # Tensor
+            nb_params += reduce(lambda a, b: a * b, w.shape)
+        else:  # Scalar
+            nb_params += 1
+
+    return nb_params
+
+
+def get_model_size_efficiency(model_sizes):
+    """Computes the efficiency of the model sizes.
+
+    Reference:
+    * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
+      Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
+
+    :param model_sizes: A list of number of parameters, each being computed after a task.
+    :return: a float metric between 0 and 1.
+    """
+    T = len(model_sizes)
+    if T <= 1:
+        return 1.0
+
+    ms = 0.
+    for i in range(T):
+        ms += (model_sizes[0] / model_sizes[i])
+
+    return min(1., ms / T)
