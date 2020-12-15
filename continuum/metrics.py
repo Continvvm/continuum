@@ -2,12 +2,18 @@ import statistics
 import collections
 from functools import reduce
 
+import numpy as np
+import torch
+
 
 def require_subset(subset):
     def wrapper1(func):
         def wrapper2(self):
             if subset not in self._predictions:
-                raise Exception(f"No {subset} predictions have been logged so far which last_accuracy rely on!")
+                raise Exception(
+                    f"No {subset} predictions have been logged so far which "
+                    f"{func.__name__} rely on!"
+                )
             return func(self)
         return wrapper2
     return wrapper1
@@ -31,9 +37,33 @@ class MetricsLogger:
         self._tasks = collections.defaultdict(list)
         self._model_sizes = []
 
-    def add(self, predictions=None, targets=None, task_ids=None, subset="test", model=None):
-        if subset not in ("train", "val", "test"):
+        self._batch_predictions = []
+        self._batch_targets = []
+
+    def add_batch(self, predictions, targets):
+        if isinstance(predictions, torch.Tensor):
+            predictions = predictions.cpu().numpy()
+        if isinstance(targets, torch.Tensor):
+            targets = targets.cpu().numpy()
+
+        if not isinstance(predictions, np.ndarray):
+            raise TypeError(f"Provide predictions as np.array, not {type(predictions).__name__}.")
+        if not isinstance(targets, np.ndarray):
+            raise TypeError(f"Provide targets as np.array, not {type(predictions).__name__}.")
+
+        self._batch_predictions.append(predictions)
+        self._batch_targets.append(targets)
+
+    def add_step(self, predictions=None, targets=None, task_ids=None, subset="test", model=None):
+        if subset not in ("train", "test"):
             raise ValueError(f"Subset must be train, val, or test, not {subset}.")
+
+        if isinstance(predictions, torch.Tensor):
+            predictions = predictions.cpu().numpy()
+        if isinstance(targets, torch.Tensor):
+            targets = targets.cpu().numpy()
+        if isinstance(task_ids, torch.Tensor):
+            task_ids = task_ids.cpu().numpy()
 
         if predictions is not None and targets is not None and task_ids is not None:
             self._predictions[subset].append(predictions)
@@ -48,12 +78,29 @@ class MetricsLogger:
             if k.startswith("__cached_"):
                 del self.__dict__[k]
 
+        self._batch_predictions = []
+        self._batch_targets = []
+
     def log(self):
         print(f"Task id={self.nb_tasks}, acc={self.accuracy}, avg-acc={self.average_incremental_accuracy}")
 
     @property
     def nb_tasks(self):
         return len(self._predictions[list(self._predictions.keys())[0]])
+
+    @property
+    def online_accuracy(self):
+        if len(self._batch_predictions) == 0:
+            raise Exception(
+                "You need to call <add_batch(preds, targets)> in order to get the online accuracy."
+            )
+
+        if len(self._batch_predictions) > 1:
+            p, t = np.concatenate(self._batch_predictions), np.concatenate(self._batch_targets)
+        else:
+            p, t = self._batch_predictions[0], self._batch_targets[0]
+
+        return accuracy(p, t)
 
     @property
     @cache
@@ -108,6 +155,12 @@ class MetricsLogger:
     @cache
     @require_subset("test")
     def backward_transfer(self):
+        return backward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+
+    @property
+    @cache
+    @require_subset("test")
+    def forward_transfer(self):
         return backward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
 
     @property

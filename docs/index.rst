@@ -22,6 +22,13 @@ The latter is about the different setting you may encounter in Continual Learnin
 
    _tutorials/datasets/*
 
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :caption: Metrics:
+
+   _tutorials/metrics/*
+
 
 Quick Example
 -------------
