@@ -44,7 +44,7 @@ and in return offers a large variety of metrics.
             targets.append(y.cpu().numpy())
             task_ids.append(t.cpu().numpy())
 
-        logger.add_task(
+        logger.add_step(
             np.concatenate(preds),
             np.concatenate(targets),
             np.concatenate(task_ids),
