@@ -190,9 +190,9 @@ def test_example_doc():
 
         preds, targets, task_ids = [], [], []
         for x, y, t in test_loader:
-            preds.append(y)
-            targets.append(y)
-            task_ids.append(t)
+            preds.append(y.cpu().numpy())
+            targets.append(y.cpu().numpy())
+            task_ids.append(t.cpu().numpy())
 
         logger.add_step(
             np.concatenate(preds),

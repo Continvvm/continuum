@@ -161,7 +161,7 @@ class MetricsLogger:
     @cache
     @require_subset("test")
     def forward_transfer(self):
-        return backward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        return forward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
 
     @property
     @cache
@@ -315,9 +315,9 @@ def forward_transfer(all_preds, all_targets, all_tasks):
     fwt = 0.
     for i in range(T):
         for j in range(i):
-            fwt += _get_R_ij(i, j)
+            fwt += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
-    return bwt / (T * (T - 1) / 2)
+    return fwt / (T * (T - 1) / 2)
 
 
 def forgetting(all_preds, all_targets, all_tasks):
