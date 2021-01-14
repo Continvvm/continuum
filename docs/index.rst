@@ -41,19 +41,18 @@ then all 5 following tasks will be made of a single new class each:
    from continuum import ClassIncremental, split_train_val
    from continuum.datasets import MNIST
 
-   dataset = MNIST("my/data/path", download=True)
+   dataset = MNIST("my/data/path", download=True, train=True)
 
-   clloader = ClassIncremental(
+   cl_scenario = ClassIncremental(
       dataset,
       increment=1,
-      initial_increment=5,
-      train=True
+      initial_increment=5
    )
 
    print(f"Number of classes: {clloader.nb_classes}.")
    print(f"Number of tasks: {clloader.nb_tasks}.")
 
-   for task_id, train_dataset in enumerate(clloader):
+   for task_id, train_dataset in enumerate(cl_scenario):
       train_dataset, val_dataset = split_train_val(train_dataset, val_split=0.1)
       train_loader = DataLoader(train_dataset)
       val_loader = DataLoader(val_dataset)
@@ -61,7 +60,7 @@ then all 5 following tasks will be made of a single new class each:
       # Do your cool stuff here
 
 
-The continual loader, here named :code:`clloader` is an iterable. Each loop provides then
+The continual loader, here named :code:`cl_scenario` is an iterable. Each loop provides then
 the dataset for a task. We split the dataset into a train and validation subset with
 our utility :code:`split_train_val`.
 
@@ -72,15 +71,15 @@ Finally, after training on the 6 tasks, we want to evaluate our model performanc
 on the test set:
 
 .. code-block:: python
-   clloader_test = ClassIncremental(
+   cl_scenario_test = ClassIncremental(
       dataset,
       increment=1,
       initial_increment=5,
       train=False
    )
 
-From this loader, we can get the first task :code:`clloader_test[0]`, all tasks up to the third
-task :code:`clloader_test[:3]`, or even all tasks :code:`clloader_test[:]`. You can slice
+From this loader, we can get the first task :code:`cl_scenario_test[0]`, all tasks up to the third
+task :code:`cl_scenario_test[:3]`, or even all tasks :code:`cl_scenario_test[:]`. You can slice
 any loaders like you would do with Python's List.
 
 
