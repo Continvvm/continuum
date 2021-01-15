@@ -1,4 +1,4 @@
-from tqdm import tqdm
+# from tqdm import tqdm
 from torch.utils.data import Dataset
 import numpy as np
 import json
@@ -226,12 +226,12 @@ def get_data_path_or_download(dataset, data_root):
                 total_size_in_bytes = int(
                     response.headers.get('content-length', 0))
                 block_size = 1024  # 1 Kilobyte
-                progress_bar = tqdm(total=total_size_in_bytes,
-                                    unit='iB', unit_scale=True)
+                # progress_bar = tqdm(total=total_size_in_bytes,
+                                    # unit='iB', unit_scale=True)
                 for data in response.iter_content(block_size):
-                    progress_bar.update(len(data))
+                    # progress_bar.update(len(data))
                     file.write(data)
-                progress_bar.close()
-                if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
+                # progress_bar.close()
+                if total_size_in_bytes != 0:# and progress_bar.n != total_size_in_bytes:
                     print("ERROR, something went wrong downloading %s" % url)
     return full_path
