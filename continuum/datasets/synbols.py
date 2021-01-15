@@ -83,7 +83,7 @@ class SynbolsHDF5:
             self.x = data['x'][...]
             y = data['y'][...]
             print("Converting json strings to labels...")
-            with multiprocessing.Pool(multiprocessing.cpu_count) as pool:
+            with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
                 self.y = pool.map(json.loads, y)
             print("Done converting.")
 
@@ -223,6 +223,6 @@ def get_data_path_or_download(dataset, data_root):
                     # progress_bar.update(len(data))
                     file.write(data)
                 # progress_bar.close()
-                if total_size_in_bytes != 0:# and progress_bar.n != total_size_in_bytes:
-                    print("ERROR, something went wrong downloading %s" % url)
+                # if total_size_in_bytes != 0:# and progress_bar.n != total_size_in_bytes:
+                    # print("ERROR, something went wrong downloading %s" % url)
     return full_path
