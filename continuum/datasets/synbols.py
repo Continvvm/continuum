@@ -83,20 +83,11 @@ class SynbolsHDF5:
             self.x = data['x'][...]
             y = data['y'][...]
             print("Converting json strings to labels...")
-            with multiprocessing.Pool(8) as pool:
+            with multiprocessing.Pool(multiprocessing.cpu_count) as pool:
                 self.y = pool.map(json.loads, y)
             print("Done converting.")
-            if isinstance(mask, str):
-                if "split" in data:
-                    if mask in data['split'] and mask == "random":
-                        self.mask = data["split"][mask][...]
-                    else:
-                        self.mask = self.parse_mask(mask, ratios=ratios)
-                else:
-                    raise ValueError
-            else:
-                self.mask = mask
 
+            self.mask = data["split"][mask][...]
             self.y = np.array([_y[task] for _y in self.y])
 
             self.raw_labels = None
