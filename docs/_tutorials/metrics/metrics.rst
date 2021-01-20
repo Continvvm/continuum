@@ -2,8 +2,36 @@ Metrics
 -------
 
 Continual Learning has many different metrics due to the nature of the task.
-Continuum proposes a metric logger that accumulates the predictions of the model
-and in return offers a large variety of metrics.
+Continuum proposes a logger module that accumulates the predictions of the model.
+Then the logger can compute various type of continual learning metrics based on the prediction saved.
+
+Pseudo-code
+
+.. code-block:: python
+
+    for task in scenarios:
+        for (x,y,t) in tasks:
+            prediction = model(x,y,t)
+
+            logger.add_batch(predictions, y)
+
+        print(f"Metric result: {logger.my_pretty_metric}")
+
+
+
+
+
+Accuracy
+-------
+
+[accuracy & online accuracy]
+
+Forward / Backward Transfer
+-------
+
+
+Detailed Example
+-------
 
 .. code-block:: python
 
