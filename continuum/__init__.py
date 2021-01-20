@@ -9,5 +9,5 @@ Continual Learning.
 # flake8: noqa
 from continuum import datasets
 from continuum.scenarios import *
+from continuum.metrics import *
 from continuum.viz import plot_samples
-from continuum.metrics import MetricsLogger
