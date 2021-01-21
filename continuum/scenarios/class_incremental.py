@@ -117,7 +117,7 @@ class ClassIncremental(_BaseCLLoader):
                 raise Exception("The increment list is not compatible with the number of classes")
 
             increments = increment
-        else:
+        elif isinstance(increment, int) and increment > 0:
             increments = []
             if initial_increment:
                 increments.append(initial_increment)
@@ -129,6 +129,8 @@ class ClassIncremental(_BaseCLLoader):
                     f" with {len(self.class_order)} and increment {increment}"
                 )
             increments.extend([increment for _ in range(int(nb_tasks))])
+        else:
+            raise TypeError(f"Invalid increment={increment}, it must be an int > 0.")
 
         return increments
 
