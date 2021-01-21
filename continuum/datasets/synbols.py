@@ -46,10 +46,6 @@ class Synbols(InMemoryDataset):
 
         super().__init__(data.x, data.y, train=train, download=download)
 
-    @property
-    def transformations(self):
-        return [tt.ToPILImage(), tt.ToTensor()]
-
 
 def _read_json_key(args):
     string, key = args
