@@ -8,7 +8,7 @@ from continuum.datasets import _ContinuumDataset
 from continuum.tasks import TaskSet
 
 
-class _BaseCLLoader(abc.ABC):
+class _BaseScenario(abc.ABC):
     """Abstract loader.
 
     DO NOT INSTANTIATE THIS CLASS.

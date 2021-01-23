@@ -4,10 +4,10 @@ from typing import Callable, List
 import numpy as np
 
 from continuum.datasets import _ContinuumDataset
-from continuum.scenarios import _BaseCLLoader
+from continuum.scenarios import _BaseScenario
 
 
-class InstanceIncremental(_BaseCLLoader):
+class InstanceIncremental(_BaseScenario):
     """Continual Loader, generating instance incremental consecutive tasks.
 
     Scenario: Classes are always the same but instances change (NI scenario)

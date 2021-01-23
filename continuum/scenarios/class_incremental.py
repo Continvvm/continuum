@@ -5,10 +5,10 @@ from typing import Callable, List, Union
 import numpy as np
 
 from continuum.datasets import _ContinuumDataset
-from continuum.scenarios import _BaseCLLoader
+from continuum.scenarios import _BaseScenario
 
 
-class ClassIncremental(_BaseCLLoader):
+class ClassIncremental(_BaseScenario):
     """Continual Loader, generating datasets for the consecutive tasks.
 
     Scenario: Each new tasks bring new classes only
