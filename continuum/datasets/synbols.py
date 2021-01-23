@@ -79,7 +79,7 @@ class SynbolsHDF5:
             self.x = data['x'][...]
             y = data['y'][...]
             print("Converting json strings to labels...")
-            with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+            with multiprocessing.Pool(min(8, multiprocessing.cpu_count())) as pool:
                 self.y = pool.map(json.loads, y)
             print("Done converting.")
 
