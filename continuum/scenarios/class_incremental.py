@@ -22,6 +22,7 @@ class ClassIncremental(_BaseCLLoader):
                               Desactivated if `increment` is a list.
     :param transformations: A list of transformations applied to all tasks.
     :param class_order: An optional custom class order, used for NC.
+                        e.g. [0,1,2,3,4,5,6,7,8,9] or [5,2,4,1,8,6,7,9,0,3]
     """
 
     def __init__(
@@ -31,7 +32,7 @@ class ClassIncremental(_BaseCLLoader):
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,
         transformations: List[Callable] = None,
-        class_order=None
+        class_order: Union[List[int], None]=None
     ) -> None:
 
         super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)
