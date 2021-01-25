@@ -3,7 +3,7 @@ import pytest
 from torch import nn
 import torch
 
-from continuum import ContinuumLogger
+from continuum.metrics import Logger
 
 # yapf: disable
 
@@ -60,7 +60,7 @@ def torch_models():
     ("best", 1.), ("worst", 0.), ("random", None)
 ])
 def test_metrics(numpy_data, mode, expected):
-    logger = ContinuumLogger()
+    logger = Logger()
     all_targets, all_tasks = numpy_data
 
     for targets, task_ids in zip(all_targets, all_tasks):
@@ -97,7 +97,7 @@ def test_metrics(numpy_data, mode, expected):
     1, 32, None
 ])
 def test_online_accuracy(numpy_data, batch_size):
-    logger = ContinuumLogger()
+    logger = Logger()
     all_targets, _ = numpy_data
     targets = all_targets[0]
 
@@ -117,7 +117,7 @@ def test_online_accuracy(numpy_data, batch_size):
 
 
 def test_require_subset_test(numpy_data):
-    logger = ContinuumLogger()
+    logger = Logger()
     check_raised(lambda: logger.accuracy)
 
     logger.add_step(numpy_data[0][0], numpy_data[0][0], numpy_data[0][1], subset="test")
@@ -125,7 +125,7 @@ def test_require_subset_test(numpy_data):
 
 
 def test_require_subset_train(numpy_data):
-    logger = ContinuumLogger()
+    logger = Logger()
     check_raised(lambda: logger.online_cumulative_performance)
 
     logger.add_step(numpy_data[0][0], numpy_data[0][0], numpy_data[0][1], subset="train")
@@ -135,22 +135,22 @@ def test_require_subset_train(numpy_data):
 def test_model_efficiency(torch_models):
     small, big = torch_models
 
-    logger1 = ContinuumLogger()
+    logger1 = Logger()
     logger1.add_step(model=small)
     logger1.add_step(model=small)
     ms1 = logger1.model_size_efficiency
 
-    logger2 = ContinuumLogger()
+    logger2 = Logger()
     logger2.add_step(model=small)
     logger2.add_step(model=big)
     ms2 = logger2.model_size_efficiency
 
-    logger3 = ContinuumLogger()
+    logger3 = Logger()
     logger3.add_step(model=big)
     logger3.add_step(model=small)
     ms3 = logger3.model_size_efficiency
 
-    logger4 = ContinuumLogger()
+    logger4 = Logger()
     logger4.add_step(model=big)
     logger4.add_step(model=big)
     ms4 = logger4.model_size_efficiency
@@ -164,7 +164,7 @@ def test_example_doc():
     from torch.utils.data import DataLoader
     import numpy as np
 
-    from continuum import ContinuumLogger, ClassIncremental
+    from continuum import Logger, ClassIncremental
     from continuum.datasets import MNIST
 
     train_scenario = ClassIncremental(
@@ -176,7 +176,7 @@ def test_example_doc():
         increment=2
      )
 
-    logger = ContinuumLogger()
+    logger = Logger()
 
     for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
         train_loader = DataLoader(train_taskset)

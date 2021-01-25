@@ -50,8 +50,9 @@ Detailed Example
 	from torch.utils.data import DataLoader
     import numpy as np
 
-    from continuum import MetricsLogger, ClassIncremental
+    from continuum import ClassIncremental
     from continuum.datasets import MNIST
+    from continuum.metrics import Logger
 
     train_scenario = ClassIncremental(
         MNIST(data_path="my/data/path", download=True, train=True),
@@ -64,7 +65,7 @@ Detailed Example
 
     model = ... Initialize your model here ...
 
-    logger = MetricsLogger()
+    logger = Logger()
 
     for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
         train_loader = DataLoader(train_taskset)

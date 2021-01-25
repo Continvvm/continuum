@@ -1,5 +1,18 @@
 # pylint: disable=C0401
 # flake8: noqa
-from continuum.metrics.continuum_logger import ContinuumLogger
+from continuum.metrics.logger import Logger
+from continuum.metrics.metrics import (
+    accuracy, accuracy_A, backward_transfer, positive_backward_transfer,
+    remembering, forward_transfer, forgetting
+)
 
-__all__ = ["ContinuumLogger"]
+__all__ = [
+    "Logger",
+    "accuracy",
+    "accuracy_A",
+    "backward_transfer",
+    "positive_backward_transfer",
+    "remembering",
+    "forward_transfer",
+    "forgetting"
+]

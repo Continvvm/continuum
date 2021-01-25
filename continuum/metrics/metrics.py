@@ -1,5 +1,6 @@
 from functools import reduce
 
+
 def accuracy(task_preds, task_targets):
     """Computes the accuracy of a given task.
 
