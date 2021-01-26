@@ -9,9 +9,9 @@ Pseudo-code
 
 .. code-block:: python
 
-    for task in scenarios:
+    for task in scenario:
         for (x,y,t) in tasks:
-            prediction = model(x,y,t)
+            predictions = model(x,y,t)
 
             logger.add_batch(predictions, y)
 
