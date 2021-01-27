@@ -159,7 +159,7 @@ man_pages = [(master_doc, 'continuum', 'Continuum Documentation', [author], 1)]
 texinfo_documents = [
     (
         master_doc, 'Continuum', 'Continuum Documentation', author, 'Continuum',
-        'One line description of project.', 'Miscellaneous'
+        'Data Loaders & Metrics for Continual Learning', 'Research'
     ),
 ]
 

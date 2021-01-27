@@ -1,3 +1,8 @@
+# Custom
+/tests/Datasets
+/tests/Samples
+/pytest
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

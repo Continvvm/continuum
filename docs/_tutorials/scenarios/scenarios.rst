@@ -1,5 +1,5 @@
 Continuum Scenarios
------------------
+--------------------
 
 Continual learning (CL) aim is to learn without forgetting in the most "satisfying" way. To evaluate the capacity of different CL algorithms the community use different type of benchmarks scenarios.
 
@@ -173,6 +173,22 @@ with 10 different domains. Each domain represents a new task.
 
     dataset = MultiNLI("/my/path/where/to/download")
     scenario = InstanceIncremental(dataset=dataset)
+
+
+Another example could be using different dataset with their original classes as for MNISTFellowship:
+
+.. code-block:: python
+
+    from continuum import InstanceIncremental
+    from continuum.datasets import MNISTFellowship
+
+    dataset = MNISTFellowship("/my/path/where/to/download")
+    scenario = InstanceIncremental(dataset=dataset)
+
+In this case, the three dataset MNIST, Fashion-MNIST and KMNIST will be learn with their original labels, e.g. classes 0 of all dataset stay 0.
+
+
+Instance incremental scenarios can also be create with transformation as described in next section.
 
 
 Transformed Incremental
