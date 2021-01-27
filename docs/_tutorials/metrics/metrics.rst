@@ -154,7 +154,7 @@ Detailed Example
             # Do here your model training with losses and optimizer...
 
             logger.add_batch(predictions, y)
-            print(f"Online accuracy: {logger.only_accuracy}")
+            print(f"Online accuracy: {logger.online_accuracy}")
 
         preds, targets, task_ids = [], [], []
         for x, y, t in test_loader:
