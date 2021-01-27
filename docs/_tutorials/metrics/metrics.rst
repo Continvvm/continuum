@@ -41,9 +41,86 @@ Here is a list of all implemented metrics:
 | **Model Size Efficiency**     | `model_size_efficiency`     |   ↓   |
 +-------------------------------+-----------------------------+-------+
 
+**Accuracy**::
+
+    Computes the accuracy of a given task.
+
+
+**Accuracy A**::
+
+    Accuracy as defined in Diaz-Rodriguez and Lomonaco.
+
+    Note that it is slightly different from the normal accuracy as it considers
+    each task accuracy with equal weight, while the normal accuracy considers
+    the proportion of all targets.
+
+    Example:
+    - Given task 1 with 50,000 images and task 2 with 1,000 images.
+    - With normal accuracy, task 1 has more importance in the average accuracy.
+    - With this accuracy A, task 1 has as much importance as task 2.
+
+    Reference:
+    * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
+      Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
+
+
+**Backward Transfer**::
+
+    Measures the influence that learning a task has on the performance on previous tasks.
+
+    Reference:
+    * Gradient Episodic Memory for Continual Learning
+      Lopez-paz & ranzato, NeurIPS 2017
+
+
+**Positive Backward Transfer**::
+
+    Computes the the positive gain of Backward transfer.
+
+    Reference:
+    * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
+      Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
+
+
+**Remembering**::
+
+    Computes the forgetting part of Backward transfer.
+
+    Reference:
+    * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
+      Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
+
+
+**Forward Transfer**::
+
+    Measures the influence that learning a task has on the performance of future tasks.
+
+    Reference:
+    * Gradient Episodic Memory for Continual Learning
+      Lopez-paz & ranzato, NeurIPS 2017
+
+
+**Forgetting**::
+
+    Measures the average forgetting.
+
+    Reference:
+    * Riemannian Walk for Incremental Learning: Understanding Forgetting and Intransigence
+      Chaudhry et al. ECCV 2018
+
+
+**Model Size Efficiency**::
+
+    Computes the efficiency of the model sizes.
+
+    Reference:
+    * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
+      Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
+
+
 
 Detailed Example
--------
+----------------
 
 .. code-block:: python
 
