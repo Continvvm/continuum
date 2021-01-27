@@ -8,7 +8,9 @@ def accuracy(task_preds, task_targets):
     :param task_targets: Ground-truth targets.
     :return: a float metric between 0 and 1.
     """
-    return (task_preds == task_targets).mean()
+    metric = (task_preds == task_targets).mean()
+    assert 0. <= metric <= 1.0
+    return metric
 
 
 def accuracy_A(all_preds, all_targets, all_tasks):
@@ -40,7 +42,9 @@ def accuracy_A(all_preds, all_targets, all_tasks):
         for j in range(i+1):
             A += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
-    return A / (T * (T + 1) / 2)
+    metric = A / (T * (T + 1) / 2)
+    assert 0. <= metric <= 1.0
+    return metric
 
 
 def backward_transfer(all_preds, all_targets, all_tasks):
@@ -68,7 +72,9 @@ def backward_transfer(all_preds, all_targets, all_tasks):
 
             bwt += (r_ij - r_jj)
 
-    return bwt / (T * (T - 1) / 2)
+    metric = bwt / (T * (T - 1) / 2)
+    assert -1. <= metric <= 1.0
+    return metric
 
 
 def positive_backward_transfer(all_preds, all_targets, all_tasks):
@@ -84,7 +90,9 @@ def positive_backward_transfer(all_preds, all_targets, all_tasks):
     :return: a float metric between 0 and 1.
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
-    return 1 - abs(min(bwt, 0.))
+    metric = 1 - abs(min(bwt, 0.))
+    assert 0. <= metric <= 1.0
+    return metric
 
 
 def remembering(all_preds, all_targets, all_tasks):
@@ -100,7 +108,9 @@ def remembering(all_preds, all_targets, all_tasks):
     :return: a float metric between 0 and 1.
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
-    return max(bwt, 0.)
+    metric = max(bwt, 0.)
+    assert 0. <= metric <= 1.0
+    return metric
 
 
 def forward_transfer(all_preds, all_targets, all_tasks):
@@ -125,7 +135,10 @@ def forward_transfer(all_preds, all_targets, all_tasks):
         for j in range(i):
             fwt += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
-    return fwt / (T * (T - 1) / 2)
+    metric = fwt / (T * (T - 1) / 2)
+    assert -1. <= metric <= 1.0
+    return metric
+
 
 
 def forgetting(all_preds, all_targets, all_tasks):
@@ -146,7 +159,9 @@ def forgetting(all_preds, all_targets, all_tasks):
         r_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(T - 1))
         f += (r_lj - r_kj)
 
-    return f / (T - 1)
+    metric = f / (T - 1)
+    assert 0. <= metric <= 1.0
+    return metric
 
 
 def _get_R_ij(i, j, all_preds, all_targets, all_tasks):
@@ -219,4 +234,6 @@ def get_model_size_efficiency(model_sizes):
     for i in range(T):
         ms += (model_sizes[0] / model_sizes[i])
 
-    return min(1., ms / T)
+    metric = min(1., ms / T)
+    assert 0. <= metric <= 1.0
+    return metric
