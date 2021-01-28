@@ -4,6 +4,7 @@ from continuum.metrics.base_logger import _BaseLogger
 from continuum.metrics.utils import require_subset, cache
 from continuum.metrics.metrics import accuracy, \
     get_model_size_efficiency, \
+    _get_R_ij, \
     forgetting, \
     accuracy_A, \
     remembering, \

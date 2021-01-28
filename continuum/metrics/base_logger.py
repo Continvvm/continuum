@@ -36,7 +36,7 @@ class _BaseLogger(abc.ABC):
 
     def add_step(self, predictions=None, targets=None, task_ids=None, subset="test", model=None):
         if subset not in ("train", "test"):
-            raise ValueError(f"Subset must be train, val, or test, not {subset}.")
+            raise ValueError(f"Subset must be train or test, not {subset}.")
 
         if isinstance(predictions, torch.Tensor):
             predictions = predictions.cpu().numpy()
