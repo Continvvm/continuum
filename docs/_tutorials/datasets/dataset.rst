@@ -89,7 +89,7 @@ be downloaded:
 
 If you wish to learn CORe50 in the class-incremental scenario (NC), `Core50` suffices. Although,
 for instance-incremental scenario (NI and NIC), you need to use `Core50v2_79`,
-`Core50v2_196`, or `Core50v2_391` (see `our doc about it <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html#instance-incremental>`_).
+`Core50v2_196`, or `Core50v2_391` (see `our doc about it <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios_suites/1_Introduction.html#CORe50>`_).
 Refer to the datatset `official webpage <https://vlomonaco.github.io/core50/>`_ for
 more information about the different versions.
 
