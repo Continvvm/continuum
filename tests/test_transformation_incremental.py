@@ -116,7 +116,6 @@ def test_init_shared_label_space(numpy_data, shared_label_space):
             assert classes.max() == NB_CLASSES - 1
             assert classes.min() == 0
         else:
-            print(classes)
             assert classes.max() == (NB_CLASSES * (task_id + 1)) - 1
             assert classes.min() == (NB_CLASSES * task_id)
 
