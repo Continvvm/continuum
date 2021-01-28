@@ -175,7 +175,25 @@ with 10 different domains. Each domain represents a new task.
     scenario = InstanceIncremental(dataset=dataset)
 
 
+Likewise, CORe50 provides domain ids which are automatically picked up by the `InstanceIncremental` scenario:
+
+
+.. code-block:: python
+
+    from continuum import InstanceIncremental
+    from continuum.datasets import Core50v2_79, Core50v2_196, Core50v2_391
+
+    scenario_79 = InstanceIncremental(dataset=Core50v2_79("/my/path"))
+    scenario_196 = InstanceIncremental(dataset=Core50v2_79("/my/path"))
+    scenario_391 = InstanceIncremental(dataset=Core50v2_79("/my/path"))
+
+
+The three available version of CORe50 have respectively 79, 196, and 391 tasks. Each task may bring
+new classes AND new instances of past classes, akin to the `NIC scenario <http://proceedings.mlr.press/v78/lomonaco17a.html>`_.
+
+
 Another example could be using different dataset with their original classes as for MNISTFellowship:
+
 
 .. code-block:: python
 
@@ -183,9 +201,25 @@ Another example could be using different dataset with their original classes as 
     from continuum.datasets import MNISTFellowship
 
     dataset = MNISTFellowship("/my/path/where/to/download")
-    scenario = InstanceIncremental(dataset=dataset)
+    scenario = InstanceIncremental(dataset=dataset, nb_tasks=42)
+
 
 In this case, the three dataset MNIST, Fashion-MNIST and KMNIST will be learn with their original labels, e.g. classes 0 of all dataset stay 0.
+Or with some other dataset:
+
+
+.. code-block:: python
+
+    from continuum import InstanceIncremental
+    from continuum.datasets import CIFAR100
+
+    dataset = CIFAR100("/my/path/where/to/download")
+    scenario = InstanceIncremental(dataset=dataset, nb_tasks=42)
+
+As you can see, for the last two examples, you need to provide the number of tasks. Because while MultiNLI
+and CORe50 provide the domain/task ids of each sample, we don't have this information for other datasets
+such as MNISTFellowhsip or CIFAR100. In this latter case, you must specify a number of tasks, and
+then the dataset will be split randomly in this amount of tasks.
 
 
 Instance incremental scenarios can also be create with transformation as described in next section.
