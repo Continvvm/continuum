@@ -184,8 +184,8 @@ Likewise, CORe50 provides domain ids which are automatically picked up by the `I
     from continuum.datasets import Core50v2_79, Core50v2_196, Core50v2_391
 
     scenario_79 = InstanceIncremental(dataset=Core50v2_79("/my/path"))
-    scenario_196 = InstanceIncremental(dataset=Core50v2_79("/my/path"))
-    scenario_391 = InstanceIncremental(dataset=Core50v2_79("/my/path"))
+    scenario_196 = InstanceIncremental(dataset=Core50v2_196("/my/path"))
+    scenario_391 = InstanceIncremental(dataset=Core50v2_391("/my/path"))
 
 
 The three available version of CORe50 have respectively 79, 196, and 391 tasks. Each task may bring
