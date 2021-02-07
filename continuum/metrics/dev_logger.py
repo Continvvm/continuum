@@ -36,7 +36,7 @@ class Dev_Logger(_BaseLogger):
         if keyword == "performance":
             self.add_perf(value, subset)
         else:
-            self.add_value(value, subset)
+            self.add_value(value, keyword, subset)
 
     def convert_numpy(self, _tensor):
 
@@ -44,8 +44,15 @@ class Dev_Logger(_BaseLogger):
             _tensor = _tensor.cpu().numpy()
         return _tensor
 
+    def add_value(self, _tensor, keyword, subset="train"):
+
+        self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
+            _tensor)
 
     def add_perf(self, predictions=None, targets=None, task_ids=None, subset="train"):
+        """
+        Special function for performance, so performance can be logged in one line
+        """
         predictions = self.convert_numpy(predictions)
         targets = self.convert_numpy(targets)
         task_ids = self.convert_numpy(task_ids)
@@ -55,7 +62,8 @@ class Dev_Logger(_BaseLogger):
         if not isinstance(targets, np.ndarray):
             raise TypeError(f"Provide targets as np.array, not {type(predictions).__name__}.")
 
-        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"].append(predictions)
+        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"].append(
+            predictions)
         self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"].append(targets)
         self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"].append(task_ids)
 
@@ -64,7 +72,14 @@ class Dev_Logger(_BaseLogger):
             if update_task:
                 self.logger_dict[keyword][subset][self.current_task] = {}
             for subset in self.list_subsets:
-                self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = {}
+                if keyword == "performance":
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = {}
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch][
+                        "predictions"] = []
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["targets"] = []
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["task_ids"] = []
+                else:
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = []
 
     def new_epoch(self):
         self.current_epoch += 1
@@ -76,7 +91,6 @@ class Dev_Logger(_BaseLogger):
         self.current_task += 1
         self.current_epoch = 0
         self.update_dict_architecture(update_task=True)
-
 
     def save_dic(self):
         import pickle as pkl
