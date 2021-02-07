@@ -3,6 +3,7 @@ import collections
 import os
 import torch
 import numpy as np
+from copy import deepcopy
 from continuum.metrics.base_logger import _BaseLogger
 from continuum.metrics.metrics import get_model_size
 
@@ -28,13 +29,15 @@ class Dev_Logger(_BaseLogger):
         self.current_task = 0
         self.current_epoch = 0
 
-    def add(self, value, keyword, subset):
+    def add(self, value, keyword, subset="train"):
 
         assert keyword in self.list_keywords, f"Keyword {keyword} is not declared in list_keywords {self.list_keywords}"
         assert subset in self.list_subsets, f"Field {subset} is not declared in list_keywords {self.list_subsets}"
 
         if keyword == "performance":
             self.add_perf(value, subset)
+        if keyword == "model":
+            self.add_model(model=value, subset=subset)
         else:
             self.add_value(value, keyword, subset)
 
@@ -44,7 +47,19 @@ class Dev_Logger(_BaseLogger):
             _tensor = _tensor.cpu().numpy()
         return _tensor
 
+    def add_model(self, model, subset="train"):
+        """
+        we do not save model in logger we save it in memory
+        """
+        assert self.root_log is not None
+        model2save = deepcopy(model).cpu().state_dict()
+        filename = f"Model_epoch_{self.current_epoch}_Task_{self.current_task}.pth"
+        filename = os.path.join(self.root_log, filename)
+        torch.save(model2save, filename)
+
     def add_value(self, _tensor, keyword, subset="train"):
+
+        _tensor = self.convert_numpy(_tensor)
 
         self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
             _tensor)
