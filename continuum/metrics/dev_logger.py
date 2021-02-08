@@ -10,6 +10,12 @@ from continuum.metrics.metrics import get_model_size
 
 class Dev_Logger(_BaseLogger):
     def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "eval"]):
+        """
+        root_log: folder where logged informations will be saved
+        list_keywords: keywords indicating the differentes informations to log, they might be chosen by the user
+        or specific for use special features of logger: ex: performance or model
+         list_subsets: list of data subset with distinguished results: ex ["train", "eval", "test"] or [train, "eval"]
+        """
         self.root_log = root_log
         self.list_keywords = list_keywords
         self.list_subsets = list_subsets
@@ -58,6 +64,9 @@ class Dev_Logger(_BaseLogger):
         torch.save(model2save, filename)
 
     def add_value(self, _tensor, keyword, subset="train"):
+        """
+        we assume here that value is a tensor or a single value
+        """
 
         _tensor = self.convert_numpy(_tensor)
 
