@@ -5,6 +5,7 @@ import torch
 
 from continuum.metrics import Logger
 
+
 # yapf: disable
 
 @pytest.fixture
@@ -56,6 +57,34 @@ def torch_models():
     return Small(), Big()
 
 
+def test_logger_simplest_add(numpy_data):
+    logger = Logger()
+    all_targets, all_tasks = numpy_data
+    nb_tasks = 3
+    nb_epochs = 5
+    for task in range(nb_tasks):
+        for epoch in range(nb_epochs):
+            for targets, task_ids in zip(all_targets, all_tasks):
+                preds = np.copy(targets)
+                logger.add([preds, targets, task_ids], subset="train")
+            logger.end_epoch()
+        logger.end_task()
+
+
+def test_logger_add_tensor(numpy_data):
+    logger = Logger(list_keywords=['latent'])
+    all_targets, all_tasks = numpy_data
+    nb_tasks = 3
+    nb_epochs = 5
+    for task in range(nb_tasks):
+        for epoch in range(nb_epochs):
+            for targets, task_ids in zip(all_targets, all_tasks):
+                rand_vector = torch.randn(15)
+                logger.add(rand_vector, keyword='latent')
+            logger.end_epoch()
+        logger.end_task()
+
+
 @pytest.mark.parametrize("mode,expected", [
     ("best", 1.), ("worst", 0.), ("random", None)
 ])
@@ -73,8 +102,8 @@ def test_metrics(numpy_data, mode, expected):
         else:
             preds = np.random.randint(0, np.max(targets) + 1, targets.shape)
 
-        logger.add_step(preds, targets, task_ids, subset="train")
-        logger.add_step(preds, targets, task_ids, subset="test")
+        logger.add(value=[preds, targets, task_ids], subset="train")
+        logger.add(value=[preds, targets, task_ids], subset="test")
 
         accuracies = [
             logger.accuracy, logger.online_cumulative_performance,
@@ -105,14 +134,14 @@ def test_online_accuracy(numpy_data, batch_size):
 
     batch_size = batch_size or len(targets)
     for batch_index in range(0, len(targets), batch_size):
-        y = targets[batch_index: batch_index+batch_size]
+        y = targets[batch_index: batch_index + batch_size]
         x = np.copy(y)
 
-        logger.add_batch(x, y)
+        logger.add(value=[x, y, None])
         logger.online_accuracy
     logger.online_accuracy
 
-    logger.add_step(targets, np.copy(targets))
+    logger.add(value=[targets, np.copy(targets), None])
     check_raised(lambda: logger.online_accuracy)
 
 
@@ -120,7 +149,8 @@ def test_require_subset_test(numpy_data):
     logger = Logger()
     check_raised(lambda: logger.accuracy)
 
-    logger.add_step(numpy_data[0][0], numpy_data[0][0], numpy_data[0][1], subset="test")
+    values = [numpy_data[0][0], numpy_data[0][0], numpy_data[0][1]]
+    logger.add(values, subset="test")
     logger.accuracy
 
 
@@ -128,36 +158,38 @@ def test_require_subset_train(numpy_data):
     logger = Logger()
     check_raised(lambda: logger.online_cumulative_performance)
 
-    logger.add_step(numpy_data[0][0], numpy_data[0][0], numpy_data[0][1], subset="train")
+    values = [numpy_data[0][0], numpy_data[0][0], numpy_data[0][1]]
+    logger.add(values, subset="train")
     logger.online_cumulative_performance
 
-
+"""
 def test_model_efficiency(torch_models):
     small, big = torch_models
 
-    logger1 = Logger()
-    logger1.add_step(model=small)
-    logger1.add_step(model=small)
+    logger1 = Logger(['model'])
+    model = small
+    logger1.add(model, keyword='model')
+    logger1.add(model=small)
     ms1 = logger1.model_size_efficiency
 
     logger2 = Logger()
-    logger2.add_step(model=small)
-    logger2.add_step(model=big)
+    logger2.add(model=small)
+    logger2.add(model=big)
     ms2 = logger2.model_size_efficiency
 
     logger3 = Logger()
-    logger3.add_step(model=big)
-    logger3.add_step(model=small)
+    logger3.add(model=big)
+    logger3.add(model=small)
     ms3 = logger3.model_size_efficiency
 
     logger4 = Logger()
-    logger4.add_step(model=big)
-    logger4.add_step(model=big)
+    logger4.add(model=big)
+    logger4.add(model=big)
     ms4 = logger4.model_size_efficiency
 
     assert ms1 == ms4 == ms3 == 1.0
     assert 0. <= ms2 < 1.
-
+"""
 
 @pytest.mark.slow
 def test_example_doc():
@@ -170,11 +202,11 @@ def test_example_doc():
     train_scenario = ClassIncremental(
         MNIST(data_path="/tmp", download=True, train=True),
         increment=2
-     )
+    )
     test_scenario = ClassIncremental(
         MNIST(data_path="/tmp", download=True, train=False),
         increment=2
-     )
+    )
 
     logger = Logger()
 
@@ -203,7 +235,6 @@ def test_example_doc():
         _ = (f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
 
 
-
 def check_raised(func):
     has_raised = False
     try:
@@ -212,5 +243,3 @@ def check_raised(func):
         has_raised = True
     finally:
         assert has_raised
-
-
