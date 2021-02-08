@@ -14,8 +14,8 @@ from continuum.metrics.metrics import accuracy, \
 
 
 class Logger(_BaseLogger):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "eval"]):
+        super().__init__(root_log=root_log, list_keywords=list_keywords, list_subsets=list_subsets)
 
     def log(self):
         print(f"Task id={self.nb_tasks}, acc={self.accuracy}, avg-acc={self.average_incremental_accuracy}")
