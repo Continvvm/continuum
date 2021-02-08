@@ -1,72 +1,129 @@
-
 import abc
 import collections
+import os
 import torch
 import numpy as np
-
+from copy import deepcopy
+from continuum.metrics.base_logger import _BaseLogger
 from continuum.metrics.metrics import get_model_size
 
 
 class _BaseLogger(abc.ABC):
-    def __init__(self):
-        self._predictions = collections.defaultdict(list)
-        self._targets = collections.defaultdict(list)
-        self._tasks = collections.defaultdict(list)
-        self._model_sizes = []
+    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "eval"]):
+        """
+        root_log: folder where logged informations will be saved
+        list_keywords: keywords indicating the differentes informations to log, they might be chosen by the user
+        or specific for use special features of logger: ex: performance or model
+         list_subsets: list of data subset with distinguished results: ex ["train", "eval", "test"] or [train, "eval"]
+        """
+        self.root_log = root_log
+        self.list_keywords = list_keywords
+        self.list_subsets = list_subsets
 
-        self._batch_predictions = []
-        self._batch_targets = []
+        assert self.list_keywords is not None
+        assert self.list_subsets is not None
+        assert len(self.list_keywords) >= 1
+        assert len(self.list_subsets) >= 1
 
-        self.epoch = 0
-        self.task_id = 0
+        self.logger_dict = {}
 
-    def add_batch(self, predictions, targets):
-        if isinstance(predictions, torch.Tensor):
-            predictions = predictions.cpu().numpy()
-        if isinstance(targets, torch.Tensor):
-            targets = targets.cpu().numpy()
+        for keyword in self.list_keywords:
+            self.logger_dict[keyword] = {}
+            for subset in self.list_subsets:
+                self.logger_dict[keyword][subset] = {}
+
+        self.current_task = 0
+        self.current_epoch = 0
+
+    def add(self, value, keyword="performance", subset="train"):
+
+        assert keyword in self.list_keywords, f"Keyword {keyword} is not declared in list_keywords {self.list_keywords}"
+        assert subset in self.list_subsets, f"Field {subset} is not declared in list_keywords {self.list_subsets}"
+
+        if keyword == "performance":
+            self._add_perf(value, subset)
+        if keyword == "model":
+            self._add_model(model=value)
+        else:
+            self._add_value(value, keyword, subset)
+
+    def _convert_numpy(self, _tensor):
+
+        if isinstance(_tensor, torch.Tensor):
+            _tensor = _tensor.cpu().numpy()
+        return _tensor
+
+    def _add_model(self, model):
+        """
+        we do not save model in logger we save it in memory
+        """
+        assert self.root_log is not None
+        model2save = deepcopy(model).cpu().state_dict()
+        filename = f"Model_epoch_{self.current_epoch}_Task_{self.current_task}.pth"
+        filename = os.path.join(self.root_log, filename)
+        torch.save(model2save, filename)
+
+    def _add_value(self, _tensor, keyword, subset="train"):
+        """
+        we assume here that value is a tensor or a single value
+        """
+
+        _tensor = self._convert_numpy(_tensor)
+
+        self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
+            _tensor)
+
+    def _add_perf(self, predictions=None, targets=None, task_ids=None, subset="train"):
+        """
+        Special function for performance, so performance can be logged in one line
+        """
+        predictions = self._convert_numpy(predictions)
+        targets = self._convert_numpy(targets)
+        task_ids = self._convert_numpy(task_ids)
 
         if not isinstance(predictions, np.ndarray):
             raise TypeError(f"Provide predictions as np.array, not {type(predictions).__name__}.")
         if not isinstance(targets, np.ndarray):
             raise TypeError(f"Provide targets as np.array, not {type(predictions).__name__}.")
 
-        self._batch_predictions.append(predictions)
-        self._batch_targets.append(targets)
+        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"].append(
+            predictions)
+        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"].append(targets)
+        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"].append(task_ids)
 
-    def add_step(self, predictions=None, targets=None, task_ids=None, subset="test", model=None):
-        if subset not in ("train", "test"):
-            raise ValueError(f"Subset must be train or test, not {subset}.")
+    def _update_dict_architecture(self, update_task=False):
+        for keyword in self.list_keywords:
+            for subset in self.list_subsets:
+                if update_task:
+                    self.logger_dict[keyword][subset][self.current_task] = {}
+                if keyword == "performance":
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = {}
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch][
+                        "predictions"] = []
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["targets"] = []
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["task_ids"] = []
+                else:
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = []
 
-        if isinstance(predictions, torch.Tensor):
-            predictions = predictions.cpu().numpy()
-        if isinstance(targets, torch.Tensor):
-            targets = targets.cpu().numpy()
-        if isinstance(task_ids, torch.Tensor):
-            task_ids = task_ids.cpu().numpy()
+    def end_epoch(self):
+        self.current_epoch += 1
+        self._update_dict_architecture(update_task=False)
 
-        if predictions is not None and targets is not None and task_ids is not None:
-            self._predictions[subset].append(predictions)
-            self._targets[subset].append(targets)
-            self._tasks[subset].append(task_ids)
+    def end_task(self):
+        if self.root_log is not None:
+            self._save_dic()
+        self.current_task += 1
+        self.current_epoch = 0
+        self._update_dict_architecture(update_task=True)
 
-        if model is not None:
-            self._model_sizes.append(get_model_size(model))
+    def _save_dic(self):
+        import pickle as pkl
+        filename = f"logger_dic_task_{self.current_task}.pkl"
+        filename = os.path.join(self.root_log, filename)
+        with open(filename, 'wb') as f:
+            pkl.dump(self.logger_dict, f, pkl.HIGHEST_PROTOCOL)
 
-        # Remove all cached properties
-        for k in list(self.__dict__.keys()):
-            if k.startswith("__cached_"):
-                del self.__dict__[k]
-
-        self._batch_predictions = []
-        self._batch_targets = []
-
-    def new_epoch(self):
-        self.epoch += 1
-
-    def new_task(self):
-        self.task_id += 1
-        self.epoch = 0
-
-
-
+        # after saving values we remove them from dictionnary to save space and memory
+        for keyword in self.list_keywords:
+            for subset in self.list_subsets:
+                self.logger_dict[keyword][subset][self.current_task] = None
