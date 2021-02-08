@@ -4,7 +4,6 @@ import os
 import torch
 import numpy as np
 from copy import deepcopy
-from continuum.metrics.base_logger import _BaseLogger
 from continuum.metrics.metrics import get_model_size
 
 
@@ -27,6 +26,7 @@ class _BaseLogger(abc.ABC):
 
         self.logger_dict = {}
 
+        # create dict base
         for keyword in self.list_keywords:
             self.logger_dict[keyword] = {}
             for subset in self.list_subsets:
@@ -35,14 +35,18 @@ class _BaseLogger(abc.ABC):
         self.current_task = 0
         self.current_epoch = 0
 
+        # add task and epochs in architecture
+        self._update_dict_architecture(update_task=True)
+
     def add(self, value, keyword="performance", subset="train"):
 
         assert keyword in self.list_keywords, f"Keyword {keyword} is not declared in list_keywords {self.list_keywords}"
         assert subset in self.list_subsets, f"Field {subset} is not declared in list_keywords {self.list_subsets}"
 
         if keyword == "performance":
-            self._add_perf(value, subset)
-        if keyword == "model":
+            predictions, targets, task_ids = value
+            self._add_perf(predictions, targets, task_ids, subset)
+        elif keyword == "model":
             self._add_model(model=value)
         else:
             self._add_value(value, keyword, subset)
@@ -68,12 +72,16 @@ class _BaseLogger(abc.ABC):
         we assume here that value is a tensor or a single value
         """
 
+        print("*******************************")
+        print(self.logger_dict)
+        print("*******************************")
+
         _tensor = self._convert_numpy(_tensor)
 
         self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
             _tensor)
 
-    def _add_perf(self, predictions=None, targets=None, task_ids=None, subset="train"):
+    def _add_perf(self, predictions, targets, task_ids=None, subset="train"):
         """
         Special function for performance, so performance can be logged in one line
         """
