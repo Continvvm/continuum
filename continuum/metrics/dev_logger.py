@@ -21,7 +21,7 @@ class Dev_Logger(_BaseLogger):
         self.list_subsets = list_subsets
 
         assert self.list_keywords is not None
-        assert self.list_fields is not None
+        assert self.list_subsets is not None
         assert len(self.list_keywords) >= 1
         assert len(self.list_subsets) >= 1
 
@@ -41,19 +41,19 @@ class Dev_Logger(_BaseLogger):
         assert subset in self.list_subsets, f"Field {subset} is not declared in list_keywords {self.list_subsets}"
 
         if keyword == "performance":
-            self.add_perf(value, subset)
+            self._add_perf(value, subset)
         if keyword == "model":
-            self.add_model(model=value, subset=subset)
+            self._add_model(model=value)
         else:
-            self.add_value(value, keyword, subset)
+            self._add_value(value, keyword, subset)
 
-    def convert_numpy(self, _tensor):
+    def _convert_numpy(self, _tensor):
 
         if isinstance(_tensor, torch.Tensor):
             _tensor = _tensor.cpu().numpy()
         return _tensor
 
-    def add_model(self, model, subset="train"):
+    def _add_model(self, model):
         """
         we do not save model in logger we save it in memory
         """
@@ -63,23 +63,23 @@ class Dev_Logger(_BaseLogger):
         filename = os.path.join(self.root_log, filename)
         torch.save(model2save, filename)
 
-    def add_value(self, _tensor, keyword, subset="train"):
+    def _add_value(self, _tensor, keyword, subset="train"):
         """
         we assume here that value is a tensor or a single value
         """
 
-        _tensor = self.convert_numpy(_tensor)
+        _tensor = self._convert_numpy(_tensor)
 
         self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
             _tensor)
 
-    def add_perf(self, predictions=None, targets=None, task_ids=None, subset="train"):
+    def _add_perf(self, predictions=None, targets=None, task_ids=None, subset="train"):
         """
         Special function for performance, so performance can be logged in one line
         """
-        predictions = self.convert_numpy(predictions)
-        targets = self.convert_numpy(targets)
-        task_ids = self.convert_numpy(task_ids)
+        predictions = self._convert_numpy(predictions)
+        targets = self._convert_numpy(targets)
+        task_ids = self._convert_numpy(task_ids)
 
         if not isinstance(predictions, np.ndarray):
             raise TypeError(f"Provide predictions as np.array, not {type(predictions).__name__}.")
@@ -91,11 +91,11 @@ class Dev_Logger(_BaseLogger):
         self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"].append(targets)
         self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"].append(task_ids)
 
-    def update_dict_architecture(self, update_task=False):
+    def _update_dict_architecture(self, update_task=False):
         for keyword in self.list_keywords:
-            if update_task:
-                self.logger_dict[keyword][subset][self.current_task] = {}
             for subset in self.list_subsets:
+                if update_task:
+                    self.logger_dict[keyword][subset][self.current_task] = {}
                 if keyword == "performance":
                     self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = {}
                     self.logger_dict[keyword][subset][self.current_task][self.current_epoch][
@@ -105,18 +105,18 @@ class Dev_Logger(_BaseLogger):
                 else:
                     self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = []
 
-    def new_epoch(self):
+    def end_epoch(self):
         self.current_epoch += 1
-        self.update_dict_architecture(update_task=False)
+        self._update_dict_architecture(update_task=False)
 
-    def new_task(self):
+    def end_task(self):
         if self.root_log is not None:
-            self.save_dic()
+            self._save_dic()
         self.current_task += 1
         self.current_epoch = 0
-        self.update_dict_architecture(update_task=True)
+        self._update_dict_architecture(update_task=True)
 
-    def save_dic(self):
+    def _save_dic(self):
         import pickle as pkl
         filename = f"logger_dic_task_{self.current_task}.pkl"
         filename = os.path.join(self.root_log, filename)
