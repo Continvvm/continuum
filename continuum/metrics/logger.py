@@ -14,7 +14,7 @@ from continuum.metrics.metrics import accuracy, \
 
 
 class Logger(_BaseLogger):
-    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "eval"]):
+    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "test"]):
         super().__init__(root_log=root_log, list_keywords=list_keywords, list_subsets=list_subsets)
 
     def log(self):
@@ -22,29 +22,51 @@ class Logger(_BaseLogger):
 
     @property
     def nb_tasks(self):
-        return len(self._predictions[list(self._predictions.keys())[0]])
+        return self.current_task
+
+    def _conv_list_vector(self, list_vector):
+        if len(list_vector) > 1:
+            vector = np.concatenate(list_vector)
+        else:
+            vector = list_vector[0]
+        return vector
+
+    def get_all_last_epoch_data(self, subset):
+
+        last_epoch_pred = []
+        last_epoch_targets = []
+        last_epoch_task_ids = []
+        for task_id in range(self.current_task):
+            predictions = self.logger_dict["performance"][subset][task_id][-1]["predictions"]
+            targets = self.logger_dict["performance"][subset][task_id][-1]["targets"]
+            task_id = self.logger_dict["performance"][subset][task_id][-1]["task_ids"]
+
+            last_epoch_pred.append(predictions)
+            last_epoch_targets.append(targets)
+            last_epoch_task_ids.append(task_id)
+
+        return last_epoch_pred, last_epoch_targets, last_epoch_task_ids
 
     @property
+    @require_subset("train")
     def online_accuracy(self):
-        if len(self._batch_predictions) == 0:
+        if self._get_current_predictions("train").size == 0:
             raise Exception(
-                "You need to call <add_batch(preds, targets)> in order to get the online accuracy."
+                "You need to call add([prediction, label, task_id]) in order to compute an online accuracy "
+                "(task_id might be None)."
             )
+        predictions = self._get_current_predictions("train")
+        targets = self._get_current_targets("train")
 
-        if len(self._batch_predictions) > 1:
-            p, t = np.concatenate(self._batch_predictions), np.concatenate(self._batch_targets)
-        else:
-            p, t = self._batch_predictions[0], self._batch_targets[0]
-
-        return accuracy(p, t)
+        return accuracy(predictions, targets)
 
     @property
     @cache
     @require_subset("test")
     def accuracy(self):
         return accuracy(
-            self._predictions["test"][-1],
-            self._targets["test"][-1]
+            self._get_current_predictions("test"),
+            self._get_current_targets("test")
         )
 
     @property
@@ -52,6 +74,7 @@ class Logger(_BaseLogger):
     @require_subset("test")
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
+        all_preds, all_targets, all_tasks = self.get_all_last_epoch_data()
         return [
             _get_R_ij(-1, j, all_preds, all_targets, all_tasks)
             for j in range(self.nb_tasks)
@@ -67,10 +90,13 @@ class Logger(_BaseLogger):
         * Online Fast Adaptation and Knowledge Accumulation: a New Approach to Continual Learning
           Caccia et al. NeurIPS 2020
         """
-        return accuracy(
-            self._predictions["train"][-1],
-            self._targets["train"][-1]
+        preds = np.concatenate(
+            [dict_epoch['predictions'] for dict_epoch in self.logger_dict["performance"]["train"][self.current_task]]
         )
+        targets = np.concatenate(
+            [dict_epoch['targets'] for dict_epoch in self.logger_dict["performance"]["train"][self.current_task]]
+        )
+        return accuracy(preds, targets)
 
     @property
     @cache
@@ -82,46 +108,54 @@ class Logger(_BaseLogger):
         * iCaRL: Incremental Classifier and Representation Learning
           Rebuffi et al. CVPR 2017
         """
+        all_preds, all_targets, _ = self.get_all_last_epoch_data(subset="test")
+
         return statistics.mean([
-            accuracy(self._predictions["test"][t], self._targets["test"][t])
-            for t in range(len(self._predictions["test"]))
+            accuracy(all_preds[t], all_targets[t])
+            for t in range(len(all_preds))
         ])
 
     @property
     @cache
     @require_subset("test")
     def backward_transfer(self):
-        return backward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        return backward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def forward_transfer(self):
-        return forward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        return forward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def positive_backward_transfer(self):
-        return positive_backward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        return positive_backward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def remembering(self):
-        return remembering(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        return remembering(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def accuracy_A(self):
-        return accuracy_A(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        return accuracy_A(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def forgetting(self):
-        return forgetting(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        return forgetting(all_preds, all_targets, task_ids)
 
     @property
     @cache

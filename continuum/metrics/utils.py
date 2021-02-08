@@ -3,7 +3,7 @@
 def require_subset(subset):
     def wrapper1(func):
         def wrapper2(self):
-            if subset not in self._predictions:
+            if subset not in self.list_subsets:
                 raise Exception(
                     f"No {subset} predictions have been logged so far which "
                     f"{func.__name__} rely on!"

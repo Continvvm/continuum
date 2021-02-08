@@ -57,6 +57,22 @@ def torch_models():
     return Small(), Big()
 
 
+def test_logger_nb_tasks(numpy_data):
+    logger = Logger()
+    all_targets, all_tasks = numpy_data
+    nb_tasks = 3
+    nb_epochs = 5
+    for task in range(nb_tasks):
+        for epoch in range(nb_epochs):
+            for targets, task_ids in zip(all_targets, all_tasks):
+                preds = np.copy(targets)
+                logger.add([preds, targets, task_ids], subset="train")
+            logger.end_epoch()
+        logger.end_task()
+
+    assert logger.nb_tasks == nb_tasks
+
+
 def test_logger_simplest_add(numpy_data):
     logger = Logger()
     all_targets, all_tasks = numpy_data
@@ -72,7 +88,10 @@ def test_logger_simplest_add(numpy_data):
 
 
 def test_logger_add_tensor(numpy_data):
-    logger = Logger(list_keywords=['latent'])
+    """
+    test to check if we can use the logger to log random tensor with random keword
+    """
+    logger = Logger(list_keywords=['RandKeyword'])
     all_targets, all_tasks = numpy_data
     nb_tasks = 3
     nb_epochs = 5
@@ -80,7 +99,7 @@ def test_logger_add_tensor(numpy_data):
         for epoch in range(nb_epochs):
             for targets, task_ids in zip(all_targets, all_tasks):
                 rand_vector = torch.randn(15)
-                logger.add(rand_vector, keyword='latent')
+                logger.add(rand_vector, keyword='RandKeyword')
             logger.end_epoch()
         logger.end_task()
 
@@ -137,12 +156,13 @@ def test_online_accuracy(numpy_data, batch_size):
         y = targets[batch_index: batch_index + batch_size]
         x = np.copy(y)
 
-        logger.add(value=[x, y, None])
+        logger.add(value=[x, y, None], subset="train")
         logger.online_accuracy
     logger.online_accuracy
 
-    logger.add(value=[targets, np.copy(targets), None])
-    check_raised(lambda: logger.online_accuracy)
+    logger.add(value=[targets, np.copy(targets), None], subset="train")
+    logger.online_accuracy
+    # check_raised(lambda: logger.online_accuracy)
 
 
 def test_require_subset_test(numpy_data):
@@ -161,6 +181,7 @@ def test_require_subset_train(numpy_data):
     values = [numpy_data[0][0], numpy_data[0][0], numpy_data[0][1]]
     logger.add(values, subset="train")
     logger.online_cumulative_performance
+
 
 """
 def test_model_efficiency(torch_models):
@@ -191,6 +212,7 @@ def test_model_efficiency(torch_models):
     assert 0. <= ms2 < 1.
 """
 
+
 @pytest.mark.slow
 def test_example_doc():
     from torch.utils.data import DataLoader
@@ -217,22 +239,18 @@ def test_example_doc():
         for x, y, t in train_loader:
             predictions = torch.clone(y)
 
-            logger.add_batch(predictions, y)
+            logger.add([predictions, y, None], subset="train")
             _ = (f"Online accuracy: {logger.online_accuracy}")
 
-        preds, targets, task_ids = [], [], []
-        for x, y, t in test_loader:
-            preds.append(y.cpu().numpy())
-            targets.append(y.cpu().numpy())
-            task_ids.append(t.cpu().numpy())
+        for x_test, y_test, t_test in test_loader:
+            preds_test = y_test
 
-        logger.add_step(
-            np.concatenate(preds),
-            np.concatenate(targets),
-            np.concatenate(task_ids)
-        )
+            logger.add([preds_test, y_test, t_test], subset="test")
+
         _ = (f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
         _ = (f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
+
+        logger.end_task()
 
 
 def check_raised(func):

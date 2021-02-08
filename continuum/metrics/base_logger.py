@@ -8,12 +8,12 @@ from continuum.metrics.metrics import get_model_size
 
 
 class _BaseLogger(abc.ABC):
-    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "eval"]):
+    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "test"]):
         """
         root_log: folder where logged informations will be saved
         list_keywords: keywords indicating the differentes informations to log, they might be chosen by the user
         or specific for use special features of logger: ex: performance or model
-         list_subsets: list of data subset with distinguished results: ex ["train", "eval", "test"] or [train, "eval"]
+         list_subsets: list of data subset with distinguished results: ex ["train", "eval", "test"] or [train, "test"]
         """
         self.root_log = root_log
         self.list_keywords = list_keywords
@@ -30,7 +30,7 @@ class _BaseLogger(abc.ABC):
         for keyword in self.list_keywords:
             self.logger_dict[keyword] = {}
             for subset in self.list_subsets:
-                self.logger_dict[keyword][subset] = {}
+                self.logger_dict[keyword][subset] = []
 
         self.current_task = 0
         self.current_epoch = 0
@@ -50,6 +50,15 @@ class _BaseLogger(abc.ABC):
             self._add_model(model=value)
         else:
             self._add_value(value, keyword, subset)
+
+    def _get_current_predictions(self, subset="train"):
+        return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"]
+
+    def _get_current_targets(self, subset="train"):
+        return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"]
+
+    def _get_current_task_ids(self, subset="train"):
+        return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"]
 
     def _convert_numpy(self, _tensor):
 
@@ -72,10 +81,6 @@ class _BaseLogger(abc.ABC):
         we assume here that value is a tensor or a single value
         """
 
-        print("*******************************")
-        print(self.logger_dict)
-        print("*******************************")
-
         _tensor = self._convert_numpy(_tensor)
 
         self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
@@ -90,28 +95,38 @@ class _BaseLogger(abc.ABC):
         task_ids = self._convert_numpy(task_ids)
 
         if not isinstance(predictions, np.ndarray):
-            raise TypeError(f"Provide predictions as np.array, not {type(predictions).__name__}.")
+            raise TypeError(f"Provide predictions as np.ndarray, not {type(predictions).__name__}.")
         if not isinstance(targets, np.ndarray):
-            raise TypeError(f"Provide targets as np.array, not {type(predictions).__name__}.")
+            raise TypeError(f"Provide targets as np.ndarray, not {type(targets).__name__}.")
 
-        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"].append(
-            predictions)
-        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"].append(targets)
-        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"].append(task_ids)
+        assert predictions.size == targets.size, f"{predictions.size} vs {targets.size}"
+
+        predictions = np.concatenate([self._get_current_predictions(subset), predictions])
+        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"] = predictions
+
+        targets = np.concatenate([self._get_current_targets(subset), targets])
+        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"] = targets
+
+        if (task_ids is not None) and self._get_current_task_ids(subset).size > 0:
+            task_ids = np.concatenate([self._get_current_task_ids(subset), task_ids])
+            self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"] = task_ids
 
     def _update_dict_architecture(self, update_task=False):
         for keyword in self.list_keywords:
             for subset in self.list_subsets:
                 if update_task:
-                    self.logger_dict[keyword][subset][self.current_task] = {}
+                    self.logger_dict[keyword][subset].append([])
                 if keyword == "performance":
-                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = {}
+                    self.logger_dict[keyword][subset][self.current_task].append({})
                     self.logger_dict[keyword][subset][self.current_task][self.current_epoch][
-                        "predictions"] = []
-                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["targets"] = []
-                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["task_ids"] = []
+                        "predictions"] = np.zeros(0)
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["targets"] = np.zeros(0)
+                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["task_ids"] = np.zeros(0)
                 else:
-                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch] = []
+                    self.logger_dict[keyword][subset][self.current_task].append([])
+
+        assert len(self.logger_dict[keyword][subset])-1 == self.current_task
+        assert len(self.logger_dict[keyword][subset][self.current_task])-1 == self.current_epoch
 
     def end_epoch(self):
         self.current_epoch += 1

@@ -8,6 +8,11 @@ def accuracy(task_preds, task_targets):
     :param task_targets: Ground-truth targets.
     :return: a float metric between 0 and 1.
     """
+
+    assert task_preds.size > 0
+    assert task_targets.size > 0
+    assert task_targets.size == task_preds.size, f"{task_targets.size} vs {task_preds.size}"
+
     metric = (task_preds == task_targets).mean()
     assert 0. <= metric <= 1.0
     return metric
