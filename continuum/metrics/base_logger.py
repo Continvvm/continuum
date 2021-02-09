@@ -7,6 +7,12 @@ from copy import deepcopy
 from continuum.metrics.metrics import get_model_size
 
 
+def convert_numpy(_tensor):
+    if isinstance(_tensor, torch.Tensor):
+        _tensor = _tensor.cpu().numpy()
+    return _tensor
+
+
 class _BaseLogger(abc.ABC):
     def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "test"]):
         """
@@ -60,11 +66,6 @@ class _BaseLogger(abc.ABC):
     def _get_current_task_ids(self, subset="train"):
         return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"]
 
-    def _convert_numpy(self, _tensor):
-
-        if isinstance(_tensor, torch.Tensor):
-            _tensor = _tensor.cpu().numpy()
-        return _tensor
 
     def _add_model(self, model):
         """
@@ -81,7 +82,7 @@ class _BaseLogger(abc.ABC):
         we assume here that value is a tensor or a single value
         """
 
-        _tensor = self._convert_numpy(_tensor)
+        _tensor = convert_numpy(_tensor)
 
         self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
             _tensor)
@@ -90,9 +91,9 @@ class _BaseLogger(abc.ABC):
         """
         Special function for performance, so performance can be logged in one line
         """
-        predictions = self._convert_numpy(predictions)
-        targets = self._convert_numpy(targets)
-        task_ids = self._convert_numpy(task_ids)
+        predictions = convert_numpy(predictions)
+        targets = convert_numpy(targets)
+        task_ids = convert_numpy(task_ids)
 
         if not isinstance(predictions, np.ndarray):
             raise TypeError(f"Provide predictions as np.ndarray, not {type(predictions).__name__}.")
@@ -125,8 +126,8 @@ class _BaseLogger(abc.ABC):
                 else:
                     self.logger_dict[keyword][subset][self.current_task].append([])
 
-        assert len(self.logger_dict[keyword][subset])-1 == self.current_task
-        assert len(self.logger_dict[keyword][subset][self.current_task])-1 == self.current_epoch
+                assert len(self.logger_dict[keyword][subset])-1 == self.current_task
+                assert len(self.logger_dict[keyword][subset][self.current_task])-1 == self.current_epoch
 
     def end_epoch(self):
         self.current_epoch += 1
