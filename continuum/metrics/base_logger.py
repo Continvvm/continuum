@@ -7,10 +7,10 @@ from copy import deepcopy
 from continuum.metrics.metrics import get_model_size
 
 
-def convert_numpy(_tensor):
-    if isinstance(_tensor, torch.Tensor):
-        _tensor = _tensor.cpu().numpy()
-    return _tensor
+def convert_numpy(tensor):
+    if isinstance(tensor, torch.Tensor):
+        tensor = tensor.cpu().numpy()
+    return tensor
 
 
 class _BaseLogger(abc.ABC):
@@ -19,16 +19,16 @@ class _BaseLogger(abc.ABC):
         root_log: folder where logged informations will be saved
         list_keywords: keywords indicating the differentes informations to log, they might be chosen by the user
         or specific for use special features of logger: ex: performance or model
-         list_subsets: list of data subset with distinguished results: ex ["train", "eval", "test"] or [train, "test"]
+         list_subsets: list of data subset with distinguished results: ex ["train", "val", "test"] or [train, "test"]
         """
         self.root_log = root_log
         self.list_keywords = list_keywords
         self.list_subsets = list_subsets
 
-        assert self.list_keywords is not None
-        assert self.list_subsets is not None
-        assert len(self.list_keywords) >= 1
-        assert len(self.list_subsets) >= 1
+        assert self.list_keywords is not None, f" self.list_keywords should contains at list one keyword"
+        assert self.list_subsets is not None, f" self.list_subsets should contains at list one subset"
+        assert len(self.list_keywords) >= 1, f" self.list_keywords should contains at list one keyword"
+        assert len(self.list_subsets) >= 1, f" self.list_subsets should contains at list one subset"
 
         self.logger_dict = {}
 
@@ -66,31 +66,27 @@ class _BaseLogger(abc.ABC):
     def _get_current_task_ids(self, subset="train"):
         return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"]
 
-
     def _add_model(self, model):
         """
-        we do not save model in logger we save it in memory
+        The logger save model weights and does not store it in memory
+        model: pytorch neural network
         """
-        assert self.root_log is not None
+        assert self.root_log is not None, f"a root dir should be defined when creating the logger to save model"
         model2save = deepcopy(model).cpu().state_dict()
         filename = f"Model_epoch_{self.current_epoch}_Task_{self.current_task}.pth"
         filename = os.path.join(self.root_log, filename)
         torch.save(model2save, filename)
 
-    def _add_value(self, _tensor, keyword, subset="train"):
-        """
-        we assume here that value is a tensor or a single value
-        """
+    def _add_value(self, tensor, keyword, subset="train"):
+        """Add a tensor in the list of the current epoch (tensor can also be a single value) """
 
-        _tensor = convert_numpy(_tensor)
+        tensor = convert_numpy(tensor)
 
         self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
-            _tensor)
+            tensor)
 
     def _add_perf(self, predictions, targets, task_ids=None, subset="train"):
-        """
-        Special function for performance, so performance can be logged in one line
-        """
+        """Special function for performance, so performance can be logged in one line """
         predictions = convert_numpy(predictions)
         targets = convert_numpy(targets)
         task_ids = convert_numpy(task_ids)
@@ -126,8 +122,12 @@ class _BaseLogger(abc.ABC):
                 else:
                     self.logger_dict[keyword][subset][self.current_task].append([])
 
-                assert len(self.logger_dict[keyword][subset])-1 == self.current_task
-                assert len(self.logger_dict[keyword][subset][self.current_task])-1 == self.current_epoch
+                assert len(self.logger_dict[keyword][subset]) - 1 == self.current_task, \
+                    f"the current task index is {self.current_task} while there are" \
+                    f" {len(self.logger_dict[keyword][subset]) - 1} past tasks, there is a mismatch"
+                assert len(self.logger_dict[keyword][subset][self.current_task]) - 1 == self.current_epoch, \
+                    f"the current epoch index is {self.current_epoch} while there are" \
+                    f" {len(self.logger_dict[keyword][subset][self.current_task]) - 1} past epoch, there is a mismatch"
 
     def end_epoch(self):
         self.current_epoch += 1
@@ -140,7 +140,7 @@ class _BaseLogger(abc.ABC):
         self.current_epoch = 0
         self._update_dict_architecture(update_task=True)
 
-    def _save_dic(self):
+    def _save(self):
         import pickle as pkl
         filename = f"logger_dic_task_{self.current_task}.pkl"
         filename = os.path.join(self.root_log, filename)

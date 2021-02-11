@@ -140,6 +140,30 @@ def test_metrics(numpy_data, mode, expected):
 
     assert 0. <= logger.average_incremental_accuracy <= 1.
 
+@pytest.mark.parametrize("mode,expected", [
+    ("best", 1.), ("worst", 0.), ("random", None)
+])
+def test_accuracy_per_task(numpy_data, mode, expected):
+    logger = Logger()
+    all_targets, all_tasks = numpy_data
+
+    for targets, task_ids in zip(all_targets, all_tasks):
+        if mode == "best":
+            preds = np.copy(targets)
+        elif mode == "worst":
+            # Trick to never generate the correct predictions
+            # only work for more three classes or more
+            preds = (np.copy(targets) + 1) % np.max(targets)
+        else:
+            preds = np.random.randint(0, np.max(targets) + 1, targets.shape)
+        logger.add(value=[preds, targets, task_ids], subset="test")
+
+    accuracies = logger.accuracy_per_task
+
+    for accuracy in accuracies:
+        assert 0. <= accuracy <= 1.0
+
+
 
 @pytest.mark.parametrize("batch_size", [
     1, 32, None
