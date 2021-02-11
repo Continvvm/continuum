@@ -74,7 +74,7 @@ class Logger(_BaseLogger):
     @require_subset("test")
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
-        all_preds, all_targets, all_tasks = self.get_all_last_epoch_data()
+        all_preds, all_targets, all_tasks = self.get_all_last_epoch_data(subset="test")
         return [
             _get_R_ij(-1, j, all_preds, all_targets, all_tasks)
             for j in range(self.nb_tasks)
