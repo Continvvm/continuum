@@ -44,7 +44,7 @@ def accuracy_A(all_preds, all_targets, all_tasks):
     A = 0.
 
     for i in range(T):
-        for j in range(i+1):
+        for j in range(i + 1):
             A += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
     metric = A / (T * (T + 1) / 2)
@@ -145,7 +145,6 @@ def forward_transfer(all_preds, all_targets, all_tasks):
     return metric
 
 
-
 def forgetting(all_preds, all_targets, all_tasks):
     """Measures the average forgetting.
 
@@ -211,7 +210,8 @@ def get_model_size(model):
     :return: The number of parameters.
     """
     nb_params = 0
-
+    # we want he number of parameter for inference
+    model.eval()
     for w in model.parameters():
         if len(w.shape) > 0:  # Tensor
             nb_params += reduce(lambda a, b: a * b, w.shape)
@@ -221,9 +221,10 @@ def get_model_size(model):
     return nb_params
 
 
-def get_model_size_efficiency(model_sizes):
-    """Computes the efficiency of the model sizes.
+def get_model_size_growth(model_sizes):
+    """Computes the growth of the model sizes.
 
+    Same as model size efficiency but with a less missleading name
     Reference:
     * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
       Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
