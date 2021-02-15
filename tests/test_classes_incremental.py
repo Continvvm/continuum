@@ -15,12 +15,12 @@ from torchvision.transforms import transforms
                                                 (FashionMNIST, 1),
                                                 (CIFAR10, 2),
                                                 (CIFAR100, 10)])
-def test_with_dataset_simple_increment(dataset, increment):
-    dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
+def test_with_dataset_simple_increment(tmpdir, dataset, increment):
+    dataset = dataset(data_path=tmpdir, download=True, train=True)
     scenario = ClassIncremental(cl_dataset=dataset,
-                                 increment=increment,
-                                 transformations=[transforms.ToTensor()]
-                                 )
+                                increment=increment,
+                                transformations=[transforms.ToTensor()]
+                                )
 
     for task_id, taskset in enumerate(scenario):
         classes = taskset.get_classes()
@@ -37,12 +37,12 @@ def test_with_dataset_simple_increment(dataset, increment):
                                                 (FashionMNIST, [1, 2, 1, 2, 1, 2, 1]),
                                                 (CIFAR10, [2, 2, 2, 2, 2]),
                                                 (CIFAR100, [50, 10, 20, 20])])
-def test_with_dataset_composed_increment(dataset, increment):
-    dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
+def test_with_dataset_composed_increment(tmpdir, dataset, increment):
+    dataset = dataset(data_path=tmpdir, download=True, train=True)
     scenario = ClassIncremental(cl_dataset=dataset,
-                                 increment=increment,
-                                 transformations=[transforms.ToTensor()]
-                                 )
+                                increment=increment,
+                                transformations=[transforms.ToTensor()]
+                                )
 
     for task_id, taskset in enumerate(scenario):
         classes = taskset.get_classes()

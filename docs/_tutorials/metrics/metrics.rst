@@ -9,13 +9,14 @@ Pseudo-code
 
 .. code-block:: python
 
+    logger = Logger()
     for task in scenario:
         for (x,y,t) in tasks:
             predictions = model(x,y,t)
 
-            logger.add_batch(predictions, y)
-
-        print(f"Metric result: {logger.my_pretty_metric}")
+            logger.add([predictions, y, t])
+        logger.end_task()
+    print(f"Metric result: {logger.my_pretty_metric}")
 
 
 
@@ -38,7 +39,7 @@ Here is a list of all implemented metrics:
 +-------------------------------+-----------------------------+-------+
 | **Forgetting**                | `forgetting`                |   ↓   |
 +-------------------------------+-----------------------------+-------+
-| **Model Size Efficiency**     | `model_size_efficiency`     |   ↓   |
+| **Model Size Growth**     | `model_size_growth`     |   ↓   |
 +-------------------------------+-----------------------------+-------+
 
 **Accuracy**::
@@ -109,14 +110,9 @@ Here is a list of all implemented metrics:
       Chaudhry et al. ECCV 2018
 
 
-**Model Size Efficiency**::
+**Model Size Growth**::
 
-    Computes the efficiency of the model sizes.
-
-    Reference:
-    * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
-      Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
-
+    Evaluate the evolution of the model size.
 
 
 Detailed Example
@@ -142,7 +138,7 @@ Detailed Example
 
     model = ... Initialize your model here ...
 
-    logger = Logger()
+    logger = Logger(subset_list=['train', 'test'])
 
     for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
         train_loader = DataLoader(train_taskset)
@@ -153,21 +149,13 @@ Detailed Example
 
             # Do here your model training with losses and optimizer...
 
-            logger.add_batch(predictions, y)
+            logger.add([predictions, y, t], 'train')
             print(f"Online accuracy: {logger.online_accuracy}")
 
-        preds, targets, task_ids = [], [], []
         for x, y, t in test_loader:
-            preds.append(model(x).cpu().numpy())
-            targets.append(y.cpu().numpy())
-            task_ids.append(t.cpu().numpy())
+            pred = model(x, t)
+            logger.add([pred, y, t], 'test')
 
-        logger.add_step(
-            np.concatenate(preds),
-            np.concatenate(targets),
-            np.concatenate(task_ids),
-            model
-        )
         print(f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
         print(f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
 
