@@ -3,7 +3,7 @@ import numpy as np
 from continuum.metrics.base_logger import _BaseLogger
 from continuum.metrics.utils import require_subset, cache
 from continuum.metrics.metrics import accuracy, \
-    get_model_size_efficiency, \
+    get_model_size_growth, \
     _get_R_ij, \
     forgetting, \
     accuracy_A, \
@@ -182,4 +182,4 @@ class Logger(_BaseLogger):
     def model_size_growth(self):
         assert "model_size" in self.list_keywords
         sizes = self._get_best_epochs("model_size")
-        return get_model_size_efficiency(sizes)
+        return get_model_size_growth(sizes)
