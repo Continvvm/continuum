@@ -211,14 +211,14 @@ def test_require_subset_train(numpy_data):
 def test_model_growth(torch_models):
     small, big = torch_models
 
-    logger1 = Logger(['model'])
+    logger1 = Logger(list_keywords=['model']) # Logger declaration with parameter name
     model = deepcopy(small)
     logger1.add(model, keyword='model')
     logger1.end_task()
     logger1.add(model=small, keyword='model')
     ms1 = logger1.model_size_growth
 
-    logger2 = Logger(['model'])
+    logger2 = Logger(['model'])  # Logger declaration without parameter name
     logger2.add(model=small, keyword='model')
     logger2.end_task()
     logger2.add(model=big, keyword='model')
@@ -260,7 +260,7 @@ def test_example_doc():
 
     #model = ...
 
-    logger = Logger(subset_list=['train', 'test'])
+    logger = Logger(list_subsets=['train', 'test'])
 
     for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
         train_loader = DataLoader(train_taskset)

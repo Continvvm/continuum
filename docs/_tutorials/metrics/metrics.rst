@@ -138,7 +138,7 @@ Detailed Example
 
     model = ... Initialize your model here ...
 
-    logger = Logger(subset_list=['train', 'test'])
+    logger = Logger(list_subsets=['train', 'test'])
 
     for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
         train_loader = DataLoader(train_taskset)

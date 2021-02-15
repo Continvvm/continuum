@@ -14,7 +14,7 @@ from continuum.metrics.metrics import accuracy, \
 
 
 class Logger(_BaseLogger):
-    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "test"]):
+    def __init__(self, list_keywords=["performance"], list_subsets=["train", "test"], root_log=None):
         super().__init__(root_log=root_log, list_keywords=list_keywords, list_subsets=list_subsets)
 
     def log(self):
