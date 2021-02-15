@@ -25,18 +25,23 @@ class _BaseLogger(abc.ABC):
         self.list_keywords = list_keywords
         self.list_subsets = list_subsets
 
+        if "model" in list_keywords and not "model_size" in list_keywords:
+            # we can log model size automatically
+            list_keywords.append("model_size")
+
         assert self.list_keywords is not None, f" self.list_keywords should contains at list one keyword"
         assert self.list_subsets is not None, f" self.list_subsets should contains at list one subset"
         assert len(self.list_keywords) >= 1, f" self.list_keywords should contains at list one keyword"
         assert len(self.list_subsets) >= 1, f" self.list_subsets should contains at list one subset"
+        assert len(self.list_subsets) == len(set(self.list_subsets)), f" There are duplicate in the subset list"
 
         self.logger_dict = {}
 
         # create dict base
-        for keyword in self.list_keywords:
-            self.logger_dict[keyword] = {}
-            for subset in self.list_subsets:
-                self.logger_dict[keyword][subset] = []
+        for subset in self.list_subsets:
+            self.logger_dict[subset] = {}
+            for keyword in self.list_keywords:
+                self.logger_dict[subset][keyword] = []
 
         self.current_task = 0
         self.current_epoch = 0
@@ -58,21 +63,27 @@ class _BaseLogger(abc.ABC):
             self._add_value(value, keyword, subset)
 
     def _get_current_predictions(self, subset="train"):
-        return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"]
+        return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["predictions"]
 
     def _get_current_targets(self, subset="train"):
-        return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"]
+        return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["targets"]
 
     def _get_current_task_ids(self, subset="train"):
-        return self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"]
+        return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"]
 
     def _add_model(self, model):
         """
         The logger save model weights and does not store it in memory
         model: pytorch neural network
         """
-        assert self.root_log is not None, f"a root dir should be defined when creating the logger to save model"
+
         model2save = deepcopy(model).cpu().state_dict()
+        model_size = get_model_size(model2save)
+        # log model size (we considere that the important is the test model size)
+        self.logger_dict["test"]["model_size"][self.current_task][self.current_epoch].append(model_size)
+
+        # save model weights
+        assert self.root_log is not None, f"a root dir should be defined when creating the logger to save model"
         filename = f"Model_epoch_{self.current_epoch}_Task_{self.current_task}.pth"
         filename = os.path.join(self.root_log, filename)
         torch.save(model2save, filename)
@@ -82,7 +93,7 @@ class _BaseLogger(abc.ABC):
 
         tensor = convert_numpy(tensor)
 
-        self.logger_dict[keyword][subset][self.current_task][self.current_epoch].append(
+        self.logger_dict[subset][keyword][self.current_task][self.current_epoch].append(
             tensor)
 
     def _add_perf(self, predictions, targets, task_ids=None, subset="train"):
@@ -99,35 +110,35 @@ class _BaseLogger(abc.ABC):
         assert predictions.size == targets.size, f"{predictions.size} vs {targets.size}"
 
         predictions = np.concatenate([self._get_current_predictions(subset), predictions])
-        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["predictions"] = predictions
+        self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["predictions"] = predictions
 
         targets = np.concatenate([self._get_current_targets(subset), targets])
-        self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["targets"] = targets
+        self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["targets"] = targets
 
         if (task_ids is not None) and self._get_current_task_ids(subset).size > 0:
             task_ids = np.concatenate([self._get_current_task_ids(subset), task_ids])
-            self.logger_dict["performance"][subset][self.current_task][self.current_epoch]["task_ids"] = task_ids
+            self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"] = task_ids
 
     def _update_dict_architecture(self, update_task=False):
         for keyword in self.list_keywords:
             for subset in self.list_subsets:
                 if update_task:
-                    self.logger_dict[keyword][subset].append([])
+                    self.logger_dict[subset][keyword].append([])
                 if keyword == "performance":
-                    self.logger_dict[keyword][subset][self.current_task].append({})
-                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch][
+                    self.logger_dict[subset][keyword][self.current_task].append({})
+                    self.logger_dict[subset][keyword][self.current_task][self.current_epoch][
                         "predictions"] = np.zeros(0)
-                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["targets"] = np.zeros(0)
-                    self.logger_dict[keyword][subset][self.current_task][self.current_epoch]["task_ids"] = np.zeros(0)
+                    self.logger_dict[subset][keyword][self.current_task][self.current_epoch]["targets"] = np.zeros(0)
+                    self.logger_dict[subset][keyword][self.current_task][self.current_epoch]["task_ids"] = np.zeros(0)
                 else:
-                    self.logger_dict[keyword][subset][self.current_task].append([])
+                    self.logger_dict[subset][keyword][self.current_task].append([])
 
-                assert len(self.logger_dict[keyword][subset]) - 1 == self.current_task, \
+                assert len(self.logger_dict[subset][keyword]) - 1 == self.current_task, \
                     f"the current task index is {self.current_task} while there are" \
-                    f" {len(self.logger_dict[keyword][subset]) - 1} past tasks, there is a mismatch"
-                assert len(self.logger_dict[keyword][subset][self.current_task]) - 1 == self.current_epoch, \
+                    f" {len(self.logger_dict[subset][keyword]) - 1} past tasks, there is a mismatch"
+                assert len(self.logger_dict[subset][keyword][self.current_task]) - 1 == self.current_epoch, \
                     f"the current epoch index is {self.current_epoch} while there are" \
-                    f" {len(self.logger_dict[keyword][subset][self.current_task]) - 1} past epoch, there is a mismatch"
+                    f" {len(self.logger_dict[subset][keyword][self.current_task]) - 1} past epoch, there is a mismatch"
 
     def end_epoch(self):
         self.current_epoch += 1
@@ -147,7 +158,7 @@ class _BaseLogger(abc.ABC):
         with open(filename, 'wb') as f:
             pkl.dump(self.logger_dict, f, pkl.HIGHEST_PROTOCOL)
 
-        # after saving values we remove them from dictionnary to save space and memory
-        for keyword in self.list_keywords:
-            for subset in self.list_subsets:
-                self.logger_dict[keyword][subset][self.current_task] = None
+        # after saving values we remove them from dictionary to save space and memory
+        for subset in self.list_subsets:
+            for keyword in self.list_keywords:
+                self.logger_dict[subset][keyword][self.current_task] = None
