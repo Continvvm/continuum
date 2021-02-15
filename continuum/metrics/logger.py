@@ -31,15 +31,16 @@ class Logger(_BaseLogger):
             vector = list_vector[0]
         return vector
 
-    def get_all_last_epoch_data(self, subset):
+    def _get_best_epochs_perf(self, subset):
+        """If there is no eval data, we assume that the best epoch for each task is the last one"""
 
         last_epoch_pred = []
         last_epoch_targets = []
         last_epoch_task_ids = []
         for task_id in range(self.current_task):
-            predictions = self.logger_dict["performance"][subset][task_id][-1]["predictions"]
-            targets = self.logger_dict["performance"][subset][task_id][-1]["targets"]
-            task_id = self.logger_dict["performance"][subset][task_id][-1]["task_ids"]
+            predictions = self.logger_dict[subset]["performance"][task_id][-1]["predictions"]
+            targets = self.logger_dict[subset]["performance"][task_id][-1]["targets"]
+            task_id = self.logger_dict[subset]["performance"][task_id][-1]["task_ids"]
 
             last_epoch_pred.append(predictions)
             last_epoch_targets.append(targets)
@@ -47,13 +48,32 @@ class Logger(_BaseLogger):
 
         return last_epoch_pred, last_epoch_targets, last_epoch_task_ids
 
+
+    def _get_best_epochs_data(self, keyword, subset):
+
+        assert keyword != "performance", f"this method is not mode for performance keyword use _get_best_epochs_perf"
+        list_values = []
+        for task_id in range(self.current_task):
+            list_values.append(self.logger_dict[subset][keyword][task_id][-1])
+        return list_values
+
+
+
+    def _get_best_epochs(self, keyword="performance", subset="train"):
+
+        if keyword=="performance":
+            values = self._get_best_epochs_perf(subset)
+        else:
+            values = self._get_best_epochs_data(keyword, subset)
+        return values
+
     @property
     @require_subset("train")
     def online_accuracy(self):
         if self._get_current_predictions("train").size == 0:
             raise Exception(
                 "You need to call add([prediction, label, task_id]) in order to compute an online accuracy "
-                "(task_id might be None)."
+                "(add([prediction, label, None]) also works here, task_id is not needed)."
             )
         predictions = self._get_current_predictions("train")
         targets = self._get_current_targets("train")
@@ -74,7 +94,7 @@ class Logger(_BaseLogger):
     @require_subset("test")
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
-        all_preds, all_targets, all_tasks = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, all_tasks = self._get_best_epochs(subset="test")
         return [
             _get_R_ij(-1, j, all_preds, all_targets, all_tasks)
             for j in range(self.nb_tasks)
@@ -108,7 +128,7 @@ class Logger(_BaseLogger):
         * iCaRL: Incremental Classifier and Representation Learning
           Rebuffi et al. CVPR 2017
         """
-        all_preds, all_targets, _ = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, _ = self._get_best_epochs(subset="test")
 
         return statistics.mean([
             accuracy(all_preds[t], all_targets[t])
@@ -119,45 +139,47 @@ class Logger(_BaseLogger):
     @cache
     @require_subset("test")
     def backward_transfer(self):
-        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return backward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def forward_transfer(self):
-        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return forward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def positive_backward_transfer(self):
-        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return positive_backward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def remembering(self):
-        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return remembering(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def accuracy_A(self):
-        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return accuracy_A(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def forgetting(self):
-        all_preds, all_targets, task_ids = self.get_all_last_epoch_data(subset="test")
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return forgetting(all_preds, all_targets, task_ids)
 
     @property
     @cache
-    def model_size_efficiency(self):
-        return get_model_size_efficiency(self._model_sizes)
+    def model_size_growth(self):
+        assert "model_size" in self.list_keywords
+        sizes = self._get_best_epochs("model_size")
+        return get_model_size_efficiency(sizes)
