@@ -15,11 +15,11 @@ from continuum.datasets import MNISTFellowship
                                                   (FashionMNIST, "FashionMNIST", [28, 28, 1]),
                                                   (CIFAR10, "CIFAR10", [32, 32, 3]),
                                                   (CIFAR100, "CIFAR100", [32, 32, 3])])
-def test_visualization_ClassIncremental(dataset, name, shape):
+def test_visualization_ClassIncremental(tmpdir, dataset, name, shape):
     increment = 2
     if name == "CIFAR100":
         increment = 20
-    scenario = ClassIncremental(cl_dataset=dataset(data_path="./tests/Datasets", download=True, train=True),
+    scenario = ClassIncremental(cl_dataset=dataset(data_path=tmpdir, download=True, train=True),
                                 increment=increment)
 
     folder = "./tests/Samples/ClassIncremental/"
@@ -37,12 +37,12 @@ def test_visualization_ClassIncremental(dataset, name, shape):
 Test the visualization with three tasks for rotations tasks
 '''
 @pytest.mark.slow
-def test_visualization_rotations():
-    scenario = Rotations(cl_dataset=MNIST(data_path="./tests/Datasets", download=True, train=True),
+def test_visualization_rotations(tmpdir):
+    scenario = Rotations(cl_dataset=MNIST(data_path=tmpdir, download=True, train=True),
                          nb_tasks=3,
                          list_degrees=[0, 45, 92])
 
-    folder = "./tests/Samples/Rotations/"
+    folder = os.path.join(tmpdir, "samples", "rotation")
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -59,12 +59,12 @@ Test the visualization with three tasks for permutations tasks
 
 
 @pytest.mark.slow
-def test_visualization_permutations():
-    scenario = Permutations(cl_dataset=MNIST(data_path="./tests/Datasets", download=True, train=True),
+def test_visualization_permutations(tmpdir):
+    scenario = Permutations(cl_dataset=MNIST(data_path=tmpdir, download=True, train=True),
                             nb_tasks=3,
                             seed=0)
 
-    folder = "./tests/Samples/Permutations/"
+    folder = os.path.join(tmpdir, "samples", "permutation")
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -81,12 +81,12 @@ Test the visualization with three tasks for incremental tasks
 
 
 @pytest.mark.slow
-def test_visualization_MNISTFellowship():
-    cl_dataset = MNISTFellowship(data_path="./tests/Datasets", download=True, train=True)
+def test_visualization_MNISTFellowship(tmpdir):
+    cl_dataset = MNISTFellowship(data_path=tmpdir, download=True, train=True)
     scenario = ClassIncremental(cl_dataset=cl_dataset,
                                 increment=10)
 
-    folder = "./tests/Samples/MNISTFellowship/"
+    folder = os.path.join(tmpdir, "samples", "fellowship")
     if not os.path.exists(folder):
         os.makedirs(folder)
 
