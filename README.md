@@ -97,13 +97,11 @@ if you want to evaluate after each task, on all seen tasks do `clloader_test[:n]
 If you find this library useful in your work, please consider citing it:
 
 ```
-@misc{douillardlesort2020continuum,
+@misc{douillardlesort2021continuum,
   author={Douillard, Arthur and Lesort, Timothée},
-  title={Continuum, Data Loaders for Continual Learning},
-  publisher={Github},
-  journal={Github repository},
-  howpublished={\url{https://github.com/Continvvm/continuum}},
-  year={2020}
+  title={Continuum: Simple Management of Complex Continual Learning Scenarios},
+  publisher={arXiv: 2102.06253},
+  year={2021}
 }
 ```
 
