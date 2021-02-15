@@ -207,8 +207,7 @@ def test_require_subset_train(numpy_data):
     logger.add(values, subset="train")
     logger.online_cumulative_performance
 
-
-def test_model_growth(torch_models):
+def test_model_save(torch_models):
     small, big = torch_models
 
     logger1 = Logger(list_keywords=['model']) # Logger declaration with parameter name
@@ -216,24 +215,38 @@ def test_model_growth(torch_models):
     logger1.add(model, keyword='model')
     logger1.end_task()
     logger1.add(model=small, keyword='model')
+
+    # we check if we logged at the same time the model size
     ms1 = logger1.model_size_growth
 
-    logger2 = Logger(['model'])  # Logger declaration without parameter name
-    logger2.add(model=small, keyword='model')
+    assert ms1 == 1.0
+
+def test_model_growth(torch_models):
+    small, big = torch_models
+
+    logger1 = Logger(list_keywords=['model_size']) # Logger declaration with parameter name
+    model = deepcopy(small)
+    logger1.add(model, keyword='model_size')
+    logger1.end_task()
+    logger1.add(model=small, keyword='model_size')
+    ms1 = logger1.model_size_growth
+
+    logger2 = Logger(['model_size'])  # Logger declaration without parameter name
+    logger2.add(model=small, keyword='model_size')
     logger2.end_task()
-    logger2.add(model=big, keyword='model')
+    logger2.add(model=big, keyword='model_size')
     ms2 = logger2.model_size_growth
 
-    logger3 = Logger(['model'])
-    logger3.add(model=big, keyword='model')
+    logger3 = Logger(['model_size'])
+    logger3.add(model=big, keyword='model_size')
     logger3.end_task()
-    logger3.add(model=small, keyword='model')
+    logger3.add(model=small, keyword='model_size')
     ms3 = logger3.model_size_growth
 
-    logger4 = Logger(['model'])
-    logger4.add(model=big, keyword='model')
+    logger4 = Logger(['model_size'])
+    logger4.add(model=big, keyword='model_size')
     logger4.end_task()
-    logger4.add(model=big, keyword='model')
+    logger4.add(model=big, keyword='model_size')
     ms4 = logger4.model_size_growth
 
     assert ms1 == ms4 == ms3 == 1.0
