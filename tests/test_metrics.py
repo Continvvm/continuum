@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from torch import nn
 import torch
-
+from copy import deepcopy
 from continuum.metrics import Logger
 
 
@@ -173,6 +173,7 @@ def test_online_accuracy(numpy_data, batch_size):
     all_targets, _ = numpy_data
     targets = all_targets[0]
 
+    # we check that when no data is in the logger online_accuracy generate an error
     check_raised(lambda: logger.online_accuracy)
 
     batch_size = batch_size or len(targets)
@@ -186,7 +187,7 @@ def test_online_accuracy(numpy_data, batch_size):
 
     logger.add(value=[targets, np.copy(targets), None], subset="train")
     logger.online_accuracy
-    # check_raised(lambda: logger.online_accuracy)
+    #check_raised(lambda: logger.online_accuracy)
 
 
 def test_require_subset_test(numpy_data):
@@ -207,34 +208,36 @@ def test_require_subset_train(numpy_data):
     logger.online_cumulative_performance
 
 
-"""
-def test_model_efficiency(torch_models):
+def test_model_growth(torch_models):
     small, big = torch_models
 
     logger1 = Logger(['model'])
-    model = small
+    model = deepcopy(small)
     logger1.add(model, keyword='model')
-    logger1.add(model=small)
-    ms1 = logger1.model_size_efficiency
+    logger1.end_task()
+    logger1.add(model=small, keyword='model')
+    ms1 = logger1.model_size_growth
 
-    logger2 = Logger()
-    logger2.add(model=small)
-    logger2.add(model=big)
-    ms2 = logger2.model_size_efficiency
+    logger2 = Logger(['model'])
+    logger2.add(model=small, keyword='model')
+    logger2.end_task()
+    logger2.add(model=big, keyword='model')
+    ms2 = logger2.model_size_growth
 
-    logger3 = Logger()
-    logger3.add(model=big)
-    logger3.add(model=small)
-    ms3 = logger3.model_size_efficiency
+    logger3 = Logger(['model'])
+    logger3.add(model=big, keyword='model')
+    logger3.end_task()
+    logger3.add(model=small, keyword='model')
+    ms3 = logger3.model_size_growth
 
-    logger4 = Logger()
-    logger4.add(model=big)
-    logger4.add(model=big)
-    ms4 = logger4.model_size_efficiency
+    logger4 = Logger(['model'])
+    logger4.add(model=big, keyword='model')
+    logger4.end_task()
+    logger4.add(model=big, keyword='model')
+    ms4 = logger4.model_size_growth
 
     assert ms1 == ms4 == ms3 == 1.0
     assert 0. <= ms2 < 1.
-"""
 
 
 @pytest.mark.slow
