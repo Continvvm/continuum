@@ -77,7 +77,7 @@ class _BaseLogger(abc.ABC):
         model: pytorch neural network
         """
 
-        model2save = deepcopy(model).cpu().state_dict()
+        model2save = deepcopy(model)
         model_size = get_model_size(model2save)
         # log model size (we considere that the important is the test model size)
         self.logger_dict["test"]["model_size"][self.current_task][self.current_epoch].append(model_size)
@@ -86,7 +86,7 @@ class _BaseLogger(abc.ABC):
         assert self.root_log is not None, f"a root dir should be defined when creating the logger to save model"
         filename = f"Model_epoch_{self.current_epoch}_Task_{self.current_task}.pth"
         filename = os.path.join(self.root_log, filename)
-        torch.save(model2save, filename)
+        torch.save(model2save.cpu().state_dict(), filename)
 
     def _add_value(self, tensor, keyword, subset="train"):
         """Add a tensor in the list of the current epoch (tensor can also be a single value) """
