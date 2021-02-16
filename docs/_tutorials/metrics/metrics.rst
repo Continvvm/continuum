@@ -159,3 +159,62 @@ Detailed Example
         print(f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
         print(f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
 
+
+
+Advanced Use of logger
+-------
+
+The logger is designed to save any type of tensor with a corresponding keyword.
+For example you may want to save a latent vector at each epoch.
+
+.. code-block:: python
+
+    from continuum.metrics import Logger
+
+    model = ... Initialize your model here ...
+
+    list_keywords=["latent_vector"]
+
+    logger = Logger(list_keywords=list_keywords, list_subsets=['train', 'test'])
+
+    for tasks in task_scenario):
+        for epoch in range(epochs)
+            for x, y, t in task_loader:
+                # Do here your model training with losses and optimizer...
+            latent_vector = model.get_latent_vector_fancy_method_you_designed()
+            logger.add(latent_vector, keyword='latent_vector', subset="train")
+            logger.end_epoch()
+
+        logger.end_task()
+
+
+If you want to log result to compute metrics AND log you latent vector you can declare and use you logger as following:
+
+.. code-block:: python
+
+    # Logger declaration with several keyword
+    logger = Logger(list_keywords=["performance", "latent_vector"], list_subsets=['train', 'test'])
+
+    # [...]
+    # log test results for metrics
+    logger.add([x,y,t], keyword='performance', subset="test")
+
+    # [...]
+    # log latent vector while testing
+    logger.add(latent_vector, keyword='latent_vector', subset="test")
+
+At the end of training or when you want, you can get all the data logged.
+
+.. code-block:: python
+
+    logger = Logger(list_keywords=["performance", "latent_vector"], list_subsets=['train', 'test'])
+
+    # [... a long training a logging adventure ... ]
+
+    logs_latent = logger.get_logs(keyword='latent_vector', subset='test')
+
+    # you can explore the logs as follow
+    for task_id in range(logs_latent):
+        for epoch_id in range(logs_latent[task_id]):
+            # the list of all latent vector you saved as task_id and epoch_id by chronological order.
+            list_of_latent_vector_logged = logs_latent[task_id][epoch_id]
