@@ -200,7 +200,8 @@ Another example could be using different dataset with their original classes as 
     from continuum import InstanceIncremental
     from continuum.datasets import MNISTFellowship
 
-    dataset = MNISTFellowship("/my/path/where/to/download")
+    # We create MNISTFellowship dataset and we keep original labels
+    dataset = MNISTFellowship("/my/path/where/to/download", update_labels=False)
     scenario = InstanceIncremental(dataset=dataset, nb_tasks=3)
 
 

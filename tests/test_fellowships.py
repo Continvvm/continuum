@@ -1,10 +1,30 @@
 import pytest
+import numpy as np
 
-
-from continuum import ClassIncremental
+from continuum import ClassIncremental, InstanceIncremental
+from continuum.datasets import InMemoryDataset
 from continuum.datasets import (
     CIFAR10, CIFAR100, KMNIST, MNIST, CIFARFellowship, FashionMNIST, Fellowship, MNISTFellowship
 )
+
+
+@pytest.mark.slow
+def test_MNIST_Fellowship_Instance_Incremental(tmpdir):
+    scenario = MNISTFellowship(data_path=tmpdir, train=True, download=True)
+    scenario.get_data()
+    continuum = InstanceIncremental(scenario, nb_tasks=3)
+    assert len(continuum) == 3
+
+
+@pytest.mark.slow
+def test_MNIST_Fellowship_nb_classes(tmpdir):
+    scenario = MNISTFellowship(data_path=tmpdir, train=True, download=True)
+    x, y, t = scenario.get_data()
+    assert len(np.unique(y)) == 30
+    scenario = None
+    scenario = MNISTFellowship(data_path=tmpdir, train=True, download=True, update_labels=False)
+    x, y, t = scenario.get_data()
+    assert len(np.unique(y)) == 10
 
 
 @pytest.mark.slow
