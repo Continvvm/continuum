@@ -18,16 +18,12 @@ class _BaseLogger(abc.ABC):
         """
         root_log: folder where logged informations will be saved
         list_keywords: keywords indicating the differentes informations to log, they might be chosen by the user
-        or specific for use special features of logger: ex: performance or model
+        or specific for use special features of logger: ex: performance or model_size
          list_subsets: list of data subset with distinguished results: ex ["train", "val", "test"] or [train, "test"]
         """
         self.root_log = root_log
         self.list_keywords = list_keywords
         self.list_subsets = list_subsets
-
-        if "model" in list_keywords and not "model_size" in list_keywords:
-            # we can log model size automatically
-            list_keywords.append("model_size")
 
         assert self.list_keywords is not None, f" self.list_keywords should contains at list one keyword"
         assert self.list_subsets is not None, f" self.list_subsets should contains at list one subset"
@@ -57,8 +53,6 @@ class _BaseLogger(abc.ABC):
         if keyword == "performance":
             predictions, targets, task_ids = value
             self._add_perf(predictions, targets, task_ids, subset)
-        elif keyword == "model":
-            self._add_model(model=value)
         else:
             self._add_value(value, keyword, subset)
 
@@ -70,23 +64,6 @@ class _BaseLogger(abc.ABC):
 
     def _get_current_task_ids(self, subset="train"):
         return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"]
-
-    def _add_model(self, model):
-        """
-        The logger save model weights and does not store it in memory
-        model: pytorch neural network
-        """
-
-        model2save = deepcopy(model)
-        model_size = get_model_size(model2save)
-        # log model size (we considere that the important is the test model size)
-        self.logger_dict["test"]["model_size"][self.current_task][self.current_epoch].append(model_size)
-
-        # save model weights
-        assert self.root_log is not None, f"a root dir should be defined when creating the logger to save model"
-        filename = f"Model_epoch_{self.current_epoch}_Task_{self.current_task}.pth"
-        filename = os.path.join(self.root_log, filename)
-        torch.save(model2save.cpu().state_dict(), filename)
 
     def _add_value(self, tensor, keyword, subset="train"):
         """Add a tensor in the list of the current epoch (tensor can also be a single value) """
@@ -142,24 +119,25 @@ class _BaseLogger(abc.ABC):
 
     def print_state(self, keyword, subset):
 
+        print(self.logger_dict)
+
         print(f"**********************")
         print(f"{keyword} on {subset}")
         print(f"**********************")
-        for task in range(self.current_task+1):
+        for task in range(self.current_task):
             print(f"**********************")
             print(f"Task: {task}")
             for epoch in range(self.current_epoch+1):
                 print(f"Epoch: {task}")
-                value = self.logger_dict[subset][keyword][task][epoch]
-                print(value)
+                print(self.logger_dict[subset][keyword][task][epoch])
 
     def end_epoch(self):
         self.current_epoch += 1
         self._update_dict_architecture(update_task=False)
 
-    def end_task(self):
-        if self.root_log is not None:
-            self._save_dic()
+    def end_task(self, clean=False):
+        if self.root_log is not None and clean:
+            self._save()
         self.current_task += 1
         self.current_epoch = 0
         self._update_dict_architecture(update_task=True)

@@ -208,20 +208,6 @@ def test_require_subset_train(numpy_data):
     logger.add(values, subset="train")
     logger.online_cumulative_performance
 
-def test_model_save(torch_models):
-    small, big = torch_models
-
-    logger1 = Logger(list_keywords=['model']) # Logger declaration with parameter name
-    model = deepcopy(small)
-    logger1.add(model, keyword='model')
-    logger1.end_task()
-    logger1.add(model=small, keyword='model')
-
-    # we check if we logged at the same time the model size
-    ms1 = logger1.model_size_growth
-
-    assert ms1 == 1.0
-
 def test_model_size(torch_models):
     small, big = torch_models
     assert get_model_size(small) < get_model_size(big)
