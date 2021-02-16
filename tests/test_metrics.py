@@ -188,7 +188,6 @@ def test_online_accuracy(numpy_data, batch_size):
 
     logger.add(value=[targets, np.copy(targets), None], subset="train")
     logger.online_accuracy
-    #check_raised(lambda: logger.online_accuracy)
 
 
 def test_require_subset_test(numpy_data):

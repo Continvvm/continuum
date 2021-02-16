@@ -67,6 +67,9 @@ class Logger(_BaseLogger):
             values = self._get_best_epochs_data(keyword, subset)
         return values
 
+    def get_logs(self, keyword, subset):
+        return self.logger_dict[subset][keyword]
+
     @property
     @require_subset("train")
     def online_accuracy(self):
