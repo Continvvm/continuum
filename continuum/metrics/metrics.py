@@ -238,7 +238,7 @@ def get_model_size_growth(model_sizes):
 
     ms = 0.
     for i in range(T):
-        ms += (model_sizes[0] / model_sizes[i])
+        ms += (model_sizes[0][0] / model_sizes[i][-1])
 
     metric = min(1., ms / T)
     assert 0. <= metric <= 1.0

@@ -5,6 +5,7 @@ import torch
 from copy import deepcopy
 from continuum.metrics import Logger
 
+from continuum.metrics import get_model_size
 
 # yapf: disable
 
@@ -221,31 +222,39 @@ def test_model_save(torch_models):
 
     assert ms1 == 1.0
 
+def test_model_size(torch_models):
+    small, big = torch_models
+    assert get_model_size(small) < get_model_size(big)
+
 def test_model_growth(torch_models):
     small, big = torch_models
 
     logger1 = Logger(list_keywords=['model_size']) # Logger declaration with parameter name
-    logger1.add(small, keyword='model_size')
+    logger1.add(get_model_size(small), keyword='model_size')
     logger1.end_task()
-    logger1.add(small, keyword='model_size')
+    logger1.add(get_model_size(small), keyword='model_size')
+    logger1.end_task()
     ms1 = logger1.model_size_growth
 
     logger2 = Logger(['model_size'])  # Logger declaration without parameter name
-    logger2.add(small, keyword='model_size')
+    logger2.add(get_model_size(small), keyword='model_size')
     logger2.end_task()
-    logger2.add(big, keyword='model_size')
+    logger2.add(get_model_size(big), keyword='model_size')
+    logger2.end_task()
     ms2 = logger2.model_size_growth
 
     logger3 = Logger(['model_size'])
-    logger3.add(big, keyword='model_size')
+    logger3.add(get_model_size(big), keyword='model_size')
     logger3.end_task()
-    logger3.add(small, keyword='model_size')
+    logger3.add(get_model_size(small), keyword='model_size')
+    logger3.end_task()
     ms3 = logger3.model_size_growth
 
     logger4 = Logger(['model_size'])
-    logger4.add(big, keyword='model_size')
+    logger4.add(get_model_size(big), keyword='model_size')
     logger4.end_task()
-    logger4.add(big, keyword='model_size')
+    logger4.add(get_model_size(big), keyword='model_size')
+    logger4.end_task()
     ms4 = logger4.model_size_growth
 
     assert ms1 == ms4 == ms3 == 1.0

@@ -140,6 +140,19 @@ class _BaseLogger(abc.ABC):
                     f"the current epoch index is {self.current_epoch} while there are" \
                     f" {len(self.logger_dict[subset][keyword][self.current_task]) - 1} past epoch, there is a mismatch"
 
+    def print_state(self, keyword, subset):
+
+        print(f"**********************")
+        print(f"{keyword} on {subset}")
+        print(f"**********************")
+        for task in range(self.current_task+1):
+            print(f"**********************")
+            print(f"Task: {task}")
+            for epoch in range(self.current_epoch+1):
+                print(f"Epoch: {task}")
+                value = self.logger_dict[subset][keyword][task][epoch]
+                print(value)
+
     def end_epoch(self):
         self.current_epoch += 1
         self._update_dict_architecture(update_task=False)
