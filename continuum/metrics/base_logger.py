@@ -127,7 +127,7 @@ class _BaseLogger(abc.ABC):
         for task in range(self.current_task):
             print(f"**********************")
             print(f"Task: {task}")
-            for epoch in range(self.current_epoch+1):
+            for epoch in range(self.current_epoch + 1):
                 print(f"Epoch: {task}")
                 print(self.logger_dict[subset][keyword][task][epoch])
 

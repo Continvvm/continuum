@@ -7,6 +7,7 @@ from continuum.metrics import Logger
 
 from continuum.metrics import get_model_size
 
+
 # yapf: disable
 
 @pytest.fixture
@@ -141,6 +142,7 @@ def test_metrics(numpy_data, mode, expected):
 
     assert 0. <= logger.average_incremental_accuracy <= 1.
 
+
 @pytest.mark.parametrize("mode,expected", [
     ("best", 1.), ("worst", 0.), ("random", None)
 ])
@@ -163,7 +165,6 @@ def test_accuracy_per_task(numpy_data, mode, expected):
 
     for accuracy in accuracies:
         assert 0. <= accuracy <= 1.0
-
 
 
 @pytest.mark.parametrize("batch_size", [
@@ -207,14 +208,16 @@ def test_require_subset_train(numpy_data):
     logger.add(values, subset="train")
     logger.online_cumulative_performance
 
+
 def test_model_size(torch_models):
     small, big = torch_models
     assert get_model_size(small) < get_model_size(big)
 
+
 def test_model_growth(torch_models):
     small, big = torch_models
 
-    logger1 = Logger(list_keywords=['model_size']) # Logger declaration with parameter name
+    logger1 = Logger(list_keywords=['model_size'])  # Logger declaration with parameter name
     logger1.add(get_model_size(small), keyword='model_size')
     logger1.end_task()
     logger1.add(get_model_size(small), keyword='model_size')
@@ -264,7 +267,7 @@ def test_example_doc():
         increment=2
     )
 
-    #model = ...
+    # model = ...
 
     logger = Logger(list_subsets=['train', 'test'])
 
@@ -273,7 +276,7 @@ def test_example_doc():
         test_loader = DataLoader(test_taskset)
 
         for x, y, t in train_loader:
-            predictions = y #model(x)
+            predictions = y  # model(x)
 
             logger.add([predictions, y, None], subset="train")
             _ = (f"Online accuracy: {logger.online_accuracy}")
