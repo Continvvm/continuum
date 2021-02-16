@@ -148,8 +148,10 @@ For example, the type of scenarios are easy to use with others dataset:
     from torchvision.datasets import CIFAR10, CIFAR100
     from continuum.datasets import Fellowship
 
-    Fellowship(data_path="/my/data/folder", dataset_list=[CIFAR10, CIFAR100])
+    Fellowship(data_path="/my/data/folder", dataset_list=[CIFAR10, CIFAR100], update_labels=True)
 
+The `update_labels` parameter determines if we want that different datasets have different labels or if we do not care about it.
+The default value of `update_labels` is `True`.
 Note that Continuum already provide pre-made Fellowship:
 
 .. code-block:: python
