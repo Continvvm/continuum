@@ -111,10 +111,10 @@ class Logger(_BaseLogger):
           Caccia et al. NeurIPS 2020
         """
         preds = np.concatenate(
-            [dict_epoch['predictions'] for dict_epoch in self.logger_dict["performance"]["train"][self.current_task]]
+            [dict_epoch['predictions'] for dict_epoch in self.logger_dict["train"]["performance"][self.current_task]]
         )
         targets = np.concatenate(
-            [dict_epoch['targets'] for dict_epoch in self.logger_dict["performance"]["train"][self.current_task]]
+            [dict_epoch['targets'] for dict_epoch in self.logger_dict["train"]["performance"][self.current_task]]
         )
         return accuracy(preds, targets)
 
