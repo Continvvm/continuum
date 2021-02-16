@@ -201,7 +201,7 @@ Another example could be using different dataset with their original classes as 
     from continuum.datasets import MNISTFellowship
 
     dataset = MNISTFellowship("/my/path/where/to/download")
-    scenario = InstanceIncremental(dataset=dataset, nb_tasks=42)
+    scenario = InstanceIncremental(dataset=dataset, nb_tasks=3)
 
 
 In this case, the three dataset MNIST, Fashion-MNIST and KMNIST will be learn with their original labels, e.g. classes 0 of all dataset stay 0.
