@@ -105,3 +105,27 @@ def test_instance_default_nb_tasks(numpy_data_per_task, nb_tasks, nb_tasks_gt, c
 
         unique_pixels = np.unique(train_dataset._x)
         assert len(unique_pixels) == 1 and unique_pixels[0] == float(task_id)
+
+
+@pytest.fixture
+def balanced_data():
+    x = np.ones((100, 4, 4, 3), dtype=np.uint8)
+    y = np.concatenate((
+        np.ones((25,), dtype=np.uint32) * 0,
+        np.ones((50,), dtype=np.uint32) * 1,
+        np.ones((10,), dtype=np.uint32) * 2,
+        np.ones((15,), dtype=np.uint32) * 3,
+    ))
+    return x, y
+
+
+def test_instance_balanced(balanced_data):
+    dataset = InMemoryDataset(*balanced_data)
+    scenario = InstanceIncremental(dataset, nb_tasks=5)
+
+    for taskset in scenario:
+        bincount = np.bincount(taskset._y)
+        assert bincount[0] == 5
+        assert bincount[1] == 10
+        assert bincount[2] == 2
+        assert bincount[3] == 3
