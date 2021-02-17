@@ -83,6 +83,7 @@ class SynbolsHDF5:
         Args:
             path (str): path where the data is stored (see full_path above)
             task (str): 'char', 'font', or the field of choice 
+            domain_incremental_task (str): task used for domain-incremental learning
             ratios (list, optional): The train/val/test split ratios. Defaults to [0.6, 0.2, 0.2].
             mask (ndarray, optional): Mask with the data partition. Defaults to None.
             trim_size (int, optional): Trim the dataset to a smaller size, for debugging speed. Defaults to None.
@@ -135,6 +136,7 @@ class SynbolsSplit(Dataset):
             dataset (object): backend to load, it should contain the following attributes:
                 - x, y, mask, ratios, path, task, mask
             split (str): train, val, or test
+            domain_incremental_task (str): attribute used for domain-incremental learning
             domain_increments (int): number of domain increments
             transform (torchvision.transforms, optional): A composition of torchvision transforms. Defaults to None.
         """
@@ -277,7 +279,3 @@ def get_data_path_or_download(dataset, data_root):
                 # if total_size_in_bytes != 0:# and progress_bar.n != total_size_in_bytes:
                     # print("ERROR, something went wrong downloading %s" % url)
     return full_path
-
-
-if __name__ == "__main__":
-    Synbols('/mnt/public/datasets/synbols', domain_incremental_task='translation.x', domain_increments=4)
