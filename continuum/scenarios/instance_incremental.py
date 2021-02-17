@@ -37,7 +37,7 @@ class InstanceIncremental(_BaseScenario):
         if t is None and nb_tasks <= 0:
             raise ValueError(f"You need to specify a number of tasks > 0, not {nb_tasks}.")
         if t is None:  # If the dataset didn't provide default task ids:
-            task_ids = self._random_state.randint(nb_tasks, size=len(y))
+            task_ids = _split_dataset(y, nb_tasks)
             self.dataset = (x, y, task_ids)
         else:  # With dataset default task ids provided:
             default_nb_tasks = len(np.unique(t))
@@ -64,3 +64,27 @@ class InstanceIncremental(_BaseScenario):
             self.dataset = (x, y, t)
 
         return nb_tasks
+
+
+
+def _split_dataset(y, nb_tasks):
+    nb_per_class = np.bincount(y)
+    nb_per_class_per_task = nb_per_class / nb_tasks
+
+    if (nb_per_class_per_task <= 0.).any():
+        warnings.warn(
+            f"Number of tasks ({nb_tasks}) is too big resulting in some tasks"
+            " without all classes present."
+        )
+
+    n = nb_per_class_per_task.astype(np.int64)
+    t = np.zeros((len(y),))
+
+    for class_id, nb in enumerate(n):
+        t_class = np.zeros((nb_per_class[class_id],))
+        for task_id in range(nb_tasks):
+            t_class[task_id * nb:(task_id + 1)* nb] = task_id
+
+        t[y == class_id] = t_class
+
+    return t
