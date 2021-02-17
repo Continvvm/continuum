@@ -52,7 +52,9 @@ def _split_dataset(y, nb_tasks):
     nb_per_class = np.bincount(y)
     nb_per_class_per_task = nb_per_class / nb_tasks
 
-    if (nb_per_class_per_task <= 0.).any():
+    if (nb_per_class_per_task < 1.).all():
+        raise Exception(f"Too many tasks ({nb_tasks}) for the amount of data.")
+    if (nb_per_class_per_task <= 1.).any():
         warnings.warn(
             f"Number of tasks ({nb_tasks}) is too big resulting in some tasks"
             " without all classes present."
