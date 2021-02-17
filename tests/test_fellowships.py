@@ -36,31 +36,34 @@ def gen_dataset(nb_classes, pixel_value):
     return (x_train, y_train)
 
 
-@pytest.mark.parametrize("update_labels,increment", [
-    (True, 1),
-    (True, [7, 10, 20]),
-    (False, 1),
-    (False, [7, 10, 20]),
-])
-def test_inMemory_Fellowship(update_labels, increment, dataset7c, dataset10c, dataset20c):
-    fellow = Fellowship([dataset7c, dataset10c, dataset20c], update_labels=update_labels)
+@pytest.mark.parametrize("increment", [1, [7, 10, 20]])
+def test_inMemory_updateLabels_Fellowship(increment, dataset7c, dataset10c, dataset20c):
+    fellow = Fellowship([dataset7c, dataset10c, dataset20c], update_labels=True)
 
     x, y, t = fellow.get_data()
     assert len(np.unique(t)) == 3
-    if update_labels:
-        assert len(np.unique(y)) == 7 + 10 + 20
-    else:
-        assert len(np.unique(y)) == 20
+    assert len(np.unique(y)) == 37
 
-    if update_labels and isinstance(increment, list):
+    if isinstance(increment, list):
         continuum = ClassIncremental(fellow, increment=increment)
-        assert continuum.nb_classes == 7 + 10 + 20
-        assert continuum.nb_tasks == 3
-    elif update_labels:
+        assert continuum.nb_classes == 37
+        assert continuum.nb_tasks == len(increment)
+    else:
         continuum = ClassIncremental(fellow, increment=increment)
-        assert continuum.nb_tasks == 7 + 10 + 20
-        assert continuum.nb_classes == 7 + 10 + 20
-    elif isinstance(increment, list):
+        assert continuum.nb_tasks == 37
+        assert continuum.nb_classes == 37
+
+
+
+@pytest.mark.parametrize("increment", [1, [7, 10, 20]])
+def test_inMemory_keepLabels_Fellowship(increment, dataset7c, dataset10c, dataset20c):
+    fellow = Fellowship([dataset7c, dataset10c, dataset20c], update_labels=False)
+
+    x, y, t = fellow.get_data()
+    assert len(np.unique(t)) == 3
+    assert len(np.unique(y)) == 20
+
+    if isinstance(increment, list):
         with pytest.raises(Exception):
             continuum = ClassIncremental(fellow, increment=increment)
     else:
