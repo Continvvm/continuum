@@ -9,16 +9,21 @@ import torch
 import multiprocessing
 import sys
 from continuum.datasets.base import InMemoryDataset
+from functools import partial
 import copy
 import requests
 import h5py
 
 
 class Synbols(InMemoryDataset):
+    categorical_attributes = ['char', 'font', 'alphabet', 'is_bold', 'is_slant']
+    continuous_attributes = ['rotation', 'translation.x', 'translation.y', 'scale']
     def __init__(
             self,
             data_path: str,
             task_type: str = "char",
+            domain_incremental_task: str = None,
+            domain_increments: int = None,
             train: bool = True,
             dataset_name: str = "default_n=100000_2020-Oct-19.h5py",
             download: bool = True):
@@ -28,9 +33,14 @@ class Synbols(InMemoryDataset):
             data_path (str): Path where the dataset will be saved
             train (bool): Whether to use the train split
             task_type (str): Options are 'char', and 'font'
+            domain_incremental_task (str): The options are listed as static attribuets of the "Synbols" class.
+            domain_increments (int): Amount of domain increments.
             dataset_name (str): See https://github.com/ElementAI/synbols-resources/raw/master/datasets/generated/',
             download (bool): Whether to download the dataset
         """
+        assert(domain_incremental_task is None and domain_increments is None or \
+            domain_incremental_task is not None and domain_increments is not None)
+
         if download:  # done here in order to pass x and y to super
             full_path = get_data_path_or_download("default_n=100000_2020-Oct-19.h5py",
                                                   data_root=data_path)
@@ -39,23 +49,35 @@ class Synbols(InMemoryDataset):
 
         data = SynbolsHDF5(full_path,
                            task_type,
+                           domain_incremental_task=domain_incremental_task,
                            mask='random',
                            trim_size=None,
                            raw_labels=False)
-        data = SynbolsSplit(data, 'train' if train else 'val')
+        data = SynbolsSplit(data, 'train' if train else 'val', domain_incremental_task, domain_increments)
 
-        super().__init__(data.x, data.y, train=train, download=download)
+        super().__init__(data.x, data.y, data.task_id, train=train, download=download)
 
 
 def _read_json_key(args):
     string, key = args
     return json.loads(string)[key]
 
+def process_task(task, fields):
+    data = json.loads(task)
+    ret = []
+    for field in fields:
+        if '.x' in field:
+            ret.append(data[field[:-2]][0])
+        elif '.y' in field:
+            ret.append(data[field[:-2]][1])
+        else:
+            ret.append(data[field])
+    return ret
 
 class SynbolsHDF5:
     """HDF5 Backend Class"""
 
-    def __init__(self, path, task, ratios=[0.6, 0.2, 0.2], mask=None, trim_size=None, raw_labels=False, reference_mask=None):
+    def __init__(self, path, task, domain_incremental_task=None, ratios=[0.6, 0.2, 0.2], mask=None, trim_size=None, raw_labels=False, reference_mask=None):
         """Constructor: loads data and parses labels.
 
         Args:
@@ -73,18 +95,27 @@ class SynbolsHDF5:
         """
         self.path = path
         self.task = task
+        self.domain_incremental_task = domain_incremental_task
         self.ratios = ratios
         print("Loading hdf5...")
         with h5py.File(path, 'r') as data:
             self.x = data['x'][...]
             y = data['y'][...]
             print("Converting json strings to labels...")
+            parse_fields = [self.task]
+            if self.domain_incremental_task is not None:
+                parse_fields.append(self.domain_incremental_task)
             with multiprocessing.Pool(min(8, multiprocessing.cpu_count())) as pool:
-                self.y = pool.map(json.loads, y)
+                self.y = pool.map(partial(process_task, fields=parse_fields), y)
+            self.y = list(map(np.array, zip(*self.y)))
+            if self.domain_incremental_task is not None:
+                self.y, self.domain_y = self.y
+            else:
+                self.y = self.y[0]
+                self.domain_y = None
             print("Done converting.")
 
             self.mask = data["split"][mask][...]
-            self.y = np.array([_y[task] for _y in self.y])
 
             self.raw_labels = None
 
@@ -96,7 +127,7 @@ class SynbolsHDF5:
         return mask.astype(bool)
 
 class SynbolsSplit(Dataset):
-    def __init__(self, dataset, split, transform=None):
+    def __init__(self, dataset, split, domain_incremental_task, domain_increments, transform=None):
         """Given a Backend (dataset), it splits the data in train, val, and test.
 
 
@@ -104,11 +135,14 @@ class SynbolsSplit(Dataset):
             dataset (object): backend to load, it should contain the following attributes:
                 - x, y, mask, ratios, path, task, mask
             split (str): train, val, or test
+            domain_increments (int): number of domain increments
             transform (torchvision.transforms, optional): A composition of torchvision transforms. Defaults to None.
         """
         self.path = dataset.path
         self.task = dataset.task
         self.mask = dataset.mask
+        self.domain_incremental_task = domain_incremental_task
+        self.domain_increments = domain_increments
         if dataset.raw_labels is not None:
             self.raw_labelset = dataset.raw_labelset
         self.raw_labels = dataset.raw_labels
@@ -118,9 +152,9 @@ class SynbolsSplit(Dataset):
             self.transform = lambda x: x
         else:
             self.transform = transform
-        self.split_data(dataset.x, dataset.y, dataset.mask, dataset.ratios)
+        self.split_data(dataset.x, dataset.y, dataset.mask, dataset.ratios, dataset.domain_y)
 
-    def split_data(self, x, y, mask, ratios, rng=np.random.RandomState(42)):
+    def split_data(self, x, y, mask, ratios, domain_y, rng=np.random.RandomState(42)):
         if mask is None:
             if self.split == 'train':
                 start = 0
@@ -143,6 +177,27 @@ class SynbolsSplit(Dataset):
         self.y = self.y[indices]
         if self.raw_labels is not None:
             self.raw_labels = np.array(self.raw_labels)[indices]
+
+        # Create "domain_increments" bins from the attribute used for domain incremental learning 
+        if self.domain_increments is not None:
+            if self.domain_incremental_task in Synbols.categorical_attributes:
+                self.domains = list(sorted(set(domain_y)))
+                self.tasks_per_domain = len(self.domains) // self.domain_increments
+                self.domain_labels = list(range(self.domain_increments)) * self.tasks_per_domain + list(range(self.domain_increments))[:(len(self.domains) % self.domain_increments)]
+                self.task_id = domain_y[indices]
+                self.task_id = np.array([self.domain_labels[self.domains.index(d_y)] for d_y in self.task_id])
+            elif self.domain_incremental_task in Synbols.continuous_attributes:
+                self.domains = np.linspace(domain_y.min(), domain_y.max() + 1e-4, self.domain_increments + 1)
+                domain_y = domain_y[indices]
+                self.task_id = np.zeros(len(domain_y), dtype=int)
+                for i in range(1, self.domain_increments):
+                    self.task_id[(domain_y >= self.domains[i - 1]) & (domain_y < self.domains[i])] = i
+            else:
+                raise ValueError("Domain attribute not found")
+
+            assert(len(set(self.task_id)) == self.domain_increments)
+        else:
+            self.task_id = None
 
     def __getitem__(self, item):
         if self.raw_labels is None:
@@ -222,3 +277,7 @@ def get_data_path_or_download(dataset, data_root):
                 # if total_size_in_bytes != 0:# and progress_bar.n != total_size_in_bytes:
                     # print("ERROR, something went wrong downloading %s" % url)
     return full_path
+
+
+if __name__ == "__main__":
+    Synbols('/mnt/public/datasets/synbols', domain_incremental_task='translation.x', domain_increments=4)
