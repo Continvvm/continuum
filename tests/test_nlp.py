@@ -54,7 +54,7 @@ def test_nlp_instance_incremental(numpy_data):
     x_train, y_train, t_train = train
 
     dummy = InMemoryDataset(
-        x_train, y_train, t_=t_train, data_type="text"
+        x_train, y_train, t=t_train, data_type="text"
     )
 
     scenario = InstanceIncremental(dummy)
