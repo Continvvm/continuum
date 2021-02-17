@@ -1,5 +1,5 @@
 import warnings
-from typing import Callable, List
+from typing import Callable, List, Union
 
 import numpy as np
 
@@ -21,7 +21,7 @@ class InstanceIncremental(_BaseScenario):
     def __init__(
         self,
         cl_dataset: _ContinuumDataset,
-        nb_tasks: int = 0,
+        nb_tasks: Union[int, None] = None,
         transformations: List[Callable] = None,
         random_seed: int = 1
     ):
@@ -34,34 +34,15 @@ class InstanceIncremental(_BaseScenario):
     def _setup(self, nb_tasks: int) -> int:
         x, y, t = self.cl_dataset.get_data()
 
-        if t is None and nb_tasks <= 0:
-            raise ValueError(f"You need to specify a number of tasks > 0, not {nb_tasks}.")
-        if t is None:  # If the dataset didn't provide default task ids:
+        if nb_tasks is not None and nb_tasks > 0:  # If the user wants a particular nb of tasks
             task_ids = _split_dataset(y, nb_tasks)
             self.dataset = (x, y, task_ids)
-        else:  # With dataset default task ids provided:
-            default_nb_tasks = len(np.unique(t))
-            if default_nb_tasks > nb_tasks > 0:
-                # If the user desired a particular amount of tasks, that is lower
-                # than the dataset's default number of tasks, we truncate the
-                # latest tasks.
-                warnings.warn(
-                    f"The default number of task ({default_nb_tasks} is lower than"
-                    f" the one asked ({nb_tasks}), some tasks will be removed."
-                )
-                indexes = np.where(t <= nb_tasks - 1)[0]
-                x, y, t = x[indexes], y[indexes], t[indexes]
-            elif nb_tasks > 0 and default_nb_tasks < nb_tasks:
-                # If the user requests more tasks than the dataset was designed for,
-                # we raise an error.
-                raise ValueError(
-                    f"Cannot have {nb_tasks} tasks while this dataset"
-                    f" at most {default_nb_tasks} tasks."
-                )
-            else:
-                nb_tasks = default_nb_tasks
-
+        elif t is not None:  # Otherwise use the default task ids if provided by the dataset
             self.dataset = (x, y, t)
+            nb_tasks = len(np.unique(t))
+        else:
+            raise Exception(f"The dataset ({self.cl_dataset}) doesn't provide task ids, "
+                            f"you must then specify a number of tasks, not ({nb_tasks}.")
 
         return nb_tasks
 
