@@ -81,9 +81,9 @@ class InMemoryDataset(_ContinuumDataset):
 
     def __init__(
         self,
-        x_: np.ndarray,
-        y_: np.ndarray,
-        t_: Union[None, np.ndarray] = None,
+        x: np.ndarray,
+        y: np.ndarray,
+        t: Union[None, np.ndarray] = None,
         data_type: str = "image_array",
         train: bool = True,
         download: bool = True,
