@@ -196,8 +196,12 @@ class SynbolsSplit(Dataset):
                     self.task_id[(domain_y >= self.domains[i - 1]) & (domain_y < self.domains[i])] = i
             else:
                 raise ValueError("Domain attribute not found")
-
-            assert(len(set(self.task_id)) == self.domain_increments)
+            
+            if len(set(self.task_id)) != self.domain_increments:
+                raise RuntimeError("""The number of tasks differs from the number of domain increments. 
+                                        This could happen if the number of domains in the dataset is less than 
+                                        the requested number of increments. For instance, requesting 2000 
+                                        font increments for a dataset with 1500 fonts will result in failure""")
         else:
             self.task_id = None
 
