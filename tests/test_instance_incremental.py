@@ -133,7 +133,7 @@ def test_invalid(numpy_data_per_task, nb_tasks):
 
 
 @pytest.fixture
-def balanced_data():
+def equal_data():
     x = np.ones((100, 4, 4, 3), dtype=np.uint8)
     y = np.concatenate((
         np.ones((25,), dtype=np.uint32) * 0,
@@ -144,8 +144,8 @@ def balanced_data():
     return x, y
 
 
-def test_instance_balanced(balanced_data):
-    dataset = InMemoryDataset(*balanced_data)
+def test_instance_data_split_equally(equal_data):
+    dataset = InMemoryDataset(*equal_data)
     scenario = InstanceIncremental(dataset, nb_tasks=5)
 
     c = 0
@@ -163,7 +163,7 @@ def test_instance_balanced(balanced_data):
 
 
 @pytest.fixture
-def imbalanced_data():
+def unequal_data():
     y = np.concatenate((
         np.ones((22,), dtype=np.uint32) * 0,
         np.ones((53,), dtype=np.uint32) * 1,
@@ -174,8 +174,8 @@ def imbalanced_data():
     return x, y
 
 
-def test_instance_imbalanced(imbalanced_data):
-    x, y = imbalanced_data
+def test_instance_data_split_not_equally(unequal_data):
+    x, y = unequal_data
     dataset = InMemoryDataset(x, y)
     scenario = InstanceIncremental(dataset, nb_tasks=5)
 
