@@ -1,6 +1,7 @@
 import os
 import urllib.request
 import zipfile
+import tarfile
 
 
 def download(url, path):
@@ -22,9 +23,14 @@ def download(url, path):
 
 def unzip(path):
     directory_path = os.path.dirname(path)
+    with zipfile.ZipFile(path, 'r') as zip_file:
+        zip_file.extractall(directory_path)
 
-    with zipfile.ZipFile(path, 'r') as zip_ref:
-        zip_ref.extractall(directory_path)
+
+def untar(path):
+    directory_path = os.path.dirname(path)
+    with tarfile.TarFile(path, 'r') as tar_file:
+        tar_file.extractall(directory_path)
 
 
 class ProgressBar:
