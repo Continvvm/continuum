@@ -109,9 +109,15 @@ If you find this library useful in your work, please consider citing it:
 ### Maintainers
 
 This project was started by a joint effort from [Arthur Douillard](https://arthurdouillard.com/) &
-[Timothée Lesort](https://tlesort.github.io/).
+[Timothée Lesort](https://tlesort.github.io/), and we are currently the two maintainers.
 
 Feel free to contribute! If you want to propose new features, please create an issue.
+
+Contributors list:
+
+- [prlz77](https://github.com/prlz77)
+- [yantonov](https://github.com/yantonov)
+- [psychicmario](https://github.com/psychicmario)
 
 
 ### On PyPi
