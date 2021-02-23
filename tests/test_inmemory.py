@@ -80,7 +80,7 @@ def test_increments(increment, initial_increment, nb_tasks):
 
 def test_bad_data():
     train, test = gen_bad_data()
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         dummy = InMemoryDataset(*train)
 
 

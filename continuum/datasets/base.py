@@ -81,18 +81,23 @@ class InMemoryDataset(_ContinuumDataset):
 
     def __init__(
         self,
-        x_: np.ndarray,
-        y_: np.ndarray,
-        t_: Union[None, np.ndarray] = None,
+        x: np.ndarray,
+        y: np.ndarray,
+        t: Union[None, np.ndarray] = None,
         data_type: str = "image_array",
         train: bool = True,
         download: bool = True,
     ):
         super().__init__(train=train, download=download)
 
-        assert x_.shape[0] == y_.shape[0]
-        self.data = (x_, y_, t_)
-        assert data_type in ["image_array", "path_array", "text"], print(data_type)
+        if len(x) != len(y):
+            raise ValueError(f"Number of datapoints ({len(x)}) != number of labels ({len(y)})!")
+        if t is not None and len(t) != len(x):
+            raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
+
+        self.data = (x, y, t)
+        if data_type not in ("image_array", "path_array", "text"):
+            raise ValueError(f"Unrecognized data_type={data_type} for InMemoryDataset!")
         self._data_type = data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
