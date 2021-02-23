@@ -30,7 +30,7 @@ def gen_dataset(nb_classes, pixel_value):
     x_train = np.ones((nb_items_per_class * nb_classes, 32, 32, 3)) * pixel_value
     y_train = []
     for i in range(nb_classes):
-        y_train.append(np.ones(nb_items_per_class) * i)
+        y_train.append(np.ones(nb_items_per_class, dtype=np.int64) * i)
     y_train = np.concatenate(y_train)
 
     return (x_train, y_train)
