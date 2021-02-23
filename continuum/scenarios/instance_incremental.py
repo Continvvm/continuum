@@ -1,5 +1,5 @@
 import warnings
-from typing import Callable, List, Union
+from typing import Callable, List, Optional
 
 import numpy as np
 
@@ -21,7 +21,7 @@ class InstanceIncremental(_BaseScenario):
     def __init__(
         self,
         cl_dataset: _ContinuumDataset,
-        nb_tasks: Union[int, None] = None,
+        nb_tasks: Optional[int] = None,
         transformations: List[Callable] = None,
         random_seed: int = 1
     ):
@@ -31,7 +31,7 @@ class InstanceIncremental(_BaseScenario):
 
         self._nb_tasks = self._setup(nb_tasks)
 
-    def _setup(self, nb_tasks: int) -> int:
+    def _setup(self, nb_tasks: Optional[int]) -> int:
         x, y, t = self.cl_dataset.get_data()
 
         if nb_tasks is not None and nb_tasks > 0:  # If the user wants a particular nb of tasks
@@ -47,13 +47,13 @@ class InstanceIncremental(_BaseScenario):
         return nb_tasks
 
 
-
 def _split_dataset(y, nb_tasks):
     nb_per_class = np.bincount(y)
     nb_per_class_per_task = nb_per_class / nb_tasks
 
     if (nb_per_class_per_task < 1.).all():
-        raise Exception(f"Too many tasks ({nb_tasks}) for the amount of data leading to empty tasks.")
+        raise Exception(f"Too many tasks ({nb_tasks}) for the amount of data "
+                        "leading to empty tasks.")
     if (nb_per_class_per_task <= 1.).any():
         warnings.warn(
             f"Number of tasks ({nb_tasks}) is too big resulting in some tasks"
@@ -66,7 +66,7 @@ def _split_dataset(y, nb_tasks):
     for class_id, nb in enumerate(n):
         t_class = np.zeros((nb_per_class[class_id],))
         for task_id in range(nb_tasks):
-            t_class[task_id * nb:(task_id + 1)* nb] = task_id
+            t_class[task_id * nb:(task_id + 1) * nb] = task_id
 
         t[y == class_id] = t_class
 
