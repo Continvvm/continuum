@@ -133,6 +133,10 @@ class Core50v2_79(_ContinuumDataset):
     data_url = "http://bias.csr.unibo.it/maltoni/download/core50/core50_128x128.zip"
     splits_url = "https://vlomonaco.github.io/core50/data/batches_filelists_NICv2.zip"
     nb_tasks = 79
+    
+    @property
+    def data_type(self):
+        return "image_path"
 
     def __init__(self, data_path: str, train: bool = True, download: bool = True, run_id: int = 0):
         if run_id > 9 or run_id < 0:
