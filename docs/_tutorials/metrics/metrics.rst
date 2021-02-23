@@ -9,13 +9,14 @@ Pseudo-code
 
 .. code-block:: python
 
+    logger = Logger()
     for task in scenario:
         for (x,y,t) in tasks:
             predictions = model(x,y,t)
 
-            logger.add_batch(predictions, y)
-
-        print(f"Metric result: {logger.my_pretty_metric}")
+            logger.add([predictions, y, t])
+        logger.end_task()
+    print(f"Metric result: {logger.my_pretty_metric}")
 
 
 
@@ -38,7 +39,7 @@ Here is a list of all implemented metrics:
 +-------------------------------+-----------------------------+-------+
 | **Forgetting**                | `forgetting`                |   ↓   |
 +-------------------------------+-----------------------------+-------+
-| **Model Size Efficiency**     | `model_size_efficiency`     |   ↓   |
+| **Model Size Growth**     | `model_size_growth`     |   ↓   |
 +-------------------------------+-----------------------------+-------+
 
 **Accuracy**::
@@ -109,14 +110,9 @@ Here is a list of all implemented metrics:
       Chaudhry et al. ECCV 2018
 
 
-**Model Size Efficiency**::
+**Model Size Growth**::
 
-    Computes the efficiency of the model sizes.
-
-    Reference:
-    * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
-      Diaz-Rodriguez and Lomonaco et al. NeurIPS Workshop 2018
-
+    Evaluate the evolution of the model size.
 
 
 Detailed Example
@@ -142,7 +138,7 @@ Detailed Example
 
     model = ... Initialize your model here ...
 
-    logger = Logger()
+    logger = Logger(list_subsets=['train', 'test'])
 
     for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
         train_loader = DataLoader(train_taskset)
@@ -153,21 +149,72 @@ Detailed Example
 
             # Do here your model training with losses and optimizer...
 
-            logger.add_batch(predictions, y)
+            logger.add([predictions, y, t], 'train')
             print(f"Online accuracy: {logger.online_accuracy}")
 
-        preds, targets, task_ids = [], [], []
         for x, y, t in test_loader:
-            preds.append(model(x).cpu().numpy())
-            targets.append(y.cpu().numpy())
-            task_ids.append(t.cpu().numpy())
+            pred = model(x, t)
+            logger.add([pred, y, t], 'test')
 
-        logger.add_step(
-            np.concatenate(preds),
-            np.concatenate(targets),
-            np.concatenate(task_ids),
-            model
-        )
         print(f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
         print(f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
 
+
+
+Advanced Use of logger
+-------
+
+The logger is designed to save any type of tensor with a corresponding keyword.
+For example you may want to save a latent vector at each epoch.
+
+.. code-block:: python
+
+    from continuum.metrics import Logger
+
+    model = ... Initialize your model here ...
+
+    list_keywords=["latent_vector"]
+
+    logger = Logger(list_keywords=list_keywords, list_subsets=['train', 'test'])
+
+    for tasks in task_scenario):
+        for epoch in range(epochs)
+            for x, y, t in task_loader:
+                # Do here your model training with losses and optimizer...
+            latent_vector = model.get_latent_vector_fancy_method_you_designed()
+            logger.add(latent_vector, keyword='latent_vector', subset="train")
+            logger.end_epoch()
+
+        logger.end_task()
+
+
+If you want to log result to compute metrics AND log you latent vector you can declare and use you logger as following:
+
+.. code-block:: python
+
+    # Logger declaration with several keyword
+    logger = Logger(list_keywords=["performance", "latent_vector"], list_subsets=['train', 'test'])
+
+    # [...]
+    # log test results for metrics
+    logger.add([x,y,t], keyword='performance', subset="test")
+
+    # [...]
+    # log latent vector while testing
+    logger.add(latent_vector, keyword='latent_vector', subset="test")
+
+At the end of training or when you want, you can get all the data logged.
+
+.. code-block:: python
+
+    logger = Logger(list_keywords=["performance", "latent_vector"], list_subsets=['train', 'test'])
+
+    # [... a long training a logging adventure ... ]
+
+    logs_latent = logger.get_logs(keyword='latent_vector', subset='test')
+
+    # you can explore the logs as follow
+    for task_id in range(logs_latent):
+        for epoch_id in range(logs_latent[task_id]):
+            # the list of all latent vector you saved as task_id and epoch_id by chronological order.
+            list_of_latent_vector_logged = logs_latent[task_id][epoch_id]

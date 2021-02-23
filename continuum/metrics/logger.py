@@ -1,11 +1,10 @@
-
-import collections
-import torch
 import numpy as np
 
+from continuum.metrics.base_logger import _BaseLogger
+from continuum.metrics.utils import require_subset, cache
 from continuum.metrics.metrics import accuracy, \
-    get_model_size_efficiency, \
-    get_model_size, \
+    get_model_size_growth, \
+    _get_R_ij, \
     forgetting, \
     accuracy_A, \
     remembering, \
@@ -13,109 +12,84 @@ from continuum.metrics.metrics import accuracy, \
     forward_transfer, \
     backward_transfer
 
-def require_subset(subset):
-    def wrapper1(func):
-        def wrapper2(self):
-            if subset not in self._predictions:
-                raise Exception(
-                    f"No {subset} predictions have been logged so far which "
-                    f"{func.__name__} rely on!"
-                )
-            return func(self)
-        return wrapper2
-    return wrapper1
 
-
-def cache(func):
-    def wrapper(self):
-        name = f"__cached_{func.__name__}"
-        v = self.__dict__.get(name)
-        if v is None:
-            v = func(self)
-            self.__dict__[name] = v
-        return v
-    return wrapper
-
-
-class Logger:
-    def __init__(self):
-        self._predictions = collections.defaultdict(list)
-        self._targets = collections.defaultdict(list)
-        self._tasks = collections.defaultdict(list)
-        self._model_sizes = []
-
-        self._batch_predictions = []
-        self._batch_targets = []
-
-    def add_batch(self, predictions, targets):
-        if isinstance(predictions, torch.Tensor):
-            predictions = predictions.cpu().numpy()
-        if isinstance(targets, torch.Tensor):
-            targets = targets.cpu().numpy()
-
-        if not isinstance(predictions, np.ndarray):
-            raise TypeError(f"Provide predictions as np.array, not {type(predictions).__name__}.")
-        if not isinstance(targets, np.ndarray):
-            raise TypeError(f"Provide targets as np.array, not {type(predictions).__name__}.")
-
-        self._batch_predictions.append(predictions)
-        self._batch_targets.append(targets)
-
-    def add_step(self, predictions=None, targets=None, task_ids=None, subset="test", model=None):
-        if subset not in ("train", "test"):
-            raise ValueError(f"Subset must be train, val, or test, not {subset}.")
-
-        if isinstance(predictions, torch.Tensor):
-            predictions = predictions.cpu().numpy()
-        if isinstance(targets, torch.Tensor):
-            targets = targets.cpu().numpy()
-        if isinstance(task_ids, torch.Tensor):
-            task_ids = task_ids.cpu().numpy()
-
-        if predictions is not None and targets is not None and task_ids is not None:
-            self._predictions[subset].append(predictions)
-            self._targets[subset].append(targets)
-            self._tasks[subset].append(task_ids)
-
-        if model is not None:
-            self._model_sizes.append(get_model_size(model))
-
-        # Remove all cached properties
-        for k in list(self.__dict__.keys()):
-            if k.startswith("__cached_"):
-                del self.__dict__[k]
-
-        self._batch_predictions = []
-        self._batch_targets = []
+class Logger(_BaseLogger):
+    def __init__(self, list_keywords=["performance"], list_subsets=["train", "test"], root_log=None):
+        super().__init__(root_log=root_log, list_keywords=list_keywords, list_subsets=list_subsets)
 
     def log(self):
         print(f"Task id={self.nb_tasks}, acc={self.accuracy}, avg-acc={self.average_incremental_accuracy}")
 
     @property
     def nb_tasks(self):
-        return len(self._predictions[list(self._predictions.keys())[0]])
+        return self.current_task
+
+    def _conv_list_vector(self, list_vector):
+        if len(list_vector) > 1:
+            vector = np.concatenate(list_vector)
+        else:
+            vector = list_vector[0]
+        return vector
+
+    def _get_best_epochs_perf(self, subset):
+        """If there is no eval data, we assume that the best epoch for each task is the last one"""
+
+        last_epoch_pred = []
+        last_epoch_targets = []
+        last_epoch_task_ids = []
+        for task_id in range(self.current_task):
+            predictions = self.logger_dict[subset]["performance"][task_id][-1]["predictions"]
+            targets = self.logger_dict[subset]["performance"][task_id][-1]["targets"]
+            task_id = self.logger_dict[subset]["performance"][task_id][-1]["task_ids"]
+
+            last_epoch_pred.append(predictions)
+            last_epoch_targets.append(targets)
+            last_epoch_task_ids.append(task_id)
+
+        return last_epoch_pred, last_epoch_targets, last_epoch_task_ids
+
+
+    def _get_best_epochs_data(self, keyword, subset):
+
+        assert keyword != "performance", f"this method is not mode for performance keyword use _get_best_epochs_perf"
+        list_values = []
+        for task_id in range(self.current_task):
+            list_values.append(self.logger_dict[subset][keyword][task_id][-1])
+        return list_values
+
+
+
+    def _get_best_epochs(self, keyword="performance", subset="train"):
+
+        if keyword=="performance":
+            values = self._get_best_epochs_perf(subset)
+        else:
+            values = self._get_best_epochs_data(keyword, subset)
+        return values
+
+    def get_logs(self, keyword, subset):
+        return self.logger_dict[subset][keyword]
 
     @property
+    @require_subset("train")
     def online_accuracy(self):
-        if len(self._batch_predictions) == 0:
+        if self._get_current_predictions("train").size == 0:
             raise Exception(
-                "You need to call <add_batch(preds, targets)> in order to get the online accuracy."
+                "You need to call add([prediction, label, task_id]) in order to compute an online accuracy "
+                "(add([prediction, label, None]) also works here, task_id is not needed)."
             )
+        predictions = self._get_current_predictions("train")
+        targets = self._get_current_targets("train")
 
-        if len(self._batch_predictions) > 1:
-            p, t = np.concatenate(self._batch_predictions), np.concatenate(self._batch_targets)
-        else:
-            p, t = self._batch_predictions[0], self._batch_targets[0]
-
-        return accuracy(p, t)
+        return accuracy(predictions, targets)
 
     @property
     @cache
     @require_subset("test")
     def accuracy(self):
         return accuracy(
-            self._predictions["test"][-1],
-            self._targets["test"][-1]
+            self._get_current_predictions("test"),
+            self._get_current_targets("test")
         )
 
     @property
@@ -123,6 +97,7 @@ class Logger:
     @require_subset("test")
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
+        all_preds, all_targets, all_tasks = self._get_best_epochs(subset="test")
         return [
             _get_R_ij(-1, j, all_preds, all_targets, all_tasks)
             for j in range(self.nb_tasks)
@@ -138,10 +113,13 @@ class Logger:
         * Online Fast Adaptation and Knowledge Accumulation: a New Approach to Continual Learning
           Caccia et al. NeurIPS 2020
         """
-        return accuracy(
-            self._predictions["train"][-1],
-            self._targets["train"][-1]
+        preds = np.concatenate(
+            [dict_epoch['predictions'] for dict_epoch in self.logger_dict["train"]["performance"][self.current_task]]
         )
+        targets = np.concatenate(
+            [dict_epoch['targets'] for dict_epoch in self.logger_dict["train"]["performance"][self.current_task]]
+        )
+        return accuracy(preds, targets)
 
     @property
     @cache
@@ -153,48 +131,58 @@ class Logger:
         * iCaRL: Incremental Classifier and Representation Learning
           Rebuffi et al. CVPR 2017
         """
+        all_preds, all_targets, _ = self._get_best_epochs(subset="test")
+
         return statistics.mean([
-            accuracy(self._predictions["test"][t], self._targets["test"][t])
-            for t in range(len(self._predictions["test"]))
+            accuracy(all_preds[t], all_targets[t])
+            for t in range(len(all_preds))
         ])
 
     @property
     @cache
     @require_subset("test")
     def backward_transfer(self):
-        return backward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
+        return backward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def forward_transfer(self):
-        return forward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
+        return forward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def positive_backward_transfer(self):
-        return positive_backward_transfer(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
+        return positive_backward_transfer(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def remembering(self):
-        return remembering(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
+        return remembering(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def accuracy_A(self):
-        return accuracy_A(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
+        return accuracy_A(all_preds, all_targets, task_ids)
 
     @property
     @cache
     @require_subset("test")
     def forgetting(self):
-        return forgetting(self._predictions["test"], self._targets["test"], self._tasks["test"])
+        all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
+        return forgetting(all_preds, all_targets, task_ids)
 
     @property
     @cache
-    def model_size_efficiency(self):
-        return get_model_size_efficiency(self._model_sizes)
+    def model_size_growth(self):
+        assert "model_size" in self.list_keywords
+        sizes = self._get_best_epochs("model_size")
+        return get_model_size_growth(sizes)

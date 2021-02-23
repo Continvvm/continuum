@@ -89,8 +89,8 @@ be downloaded:
 
 If you wish to learn CORe50 in the class-incremental scenario (NC), `Core50` suffices. Although,
 for instance-incremental scenario (NI and NIC), you need to use `Core50v2_79`,
-`Core50v2_196`, or `Core50v2_391` (see `our doc about it <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html#instance-incremental>`_).
-Refer to the datatset [official webpage](https://vlomonaco.github.io/core50/) for
+`Core50v2_196`, or `Core50v2_391` (see `our doc about it <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios_suites/1_Introduction.html#CORe50>`_).
+Refer to the datatset `official webpage <https://vlomonaco.github.io/core50/>`_ for
 more information about the different versions.
 
 In addition to Computer Vision dataset, Continuum also provide one NLP dataset:
@@ -148,8 +148,15 @@ For example, the type of scenarios are easy to use with others dataset:
     from torchvision.datasets import CIFAR10, CIFAR100
     from continuum.datasets import Fellowship
 
-    Fellowship(data_path="/my/data/folder", dataset_list=[CIFAR10, CIFAR100])
+    Fellowship(datasets=[
+            CIFAR10(data_path="/my/data/folder1/", train=True),
+            CIFAR100(data_path="/my/data/folder1/", train=True)
+        ],
+        update_labels=True
+    )
 
+The `update_labels` parameter determines if we want that different datasets have different labels or if we do not care about it.
+The default value of `update_labels` is `True`.
 Note that Continuum already provide pre-made Fellowship:
 
 .. code-block:: python
