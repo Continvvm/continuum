@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import numpy as np
 import torch
@@ -17,7 +17,8 @@ class TaskSet(TorchDataset):
     :param y: The targets, not one-hot encoded.
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
-    :param data_type: Type of the data, either "image_path", "image_array", or "text".
+    :param data_type: Type of the data, either "image_path", "image_array",
+                      "text", or "segmentation".
     """
 
     def __init__(
@@ -26,6 +27,7 @@ class TaskSet(TorchDataset):
         y: np.ndarray,
         t: np.ndarray,
         trsf: transforms.Compose,
+        target_trsf: Optional[transforms.Compose] = None,
         data_type: str = "image_array"
     ):
         self._x, self._y, self._t = x, y, t
@@ -35,6 +37,7 @@ class TaskSet(TorchDataset):
             self._t = -1 * np.ones_like(y)
 
         self.trsf = trsf
+        self.target_trsf = target_trsf
         self.data_type = data_type
 
     @property
@@ -107,7 +110,7 @@ class TaskSet(TorchDataset):
         """
         x = self._x[index]
 
-        if self.data_type == "image_path":
+        if self.data_type in ("image_path", "segmentation"):
             x = Image.open(x).convert("RGB")
         elif self.data_type == "image_array":
             x = Image.fromarray(x.astype("uint8"))
@@ -122,13 +125,20 @@ class TaskSet(TorchDataset):
         y = self._y[index]
         t = self._t[index]
 
-        if self.data_type != 'text':
-            if self.trsf is not None:
-                sample = self.trsf(sample)
+        if self.trsf is not None and self.data_type == "segmentation":
+            img, y = self.trsf(img, y)
+        elif self.trsf is not None and self.data_type != "text":
+            img = self.trsf(img)
 
-            # we impose output data to be Tensor
-            if not isinstance(sample, torch.Tensor):
-                sample = transforms.ToTensor()(sample)
+        if self.data_type != "text" and if not isinstance(sample, torch.Tensor):
+            img = transforms.ToTensor()(img)
+
+        if self.target_trsf is not None:
+            y = self.target_trsf(y)
+
+        # we impose output data to be Tensor
+        if not isinstance(img, torch.Tensor):
+            img = transforms.ToTensor()(img)
 
         return sample, y, t
 
