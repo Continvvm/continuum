@@ -10,7 +10,7 @@ from continuum.datasets.base import _ContinuumDataset
 class _SemanticSegmentationDataset(_ContinuumDataset):
     @property
     def data_type(self) -> str:
-        return "semantic_segmentation"
+        return "segmentation"
 
 
 class PascalVOC2012(_SemanticSegmentationDataset):
