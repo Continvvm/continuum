@@ -34,7 +34,7 @@ class SegmentationClassIncremental(ClassIncremental):
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,
         transformations: List[Callable] = None,
-        class_order: Optional[List[int]]=None,
+        class_order: Optional[List[int]] = None,
         mode: str = "overlap",
         save_indexes: Optional[str] = None,
         test_background: bool = True
@@ -43,6 +43,16 @@ class SegmentationClassIncremental(ClassIncremental):
         self.save_indexes = save_indexes
         self.test_background = test_background
         self._nb_classes = nb_classes
+
+        if class_order is not None:
+            if 0 in class_order:
+                raise ValueError("Exclude the background (0) from the class order.")
+            if 255 in class_order:
+                raise ValueError("Exclude the unknown (255) from the class order.")
+            if len(class_order) != nb_classes:
+                raise ValueError(
+                    f"Number of classes ({nb_classes}) != class ordering size ({len(class_order)}."
+                )
 
         super().__init__(
             cl_dataset=cl_dataset,
@@ -89,6 +99,14 @@ class SegmentationClassIncremental(ClassIncremental):
 
         return TaskSet(x, y, t, self.trsf, target_trsf=label_trsf, data_type=self.cl_dataset.data_type)
 
+    def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
+        """Returns the original targets not changed by the custom class order.
+
+        :param targets: An array of targets, as provided by the task datasets.
+        :return: An array of targets, with their original values.
+        """
+        return self._class_mapping(targets)
+
     def _get_task_ids(self, t, task_indexes):
         if isinstance(task_indexes, list):
             task_indexes = max(task_indexes)
@@ -109,7 +127,15 @@ class SegmentationClassIncremental(ClassIncremental):
 
     def _setup(self, nb_tasks: int) -> int:
         x, y, _ = self.cl_dataset.get_data()
-        self.class_order = list(range(1, self._nb_classes + 1))
+        self.class_order = self.class_order or self.cl_dataset.class_order or list(
+            range(1, self._nb_classes + 1))
+
+        # For when the class ordering is changed,
+        # so we can quickly find the original labels
+        def class_mapping(c):
+            if c in (0, 255): return c
+            return self.class_order[c - 1]
+        self._class_mapping = np.vectorize(class_mapping)
 
         self._increments = self._define_increments(
             self.increment, self.initial_increment, self.class_order
@@ -143,6 +169,9 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
         labels = class_order[accumulated_inc:accumulated_inc+inc]
         old_labels = class_order[:accumulated_inc]
         all_labels = labels + old_labels + [0, 255]
+
+        #if class_order[0] == 4:
+        #breakpoint()
 
         for index, classes in enumerate(indexes_to_classes):
             if mode == "overlap":
