@@ -1,6 +1,7 @@
 import warnings
 from copy import copy
 from typing import Callable, List, Union, Optional
+import os
 
 import numpy as np
 from PIL import Image
@@ -156,11 +157,14 @@ class SegmentationClassIncremental(ClassIncremental):
             self.increment, self.initial_increment, self.class_order
         )
 
-        t = np.ones(len(x)) * -1
-        accumulated_inc = 0
-        t = _filter_images(
-            y, self._increments, self.class_order, self.mode
-        )
+        if self.save_indexes is not None and os.path.exists(self.save_indexes):
+            print(f"Loading previously saved indexes ({self.save_indexes}).")
+            t = np.load(self.save_indexes)
+        else:
+            print("Computing indexes, it may be slow!")
+            t = _filter_images(
+                y, self._increments, self.class_order, self.mode
+            )
         self.dataset = (x, y, t)
 
         return len(self._increments)
@@ -171,9 +175,11 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
 
     Strongly inspired from Cermelli's code:
     https://github.com/fcdl94/MiB/blob/master/dataset/utils.py#L19
+
+    # TODO add some kind of progress bar?
     """
     indexes_to_classes = []
-    for path in paths:
+    for path in paths:  # TODO use dataloader for parallelized opening?
         classes = np.unique(np.array(Image.open(path)).reshape(-1))
         indexes_to_classes.append(classes)
 
