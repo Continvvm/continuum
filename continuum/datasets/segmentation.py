@@ -5,7 +5,7 @@ import numpy as np
 
 from continuum import download
 from continuum.datasets.base import _ContinuumDataset
-
+from continuum.transforms.segmentation import ToTensor
 
 class _SemanticSegmentationDataset(_ContinuumDataset):
     @property

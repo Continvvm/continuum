@@ -6,6 +6,7 @@ from torchvision import transforms
 
 from continuum.datasets import _ContinuumDataset
 from continuum.tasks import TaskSet
+from continuum.transforms.segmentation import Compose as SegmentationCompose
 
 
 class _BaseScenario(abc.ABC):
@@ -31,7 +32,10 @@ class _BaseScenario(abc.ABC):
 
         if transformations is None:
             transformations = self.cl_dataset.transformations
-        self.trsf = transforms.Compose(transformations)
+        if self.cl_dataset.data_type == "segmentation":
+            self.trsf = SegmentationCompose(transformations)
+        else:
+            self.trsf = transforms.Compose(transformations)
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
@@ -109,6 +113,7 @@ class _BaseScenario(abc.ABC):
                 indexes = np.where(t[:, task_index] == 1)[0]
             else:
                 indexes = np.where(t == task_index)[0]
+
         selected_x = x[indexes]
         selected_y = y[indexes]
         selected_t = t[indexes]

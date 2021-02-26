@@ -10,7 +10,6 @@ from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import ClassIncremental
 from continuum.tasks import TaskSet
 
-
 class SegmentationClassIncremental(ClassIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
 
@@ -70,22 +69,30 @@ class SegmentationClassIncremental(ClassIncremental):
             raise ValueError("Step in slice for segmentation is not supported.")
 
         x, y, t, task_index = self._select_data_by_task(task_index)
+        t = self._get_task_ids(t, task_index)
 
         if self.mode in ("overlap", "disjoint"):
             labels = self._get_task_labels(task_index)
 
-            inverted_order = {label: self.class_order.index(label) for label in labels}
+            inverted_order = {label: self.class_order.index(label) + 1 for label in labels}
             if not self.cl_dataset.train:
                 inverted_order[0] = 0 if self.test_background else 255
-                inverted_order[255] = 255
+            inverted_order[255] = 255
 
             label_trsf = torchvision.transforms.Lambda(
                 lambda seg_map: seg_map.apply_(
                     lambda v: inverted_order.get(v, 0)
                 )
             )
+        else:
+            raise ValueError(f"Unknown mode={mode}.")
 
         return TaskSet(x, y, t, self.trsf, target_trsf=label_trsf, data_type=self.cl_dataset.data_type)
+
+    def _get_task_ids(self, t, task_indexes):
+        if isinstance(task_indexes, list):
+            task_indexes = max(task_indexes)
+        return np.ones((len(t))) * task_indexes
 
     def _get_task_labels(self, task_indexes: Union[int, List[int]]) -> List[int]:
         if isinstance(task_indexes, int):

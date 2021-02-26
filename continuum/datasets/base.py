@@ -5,6 +5,8 @@ import numpy as np
 from torchvision import datasets as torchdata
 from torchvision import transforms
 
+from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
+
 
 class _ContinuumDataset(abc.ABC):
 
@@ -47,6 +49,8 @@ class _ContinuumDataset(abc.ABC):
 
     @property
     def transformations(self):
+        if self.data_type == "segmentation":
+            return [ToTensorSegmentation()]
         return [transforms.ToTensor()]
 
 
