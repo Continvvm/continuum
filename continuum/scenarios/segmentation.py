@@ -97,13 +97,18 @@ class SegmentationClassIncremental(ClassIncremental):
             raise ValueError(f"Unknown mode={mode}.")
 
         inverted_order = {label: self.class_order.index(label) + 1 for label in labels}
-        if not self.cl_dataset.train:
-            inverted_order[0] = 0 if self.test_background else 255
         inverted_order[255] = 255
+
+        masking_value = 0
+        if not self.cl_dataset.train:
+            if self.test_background:
+                inverted_order[0] = 0
+            else:
+                masking_value = 255
 
         label_trsf = torchvision.transforms.Lambda(
             lambda seg_map: seg_map.apply_(
-                lambda v: inverted_order.get(v, 0)
+                lambda v: inverted_order.get(v, masking_value)
             )
         )
 

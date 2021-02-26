@@ -38,6 +38,34 @@ def pseudo_voc(tmpdir):
 
 
 @pytest.fixture
+def pseudo_voc_test(tmpdir):
+    nb_samples = 20
+
+    x = np.random.randint(0, 255, (nb_samples, 2, 2, 3), dtype=np.uint8)
+    y = np.zeros((nb_samples, 2, 2), dtype=np.uint8)
+    y[0:15, 0, 0] = 255
+
+    y[0:10, 0, 1] = 1
+    y[4:10, 1, 0] = 2
+    y[5:20, 0, 1] = 3
+    y[15:20, 1, 1] = 4
+
+    x_paths, y_paths = [], []
+    for i in range(nb_samples):
+        x_paths.append(os.path.join(tmpdir, f"seg_{i}.jpg"))
+        y_paths.append(os.path.join(tmpdir, f"seg_{i}.png"))
+
+        Image.fromarray(x[i]).save(x_paths[-1])
+        Image.fromarray(y[i]).save(y_paths[-1])
+
+    return InMemoryDataset(
+        np.array(x_paths), np.array(y_paths),
+        data_type="segmentation",
+        train=False
+    )
+
+
+@pytest.fixture
 def pseudo_voc_png(tmpdir):
     nb_samples = 20
 
@@ -91,6 +119,39 @@ def test_length_taskset(pseudo_voc, mode, lengths, increment):
     assert len(scenario) == len(lengths)
     for i, l in enumerate(lengths):
         assert len(scenario[i]) == l, i
+
+
+@pytest.mark.parametrize("mode,test_background,train", [
+    ("overlap", True, True),
+    ("overlap", False, True),
+    ("disjoint", True, True),
+    ("disjoint", False, True),
+    ("sequential", True, True),
+    ("sequential", False, True),
+    ("overlap", True, False),
+    ("overlap", False, False),
+    ("disjoint", True, False),
+    ("disjoint", False, False),
+    ("sequential", True, False),
+    ("sequential", False, False),
+])
+def test_background_test(pseudo_voc, pseudo_voc_test, mode, test_background, train):
+    scenario = SegmentationClassIncremental(
+        pseudo_voc if train else pseudo_voc_test,
+        nb_classes=4,
+        increment=2,
+        mode=mode,
+        test_background=test_background
+    )
+
+    for task_set in scenario:
+        loader = DataLoader(task_set, batch_size=200, drop_last=False)
+        x, y, _ = next(iter(loader))
+
+        if train or test_background:
+            assert 0 in y
+        else:
+            assert 0 not in y
 
 
 @pytest.mark.parametrize("mode,class_order,error", [
