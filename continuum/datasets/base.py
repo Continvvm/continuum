@@ -96,7 +96,7 @@ class InMemoryDataset(_ContinuumDataset):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.data = (x, y, t)
-        if data_type not in ("image_array", "path_array", "text"):
+        if data_type not in ("image_array", "path_array", "text", "segmentation"):
             raise ValueError(f"Unrecognized data_type={data_type} for InMemoryDataset!")
         self._data_type = data_type
 
@@ -120,15 +120,20 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, data_folder: str, train: bool = True, download: bool = True):
+    def __init__(self, data_folder: str, train: bool = True, download: bool = True, data_type: str = "image_path"):
         self.data_folder = data_folder
         super().__init__(train=train, download=download)
 
         self.dataset = torchdata.ImageFolder(data_folder)
 
+        allowed_data_types = ("image_path", "segmentation")
+        if data_type not in allowed_data_types:
+            raise ValueError(f"Invalid data_type={data_type}, allowed={allowed_data_types}.")
+        self._data_type = data_type
+
     @property
     def data_type(self) -> str:
-        return "image_path"
+        return self._data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         return self._format(self.dataset.imgs)
