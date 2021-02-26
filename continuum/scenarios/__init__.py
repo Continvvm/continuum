@@ -10,7 +10,6 @@ from continuum.scenarios.segmentation import SegmentationClassIncremental
 
 __all__ = [
     "ClassIncremental",
-    "DataIncremental",
     "InstanceIncremental",
     "Rotations",
     "Permutations",

@@ -121,26 +121,25 @@ class TaskSet(TorchDataset):
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
-        sample = self.get_sample(index)
+        x = self.get_sample(index)
         y = self._y[index]
         t = self._t[index]
 
-        if self.trsf is not None and self.data_type == "segmentation":
-            img, y = self.trsf(img, y)
-        elif self.trsf is not None and self.data_type != "text":
-            img = self.trsf(img)
+        if self.data_type == "segmentation":
+            y = Image.open(y)
 
-        if self.data_type != "text" and if not isinstance(sample, torch.Tensor):
-            img = transforms.ToTensor()(img)
+        if self.trsf is not None and self.data_type == "segmentation":
+            x, y = self.trsf(x, y)
+        elif self.trsf is not None and self.data_type != "text":
+            x = self.trsf(x)
+
+        if self.data_type != "text" and not isinstance(x, torch.Tensor):
+            x = transforms.ToTensor()(x)
 
         if self.target_trsf is not None:
             y = self.target_trsf(y)
 
-        # we impose output data to be Tensor
-        if not isinstance(img, torch.Tensor):
-            img = transforms.ToTensor()(img)
-
-        return sample, y, t
+        return x, y, t
 
     def get_raw_samples(self, indexes):
         """Get samples without preprocessing, for split train/val for example."""
