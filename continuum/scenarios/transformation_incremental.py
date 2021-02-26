@@ -83,7 +83,7 @@ class TransformationIncremental(InstanceIncremental):
         self.update_task_indexes(task_index)
         if not self.shared_label_space:
             self.update_labels(task_index)
-        train = self._select_data_by_task(task_index)
+        x, y, t, _ = self._select_data_by_task(task_index)
         trsf = self.get_task_transformation(task_index)
 
-        return TaskSet(*train, trsf, data_type=self.cl_dataset.data_type)
+        return TaskSet(x, y, t, trsf, data_type=self.cl_dataset.data_type)

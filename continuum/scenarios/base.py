@@ -75,7 +75,7 @@ class _BaseScenario(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
-        x, y, t = self._select_data_by_task(task_index)
+        x, y, t, _ = self._select_data_by_task(task_index)
         return TaskSet(x, y, t, self.trsf, data_type=self.cl_dataset.data_type)
 
     def _select_data_by_task(self, task_index: Union[int, slice]):
@@ -93,15 +93,22 @@ class _BaseScenario(abc.ABC):
             start = task_index.start or 0
             stop = task_index.stop or len(self) + 1
             step = task_index.step or 1
-            task_indexes = list(range(start, stop, step))
-            task_indexes = [
-                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_indexes
+            task_index = list(range(start, stop, step))
+            task_index = [
+                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
             ]
-            indexes = np.where(np.isin(t, task_indexes))[0]
+            if len(t.shape) == 2:
+                indexes = np.unique(np.where(t[:, task_index] == 1)[0])
+            else:
+                indexes = np.where(np.isin(t, task_index))[0]
         else:
             if task_index < 0:
                 task_index = _handle_negative_indexes(task_index, len(self))
-            indexes = np.where(t == task_index)[0]
+
+            if len(t.shape) == 2:
+                indexes = np.where(t[:, task_index] == 1)[0]
+            else:
+                indexes = np.where(t == task_index)[0]
         selected_x = x[indexes]
         selected_y = y[indexes]
         selected_t = t[indexes]
@@ -111,7 +118,7 @@ class _BaseScenario(abc.ABC):
             # like PermutedMNIST or RotatedMNIST.
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
-        return selected_x, selected_y, selected_t
+        return selected_x, selected_y, selected_t, task_index
 
 
 def _handle_negative_indexes(index: int, total_len: int) -> int:
