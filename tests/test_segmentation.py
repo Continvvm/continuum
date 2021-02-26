@@ -76,6 +76,8 @@ def pseudo_voc_png(tmpdir):
     ("disjoint", (5, 15), 2),
     ("disjoint", (5, 10, 5), 1),
     ("overlap", (10, 15, 5), 1),
+    ("sequential", (5, 15), 2),
+    ("sequential", (5, 10, 5), 1),
 ])
 def test_length_taskset(pseudo_voc, mode, lengths, increment):
     scenario = SegmentationClassIncremental(
@@ -136,21 +138,23 @@ def test_class_order(pseudo_voc_png, mode, class_order, error):
         assert real_class in np.unique(original_y), task_id
 
 
-@pytest.mark.parametrize("mode,lengths,increment", [
-    ("overlap", (10, 15), 2),
-    ("disjoint", (5, 15), 2),
-    ("disjoint", (5, 10, 5), 1),
-    ("overlap", (10, 15, 5), 1),
-    ("overlap", (10, 15), [2, 2]),
-    ("disjoint", (5, 15), [2, 2]),
-    ("disjoint", (5, 10, 5), [2, 1, 1]),
-    ("overlap", (10, 15, 5), [2, 1, 1]),
-    ("disjoint", (5, 15), [1, 3]),
-    ("overlap", (10, 25), [1, 3]),
-    ("disjoint", (15, 5), [3, 1]),
-    ("overlap", (25, 5), [3, 1]),
+@pytest.mark.parametrize("mode,increment", [
+    ("overlap", 2),
+    ("overlap", 1),
+    ("disjoint", 2),
+    ("disjoint", 1),
+    ("sequential", 2),
+    ("sequential", 1),
+    ("overlap", [2, 2]),
+    ("disjoint", [2, 2]),
+    ("disjoint", [2, 1, 1]),
+    ("overlap", [2, 1, 1]),
+    ("disjoint", [1, 3]),
+    ("overlap", [1, 3]),
+    ("disjoint", [3, 1]),
+    ("overlap", [3, 1]),
 ])
-def test_labels(pseudo_voc, mode, lengths, increment):
+def test_labels(pseudo_voc, mode, increment):
     initial_increment = 2
     nb_classes = 4
     min_cls = 1
@@ -169,8 +173,6 @@ def test_labels(pseudo_voc, mode, lengths, increment):
         increments = [2, 1, 1]
     else:
         increments = increment
-
-    all_classes = set(list(range(min_cls, nb_classes + min_cls)))
 
     for task_id, task_set in enumerate(scenario):
         loader = DataLoader(task_set, batch_size=200, drop_last=False)
@@ -191,9 +193,15 @@ def test_labels(pseudo_voc, mode, lengths, increment):
             assert 255 in seen_classes, task_id
 
         for c in list(range(min_cls, nb_classes + min_cls)):
-            if min_cls <= c < max_cls:
-                assert c in seen_classes, (c, task_id, min_cls, max_cls)
-            else:
-                assert c not in seen_classes, (c, task_id, min_cls, max_cls)
+            if mode in ("overlap", "disjoint"):
+                if min_cls <= c < max_cls:
+                    assert c in seen_classes, (c, task_id, min_cls, max_cls)
+                else:
+                    assert c not in seen_classes, (c, task_id, min_cls, max_cls)
+            elif mode == "sequential":
+                if c < max_cls:
+                    assert c in seen_classes, (c, task_id, min_cls, max_cls)
+                else:
+                    assert c not in seen_classes, (c, task_id, min_cls, max_cls)
 
         min_cls += increments[task_id]

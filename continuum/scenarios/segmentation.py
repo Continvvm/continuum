@@ -44,6 +44,9 @@ class SegmentationClassIncremental(ClassIncremental):
         self.test_background = test_background
         self._nb_classes = nb_classes
 
+        if self.mode not in ("overlap", "disjoint", "sequential"):
+            raise ValueError(f"Unknown mode={mode}.")
+
         if class_order is not None:
             if 0 in class_order:
                 raise ValueError("Exclude the background (0) from the class order.")
@@ -82,20 +85,27 @@ class SegmentationClassIncremental(ClassIncremental):
         t = self._get_task_ids(t, task_index)
 
         if self.mode in ("overlap", "disjoint"):
+            # Previous and future (for disjoint) classes are hidden
             labels = self._get_task_labels(task_index)
-
-            inverted_order = {label: self.class_order.index(label) + 1 for label in labels}
-            if not self.cl_dataset.train:
-                inverted_order[0] = 0 if self.test_background else 255
-            inverted_order[255] = 255
-
-            label_trsf = torchvision.transforms.Lambda(
-                lambda seg_map: seg_map.apply_(
-                    lambda v: inverted_order.get(v, 0)
-                )
-            )
+        elif self.mode == "sequential":
+            # Previous classes are not hidden, no future classes are present
+            if isinstance(task_index, int):
+                labels = self._get_task_labels(list(range(task_index + 1)))
+            else:
+                labels = self._get_task_labels(list(range(max(task_index) + 1)))
         else:
             raise ValueError(f"Unknown mode={mode}.")
+
+        inverted_order = {label: self.class_order.index(label) + 1 for label in labels}
+        if not self.cl_dataset.train:
+            inverted_order[0] = 0 if self.test_background else 255
+        inverted_order[255] = 255
+
+        label_trsf = torchvision.transforms.Lambda(
+            lambda seg_map: seg_map.apply_(
+                lambda v: inverted_order.get(v, 0)
+            )
+        )
 
         return TaskSet(x, y, t, self.trsf, target_trsf=label_trsf, data_type=self.cl_dataset.data_type)
 
@@ -170,14 +180,11 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
         old_labels = class_order[:accumulated_inc]
         all_labels = labels + old_labels + [0, 255]
 
-        #if class_order[0] == 4:
-        #breakpoint()
-
         for index, classes in enumerate(indexes_to_classes):
             if mode == "overlap":
                 if any(c in labels for c in classes):
                     t[index, task_id] = 1
-            elif mode == "disjoint":
+            elif mode in ("disjoint", "sequential"):
                 if any(c in labels for c in classes) and all(c in all_labels for c in classes):
                     t[index, task_id] = 1
             else:
