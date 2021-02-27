@@ -40,6 +40,8 @@ class TaskSet(TorchDataset):
         self.target_trsf = target_trsf
         self.data_type = data_type
 
+        self._to_tensor = transforms.ToTensor()
+
     @property
     def nb_classes(self):
         """The number of classes contained in the current task."""
@@ -102,6 +104,10 @@ class TaskSet(TorchDataset):
 
         return torch.stack(images), torch.Tensor(targets), torch.Tensor(tasks)
 
+    def get_raw_samples(self, indexes):
+        """Get samples without preprocessing, for split train/val for example."""
+        return self._x[indexes], self._y[indexes], self._t[indexes]
+
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
 
@@ -125,22 +131,40 @@ class TaskSet(TorchDataset):
         y = self._y[index]
         t = self._t[index]
 
-        if self.data_type == "segmentation":
-            y = Image.open(y)
-
-        if self.trsf is not None and self.data_type == "segmentation":
-            x, y = self.trsf(x, y)
-        elif self.trsf is not None and self.data_type != "text":
-            x = self.trsf(x)
-
-        if self.data_type != "text" and not isinstance(x, torch.Tensor):
-            x = transforms.ToTensor()(x)
+        if self.data_type == "text":
+            x, y, t = self._prepare(x, y, t)
+        elif self.data_type == "segmentation":
+            x, y, t = self._prepare_segmentation(x, y, t)
+        else:
+            x, y, t = self._prepare(x, y, y)
 
         if self.target_trsf is not None:
             y = self.target_trsf(y)
 
         return x, y, t
 
-    def get_raw_samples(self, indexes):
-        """Get samples without preprocessing, for split train/val for example."""
-        return self._x[indexes], self._y[indexes], self._t[indexes]
+    def _prepare(self, x, y, t):
+        if self.trsf is not None:
+            x = self.trsf(x)
+        if not isinstance(x, torch.Tensor):
+            x = self._to_tensor(x)
+
+        return x, y, t
+
+    def _prepare_segmentation(self, x, y, t):
+        y = Image.open(y)
+        if self.trsf is not None:
+            x, y = self.trsf(x, y)
+
+        if not isinstance(x, torch.Tensor):
+            x = self._to_tensor(x)
+        if not isinstance(y, torch.Tensor):
+            y = self._to_tensor(y)
+
+        return x, y, t
+
+    def _prepare_text(self, x, y, t):
+        # Nothing in particular for now, TODO latter
+        return x, y, t
+
+
