@@ -165,6 +165,11 @@ class SegmentationClassIncremental(ClassIncremental):
             t = _filter_images(
                 y, self._increments, self.class_order, self.mode
             )
+            if self.save_indexes is not None:
+                np.save(self.save_indexes, t)
+
+        assert len(x) == len(y) == len(t) and len(t) > 0
+
         self.dataset = (x, y, t)
 
         return len(self._increments)

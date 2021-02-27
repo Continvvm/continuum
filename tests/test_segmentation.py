@@ -1,4 +1,5 @@
 import os
+import glob
 
 import pytest
 import numpy as np
@@ -10,8 +11,12 @@ from continuum.datasets import InMemoryDataset
 from continuum.scenarios import SegmentationClassIncremental
 
 
-@pytest.fixture
-def pseudo_voc(tmpdir):
+def _clean(pattern):
+    for f in glob.glob(pattern):
+        os.remove(f)
+
+
+def create_dataset(tmpdir, prefix, png=False, train=True):
     nb_samples = 20
 
     x = np.random.randint(0, 255, (nb_samples, 2, 2, 3), dtype=np.uint8)
@@ -25,35 +30,11 @@ def pseudo_voc(tmpdir):
 
     x_paths, y_paths = [], []
     for i in range(nb_samples):
-        x_paths.append(os.path.join(tmpdir, f"seg_{i}.jpg"))
-        y_paths.append(os.path.join(tmpdir, f"seg_{i}.png"))
-
-        Image.fromarray(x[i]).save(x_paths[-1])
-        Image.fromarray(y[i]).save(y_paths[-1])
-
-    return InMemoryDataset(
-        np.array(x_paths), np.array(y_paths),
-        data_type="segmentation"
-    )
-
-
-@pytest.fixture
-def pseudo_voc_test(tmpdir):
-    nb_samples = 20
-
-    x = np.random.randint(0, 255, (nb_samples, 2, 2, 3), dtype=np.uint8)
-    y = np.zeros((nb_samples, 2, 2), dtype=np.uint8)
-    y[0:15, 0, 0] = 255
-
-    y[0:10, 0, 1] = 1
-    y[4:10, 1, 0] = 2
-    y[5:20, 0, 1] = 3
-    y[15:20, 1, 1] = 4
-
-    x_paths, y_paths = [], []
-    for i in range(nb_samples):
-        x_paths.append(os.path.join(tmpdir, f"seg_{i}.jpg"))
-        y_paths.append(os.path.join(tmpdir, f"seg_{i}.png"))
+        if png:
+            x_paths.append(os.path.join(tmpdir, f"{prefix}_{i}.png"))
+        else:
+            x_paths.append(os.path.join(tmpdir, f"{prefix}_{i}.jpg"))
+        y_paths.append(os.path.join(tmpdir, f"{prefix}_{i}.png"))
 
         Image.fromarray(x[i]).save(x_paths[-1])
         Image.fromarray(y[i]).save(y_paths[-1])
@@ -61,42 +42,24 @@ def pseudo_voc_test(tmpdir):
     return InMemoryDataset(
         np.array(x_paths), np.array(y_paths),
         data_type="segmentation",
-        train=False
+        train=train
     )
 
 
 @pytest.fixture
-def pseudo_voc_png(tmpdir):
-    nb_samples = 20
+def dataset(tmpdir):
+    return create_dataset(tmpdir, "seg")
 
-    x = np.zeros((nb_samples, 2, 2, 3), dtype=np.uint8)
-    y = np.zeros((nb_samples, 2, 2), dtype=np.uint8)
-    y[0:15, 0, 0] = 255
 
-    y[0:10, 0, 1] = 1
-    y[4:10, 1, 0] = 2
-    y[5:20, 0, 1] = 3
-    y[15:20, 1, 1] = 4
+@pytest.fixture
+def dataset_test(tmpdir):
+    return create_dataset(tmpdir, "seg_test", train=False)
 
-    x[0:10, 0, 1] = 1
-    x[4:10, 1, 0] = 2
-    x[5:20, 0, 1] = 3
-    x[15:20, 1, 1] = 4
 
-    x = np.tile(y[..., None], (1, 1, 1, 3))
+@pytest.fixture
+def dataset_png(tmpdir):
+    return create_dataset(tmpdir, "seg_png", png=True)
 
-    x_paths, y_paths = [], []
-    for i in range(nb_samples):
-        x_paths.append(os.path.join(tmpdir, f"seg2_{i}.png"))
-        y_paths.append(os.path.join(tmpdir, f"seg2_{i}.png"))
-
-        Image.fromarray(x[i]).save(x_paths[-1])
-        Image.fromarray(y[i]).save(y_paths[-1])
-
-    return InMemoryDataset(
-        np.array(x_paths), np.array(y_paths),
-        data_type="segmentation"
-    )
 
 
 @pytest.mark.parametrize("mode,lengths,increment", [
@@ -107,9 +70,9 @@ def pseudo_voc_png(tmpdir):
     ("sequential", (5, 15), 2),
     ("sequential", (5, 10, 5), 1),
 ])
-def test_length_taskset(pseudo_voc, mode, lengths, increment):
+def test_length_taskset(dataset, mode, lengths, increment):
     scenario = SegmentationClassIncremental(
-        pseudo_voc,
+        dataset,
         nb_classes=4,
         increment=increment,
         initial_increment=2,
@@ -119,6 +82,39 @@ def test_length_taskset(pseudo_voc, mode, lengths, increment):
     assert len(scenario) == len(lengths)
     for i, l in enumerate(lengths):
         assert len(scenario[i]) == l, i
+
+
+def test_save_indexes(tmpdir):
+    dataset = create_dataset(tmpdir, "seg_tmp")
+    _clean(os.path.join(tmpdir, "seg_tmp*"))
+
+    with pytest.raises(Exception):
+        scenario = SegmentationClassIncremental(
+            dataset,
+            nb_classes=4,
+            increment=2,
+            mode="overlap",
+        )
+
+    dataset = create_dataset(tmpdir, "seg_tmp")
+    scenario = SegmentationClassIncremental(
+        dataset,
+        nb_classes=4,
+        increment=2,
+        mode="overlap",
+        save_indexes=os.path.join(tmpdir, "indexes.npy")
+    )
+    _clean(os.path.join(tmpdir, "seg_tmp*"))
+    scenario = SegmentationClassIncremental(
+        dataset,
+        nb_classes=4,
+        increment=2,
+        mode="overlap",
+        save_indexes=os.path.join(tmpdir, "indexes.npy")
+    )
+
+
+
 
 
 @pytest.mark.parametrize("mode,test_background,train", [
@@ -135,9 +131,9 @@ def test_length_taskset(pseudo_voc, mode, lengths, increment):
     ("sequential", True, False),
     ("sequential", False, False),
 ])
-def test_background_test(pseudo_voc, pseudo_voc_test, mode, test_background, train):
+def test_background_test(dataset, dataset_test, mode, test_background, train):
     scenario = SegmentationClassIncremental(
-        pseudo_voc if train else pseudo_voc_test,
+        dataset if train else dataset_test,
         nb_classes=4,
         increment=2,
         mode=mode,
@@ -164,14 +160,14 @@ def test_background_test(pseudo_voc, pseudo_voc_test, mode, test_background, tra
     ("overlap", [2, 3, 4, 1], False),
 
 ])
-def test_class_order(pseudo_voc_png, mode, class_order, error):
+def test_class_order(dataset_png, mode, class_order, error):
     """We need PNG here because JPG lose some pixels values"""
     increments = [1, 1, 1, 1]
 
     if error:
         with pytest.raises(ValueError):
             scenario = SegmentationClassIncremental(
-                pseudo_voc_png,
+                dataset_png,
                 nb_classes=4,
                 increment=increments,
                 class_order=class_order,
@@ -180,7 +176,7 @@ def test_class_order(pseudo_voc_png, mode, class_order, error):
         return
     else:
         scenario = SegmentationClassIncremental(
-            pseudo_voc_png,
+            dataset_png,
             nb_classes=4,
             increment=increments,
             class_order=class_order,
@@ -215,13 +211,13 @@ def test_class_order(pseudo_voc_png, mode, class_order, error):
     ("disjoint", [3, 1]),
     ("overlap", [3, 1]),
 ])
-def test_labels(pseudo_voc, mode, increment):
+def test_labels(dataset, mode, increment):
     initial_increment = 2
     nb_classes = 4
     min_cls = 1
 
     scenario = SegmentationClassIncremental(
-        pseudo_voc,
+        dataset,
         nb_classes=nb_classes,
         increment=increment,
         initial_increment=initial_increment,
