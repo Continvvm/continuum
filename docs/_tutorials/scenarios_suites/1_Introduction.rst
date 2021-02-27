@@ -58,9 +58,9 @@ We also support the domain incremental case. For example, for the "char" classif
 
 .. code-block:: python
 
-    from continuum import InstanceIncremental
+    from continuum import TaskIncremental
     from continuum.datasets import Synbols
     
-    synbols = InstanceIncremental(dataset=Synbols("/my/path", task_type="char", domain_incremental_task="font",
+    synbols = TaskIncremental(dataset=Synbols("/my/path", task_type="char", domain_incremental_task="font",
                                                     dataset_name="default_n=100000_2020-Oct-19.h5py"))
 
