@@ -10,6 +10,8 @@ import torchvision
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import ClassIncremental
 from continuum.tasks import TaskSet
+from continuum.download import ProgressBar
+
 
 class SegmentationClassIncremental(ClassIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
@@ -184,9 +186,13 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
     # TODO add some kind of progress bar?
     """
     indexes_to_classes = []
-    for path in paths:  # TODO use dataloader for parallelized opening?
+    pb = ProgressBar()
+
+    for i, path in enumerate(paths, start=1):
+        # TODO use dataloader for parallelized opening?
         classes = np.unique(np.array(Image.open(path)).reshape(-1))
         indexes_to_classes.append(classes)
+        pb.update(None, i, len(paths))
 
     t = np.zeros((len(paths), len(increments)))
     accumulated_inc = 0

@@ -114,9 +114,6 @@ def test_save_indexes(tmpdir):
     )
 
 
-
-
-
 @pytest.mark.parametrize("mode,test_background,train", [
     ("overlap", True, True),
     ("overlap", False, True),
