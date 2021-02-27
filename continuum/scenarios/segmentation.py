@@ -2,6 +2,7 @@ import warnings
 from copy import copy
 from typing import Callable, List, Union, Optional
 import os
+import multiprocessing
 
 import numpy as np
 from PIL import Image
@@ -182,17 +183,15 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
 
     Strongly inspired from Cermelli's code:
     https://github.com/fcdl94/MiB/blob/master/dataset/utils.py#L19
-
-    # TODO add some kind of progress bar?
     """
     indexes_to_classes = []
     pb = ProgressBar()
 
-    for i, path in enumerate(paths, start=1):
-        # TODO use dataloader for parallelized opening?
-        classes = np.unique(np.array(Image.open(path)).reshape(-1))
-        indexes_to_classes.append(classes)
-        pb.update(None, i, len(paths))
+    with multiprocessing.Pool(min(8, multiprocessing.cpu_count())) as pool:
+        for i, classes in enumerate(pool.imap(_find_classes, paths)):
+            indexes_to_classes.append(classes)
+            if i % 100 == 0:
+                pb.update(None, i, len(paths))
 
     t = np.zeros((len(paths), len(increments)))
     accumulated_inc = 0
@@ -215,3 +214,7 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
         accumulated_inc += inc
 
     return t
+
+
+def _find_classes(path):
+    return np.unique(np.array(Image.open(path)).reshape(-1))
