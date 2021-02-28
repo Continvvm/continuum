@@ -52,3 +52,7 @@ class ProgressBar:
         print("\r|%s| %s%%" % (pbar, percent), end="\r")
         if self.count == total_size:
             print()
+
+    def end(self, total_size):
+        self.count = total_size
+        self.update(None, 0, total_size)

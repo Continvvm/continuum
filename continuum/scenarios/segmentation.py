@@ -34,7 +34,7 @@ class SegmentationClassIncremental(ClassIncremental):
     def __init__(
         self,
         cl_dataset: _ContinuumDataset,
-        nb_classes: int = 0,
+        nb_classes: int,
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,
         transformations: List[Callable] = None,
@@ -47,6 +47,12 @@ class SegmentationClassIncremental(ClassIncremental):
         self.save_indexes = save_indexes
         self.test_background = test_background
         self._nb_classes = nb_classes
+
+        if cl_dataset.data_type != "segmentation":
+            raise ValueError(
+                f"Dataset {cl_dataset} doesn't have the right data type but "
+                f"{self.cl_dataset.data_type}."
+            )
 
         if self.mode not in ("overlap", "disjoint", "sequential"):
             raise ValueError(f"Unknown mode={mode}.")
@@ -72,7 +78,7 @@ class SegmentationClassIncremental(ClassIncremental):
     @property
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
-        return len(np.unique(self.dataset[1]))  # type: ignore
+        return self._nb_classes
 
     def __getitem__(self, task_index: Union[int, slice]):
         """Returns a task by its unique index.
@@ -188,10 +194,11 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
     pb = ProgressBar()
 
     with multiprocessing.Pool(min(8, multiprocessing.cpu_count())) as pool:
-        for i, classes in enumerate(pool.imap(_find_classes, paths)):
+        for i, classes in enumerate(pool.imap(_find_classes, paths), start=1):
             indexes_to_classes.append(classes)
             if i % 100 == 0:
-                pb.update(None, i, len(paths))
+                pb.update(None, 100, len(paths))
+        pb.end(len(paths))
 
     t = np.zeros((len(paths), len(increments)))
     accumulated_inc = 0
