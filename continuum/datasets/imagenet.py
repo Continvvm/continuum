@@ -71,7 +71,7 @@ class ImageNet100(ImageNet1000):
             with open(subset, "r") as f:
                 for line in f:
                     split_line = line.split(" ")
-                    path = "/".join(split_line[0].strip().split("/")[1:])
+                    path = split_line[0].strip()
                     x.append(os.path.join(self.data_folder, path))
                     y.append(int(split_line[1].strip()))
             x = np.array(x)
