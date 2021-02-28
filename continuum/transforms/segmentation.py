@@ -76,9 +76,9 @@ class Resize:
         :return: PIL Image: Rescaled image.
         """
         if lbl is not None:
-            return Fvv.resize(img, self.size, self.interpolation), Fvv.resize(lbl, self.size, Image.NEAREST)
+            return Fv.resize(img, self.size, self.interpolation), Fv.resize(lbl, self.size, Image.NEAREST)
         else:
-            return Fvv.resize(img, self.size, self.interpolation)
+            return Fv.resize(img, self.size, self.interpolation)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
@@ -105,7 +105,7 @@ class CenterCrop:
         :return: PIL Image: Cropped image.
         """
         if lbl is not None:
-            return Fvv.center_crop(img, self.size), Fv.center_crop(lbl, self.size)
+            return Fv.center_crop(img, self.size), Fv.center_crop(lbl, self.size)
         else:
             return Fv.center_crop(img, self.size)
 
