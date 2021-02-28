@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
+def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None, data_type="image_array"):
     batch, y, _ = dataset.get_random_samples(nb_samples)
 
-    y, order = y.sort()
-    batch = batch[order]
+    if len(y.shape) == 1:
+        y, order = y.sort()
+        batch = batch[order]
 
     if path is not None:
         filename = os.path.join(path, title)
@@ -19,7 +20,10 @@ def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None):
     if shape is None:
         shape = batch[0].shape
 
-    visualize_batch(batch, nb_samples, shape, filename)
+    if data_type == "segmentation":
+        visualize_segmentation_batch(batch, y, nb_samples, shape, filename)
+    else:
+        visualize_batch(batch, nb_samples, shape, filename)
 
 
 def visualize_batch(batch, number, shape, path):
@@ -36,12 +40,18 @@ def visualize_batch(batch, number, shape, path):
     elif shape[2] == 3:
         data = batch.numpy().reshape(number, shape[2], shape[1], shape[0])
         data = img_stretch(data)
-        make_samples_batche(data[:number], number, path)
+        make_samples_batch(data[:number], number, path)
     else:
         save_images(
             batch[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
             path
         )
+
+
+def visualize_segmentation_batch(images, segmaps, number, shape, path):
+    images, segmaps = images.numpy(), segmaps.numpy()
+    images = img_stretch(images)
+    make_samples_segmentation_batch(images[:number], segmaps[:number], number, path)
 
 
 def save_images(images, size, image_path):
@@ -98,24 +108,108 @@ def img_stretch(img):
     return img
 
 
-def make_samples_batche(prediction, batch_size, filename_dest):
+def make_samples_batch(images, batch_size, path):
     plt.figure()
-    batch_size_sqrt = int(np.sqrt(batch_size))
-    input_channel = prediction[0].shape[0]
-    input_dim = prediction[0].shape[1]
-    prediction = np.clip(prediction, 0, 1)
-    pred = np.rollaxis(
-        prediction.reshape((batch_size_sqrt, batch_size_sqrt, input_channel, input_dim, input_dim)),
-        2, 5
-    )
-    pred = pred.swapaxes(2, 1)
-    pred = pred.reshape((batch_size_sqrt * input_dim, batch_size_sqrt * input_dim, input_channel))
-    fig, ax = plt.subplots(figsize=(batch_size_sqrt, batch_size_sqrt))
+    images, batch_size = _make_square_group(images, batch_size)
+    fig, ax = plt.subplots(figsize=(batch_size, batch_size))
     ax.axis('off')
-    ax.imshow(img_stretch(pred), interpolation='nearest')
+    ax.imshow(images, interpolation='nearest')
     ax.grid()
     ax.set_xticks([])
     ax.set_yticks([])
-    fig.savefig(filename_dest, bbox_inches='tight', pad_inches=0)
+
+    if path is not None:
+        fig.savefig(path, bbox_inches='tight', pad_inches=0)
+    else:
+        plt.show()
+
     plt.close(fig)
     plt.close()
+
+
+def make_samples_segmentation_batch(images, labels, batch_size, path):
+    images, _ = _make_square_group(images, batch_size)
+    labels, _ = _make_square_group(labels, batch_size)
+
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+
+    axes[0].axis('off')
+    axes[0].imshow(images, interpolation='nearest')
+    axes[0].grid()
+    axes[0].set_xticks([])
+    axes[0].set_yticks([])
+
+    # TODO: Add color map for other dataset than VOC
+    nclasses = 21
+    row_size = images.shape[-1]
+    col_size = images.shape[-2]
+    cmap = color_map()[:, np.newaxis, :]
+    labels = labels[:, :, np.newaxis]
+    new_im = np.dot(labels == 0, cmap[0])
+    for i in range(1, cmap.shape[0]):
+        new_im += np.dot(labels == i, cmap[i])
+    labels = new_im
+
+    axes[1].axis('off')
+    axes[1].imshow(labels, interpolation='nearest')
+    axes[1].grid()
+    axes[1].set_xticks([])
+    axes[1].set_yticks([])
+
+    if path is not None:
+        fig.savefig(path, bbox_inches='tight', pad_inches=0)
+    else:
+        plt.show()
+
+    plt.close(fig)
+    plt.close()
+
+
+def color_map(N=256, normalized=False):
+    def bitget(byteval, idx):
+        return ((byteval & (1 << idx)) != 0)
+
+    dtype = 'float32' if normalized else 'uint8'
+    cmap = np.zeros((N, 3), dtype=dtype)
+    for i in range(N):
+        r = g = b = 0
+        c = i
+        for j in range(8):
+            r = r | (bitget(c, 0) << 7-j)
+            g = g | (bitget(c, 1) << 7-j)
+            b = b | (bitget(c, 2) << 7-j)
+            c = c >> 3
+
+        cmap[i] = np.array([r, g, b])
+
+    cmap = cmap/255 if normalized else cmap
+    return cmap
+
+
+
+def _make_square_group(images, batch_size):
+    nb_dim = len(images.shape)
+    if nb_dim == 3:
+        images = np.repeat(images[:, None], 3, axis=1)
+
+    batch_size_sqrt = int(np.sqrt(batch_size))
+    input_channel = images[0].shape[0]
+    input_dim = images[0].shape[1]
+
+    if nb_dim != 3:
+        images = np.clip(images, 0, 1)
+    images = images[:batch_size_sqrt ** 2]
+
+    images = np.rollaxis(
+        images.reshape((batch_size_sqrt, batch_size_sqrt, input_channel, input_dim, input_dim)),
+        2, 5
+    )
+    images = images.swapaxes(2, 1)
+    images = images.reshape((batch_size_sqrt * input_dim, batch_size_sqrt * input_dim, input_channel))
+
+    if nb_dim == 3:
+        images = images[..., 0]
+
+    return images, batch_size_sqrt
+
+

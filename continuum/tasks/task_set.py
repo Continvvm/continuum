@@ -71,7 +71,7 @@ class TaskSet(TorchDataset):
         path: Union[str, None] = None,
         title: str = "",
         nb_samples: int = 100,
-        shape=None
+        shape: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -80,7 +80,8 @@ class TaskSet(TorchDataset):
         :param nb_samples: Amount of samples randomly selected.
         :param shape: Shape to resize the image before plotting.
         """
-        plot_samples(self, title=title, path=path, nb_samples=nb_samples, shape=shape)
+        plot_samples(self, title=title, path=path, nb_samples=nb_samples,
+                     shape=shape, data_type=self.data_type)
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
@@ -94,15 +95,24 @@ class TaskSet(TorchDataset):
     def get_samples(self, indexes):
         images, targets, tasks = [], [], []
 
+        w, h = None, None
         for index in indexes:
             # we need to use __getitem__ to have the transform used
             img, y, t = self[index]
+
+            if w is None:
+                w, h = img.shape[:2]
+            elif w != img.shape[0] or h != img.shape[1]:
+                raise Exception(
+                    "Images dimension are inconsistent, resize them to a "
+                    "common size using a transformation."
+                )
 
             images.append(img)
             targets.append(y)
             tasks.append(t)
 
-        return torch.stack(images), torch.Tensor(targets), torch.Tensor(tasks)
+        return _tensorize_list(images), _tensorize_list(targets), _tensorize_list(tasks)
 
     def get_raw_samples(self, indexes):
         """Get samples without preprocessing, for split train/val for example."""
@@ -168,3 +178,7 @@ class TaskSet(TorchDataset):
         return x, y, t
 
 
+def _tensorize_list(x):
+    if isinstance(x[0], torch.Tensor):
+        return torch.stack(x)
+    return torch.tensor(x)

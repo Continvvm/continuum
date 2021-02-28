@@ -25,8 +25,8 @@ class PascalVOC2012(_SemanticSegmentationDataset):
     segmentation_url = "http://cs.jhu.edu/~cxliu/data/SegmentationClassAug.zip"
     split_url = "http://cs.jhu.edu/~cxliu/data/list.zip"
 
-    def __init__(self, data_path: str = "", download: bool = True, augmented: bool = True) -> None:
-        super().__init__(data_path, download)
+    def __init__(self, data_path: str = "", train: bool = True, download: bool = True, augmented: bool = True) -> None:
+        super().__init__(data_path=data_path, train=train, download=download)
         self.augmented = augmented
 
     def _download(self):
@@ -57,8 +57,8 @@ class PascalVOC2012(_SemanticSegmentationDataset):
             print("Uncompressing train/val/test indexes...")
             download.unzip(path)
 
-    def get_data(self, train: bool) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        if train and self.augmented:
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        if self.train and self.augmented:
             list_path = os.path.join(self.data_path, "list", "train_aug.txt")
         elif train:
             list_path = os.path.join(self.data_path, "list", "train.txt")
@@ -69,7 +69,7 @@ class PascalVOC2012(_SemanticSegmentationDataset):
         with open(list_path, "r") as f:
             for line in f:
                 p1, p2 = line.split(" ")
-                image_paths.append(os.path.join(self.data_path, "VOCdevkit", "VOC2012", p1))
-                map_paths.append(os.path.join(self.data_path, p2))
+                image_paths.append(os.path.join(self.data_path, "VOCdevkit", "VOC2012", p1[1:].strip()))
+                map_paths.append(os.path.join(self.data_path, p2[1:].strip()))
 
         return np.array(image_paths), np.array(map_paths), None
