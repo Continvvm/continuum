@@ -17,10 +17,19 @@ from continuum.download import ProgressBar
 class SegmentationClassIncremental(ClassIncremental):
     """Continual Loader, generating datasets for the consecutive tasks.
 
-    Scenario: Each new tasks bring new classes only
+    References
+        * Incremental Learning Techniques for Semantic Segmentation
+          Umberto Michieli, Pietro Zanuttigh
+          ICCV Workshop 2017
+        * Modeling the Background for Incremental Learning in Semantic Segmentation
+          Fabio Cermelli, Massimiliano Mancini, Samuel Rota Bulò, Elisa Ricci, Barbara Caputo
+          CVPR 2020
+        * PLOP: Learning without Forgetting for Continual Semantic Segmentation
+          Arthur Douillard, Yifu Chen, Arnaud Dapogny, Matthieu Cord
+          CVPR 2021
 
     :param cl_dataset: A continual dataset.
-    :param nb_tasks: The scenario number of tasks.
+    :param nb_classes: The number of classes of the dataset (excluding bg=0 and unk=255).
     :param increment: Either number of classes per task (e.g. increment=2),
                     or a list specifying for every task the amount of new classes
                      (e.g. increment=[5,1,1,1,1]).
@@ -29,6 +38,16 @@ class SegmentationClassIncremental(ClassIncremental):
     :param transformations: A list of transformations applied to all tasks.
     :param class_order: An optional custom class order, used for NC.
                         e.g. [0,1,2,3,4,5,6,7,8,9] or [5,2,4,1,8,6,7,9,0,3]
+    :param mode: The mode of incremental segmentation. In both "sequential" and
+                 "disjoint", images only contain pixels of old or current classes,
+                 while in "overlap", future classes can also be present.
+                 In "sequential" all pixels are labelized while in "disjoint" and
+                 "overlap" only pixels of the current classes are labelized.
+    :param save_indexes: Path where to save and load the indexes of the different
+                         tasks. Computing it may be slow, so it can be worth to
+                         checkpoint those.
+    :param test_background: Whether to ignore the background (0) during the testing
+                            phase (False) or to keep its label (True).
     """
 
     def __init__(
@@ -80,7 +99,7 @@ class SegmentationClassIncremental(ClassIncremental):
         """Total number of classes in the whole continual setting."""
         return self._nb_classes
 
-    def __getitem__(self, task_index: Union[int, slice]):
+    def __getitem__(self, task_index: Union[int, slice]) -> TaskSet:
         """Returns a task by its unique index.
 
         :param task_index: The unique index of a task. As for List, you can use
@@ -94,6 +113,27 @@ class SegmentationClassIncremental(ClassIncremental):
         x, y, t, task_index = self._select_data_by_task(task_index)
         t = self._get_task_ids(t, task_index)
 
+        return TaskSet(
+            x, y, t,
+            self.trsf,
+            target_trsf=self._get_label_transformation(task_index),
+            data_type=self.cl_dataset.data_type
+        )
+
+    def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
+        """Returns the original targets not changed by the custom class order.
+
+        :param targets: An array of targets, as provided by the task datasets.
+        :return: An array of targets, with their original values.
+        """
+        return self._class_mapping(targets)
+
+    def _get_label_transformation(self, task_index: Union[int, List[int]]):
+        """Returns the transformation to apply on the GT segmentation maps.
+
+        :param task_index: The selected task id.
+        :return: A pytorch transformation.
+        """
         if self.mode in ("overlap", "disjoint"):
             # Previous and future (for disjoint) classes are hidden
             labels = self._get_task_labels(task_index)
@@ -116,28 +156,33 @@ class SegmentationClassIncremental(ClassIncremental):
             else:
                 masking_value = 255
 
-        label_trsf = torchvision.transforms.Lambda(
+        return torchvision.transforms.Lambda(
             lambda seg_map: seg_map.apply_(
                 lambda v: inverted_order.get(v, masking_value)
             )
         )
 
-        return TaskSet(x, y, t, self.trsf, target_trsf=label_trsf, data_type=self.cl_dataset.data_type)
+    def _get_task_ids(self, t: np.ndarray, task_indexes: Union[int, List[int]]) -> np.ndarray:
+        """Reduce multiple task ids to a single one per sample.
 
-    def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
-        """Returns the original targets not changed by the custom class order.
+        In segmentation, the same image can have several task ids. We assume that
+        the selected task ids is the last one as it will be the one that matter
+        for the ground-truth segmentation maps.
 
-        :param targets: An array of targets, as provided by the task datasets.
-        :return: An array of targets, with their original values.
+        :param t: A matrix of task ids of shape (nb_samples, nb_tasks).
+        :param task_indexes: The selected task ids.
+        :return: An array of task ids of shape (nb_samples,).
         """
-        return self._class_mapping(targets)
-
-    def _get_task_ids(self, t, task_indexes):
         if isinstance(task_indexes, list):
             task_indexes = max(task_indexes)
         return np.ones((len(t))) * task_indexes
 
     def _get_task_labels(self, task_indexes: Union[int, List[int]]) -> List[int]:
+        """Returns the labels/classes of the current tasks, not all present labels!
+
+        :param task_indexes: The selected task ids.
+        :return: A list of class/labels ids.
+        """
         if isinstance(task_indexes, int):
             task_indexes = [task_indexes]
 
@@ -151,6 +196,7 @@ class SegmentationClassIncremental(ClassIncremental):
         return list(labels)
 
     def _setup(self, nb_tasks: int) -> int:
+        """Setups the different tasks."""
         x, y, _ = self.cl_dataset.get_data()
         self.class_order = self.class_order or self.cl_dataset.class_order or list(
             range(1, self._nb_classes + 1))
@@ -166,6 +212,9 @@ class SegmentationClassIncremental(ClassIncremental):
             self.increment, self.initial_increment, self.class_order
         )
 
+        # Checkpointing the indexes if the option is enabled.
+        # The filtering can take multiple minutes, thus saving/loading them can
+        # be useful.
         if self.save_indexes is not None and os.path.exists(self.save_indexes):
             print(f"Loading previously saved indexes ({self.save_indexes}).")
             t = np.load(self.save_indexes)
@@ -184,11 +233,24 @@ class SegmentationClassIncremental(ClassIncremental):
         return len(self._increments)
 
 
-def _filter_images(paths, increments, class_order, mode="overlap"):
+def _filter_images(
+    paths: Union[np.ndarray, List[str]],
+    increments: List[int],
+    class_order: List[int],
+    mode: str = "overlap"
+) -> np.ndarray:
     """Select images corresponding to the labels.
 
     Strongly inspired from Cermelli's code:
     https://github.com/fcdl94/MiB/blob/master/dataset/utils.py#L19
+
+    :param paths: An iterable of paths to gt maps.
+    :param increments: All individual increments.
+    :param class_order: The class ordering, which may not be [1, 2, ...]. The
+                        background class (0) and unknown class (255) aren't
+                        in this class order.
+    :param mode: Mode of the segmentation (see scenario doc).
+    :return: A binary matrix representing the task ids of shape (nb_samples, nb_tasks).
     """
     indexes_to_classes = []
     pb = ProgressBar()
@@ -223,5 +285,11 @@ def _filter_images(paths, increments, class_order, mode="overlap"):
     return t
 
 
-def _find_classes(path):
+def _find_classes(path: str) -> np.ndarray:
+    """Open a ground-truth segmentation map image and returns all unique classes
+    contained.
+
+    :param path: Path to the image.
+    :return: Unique classes.
+    """
     return np.unique(np.array(Image.open(path)).reshape(-1))

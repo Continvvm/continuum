@@ -8,6 +8,8 @@ from continuum.datasets.base import _ContinuumDataset
 from continuum.transforms.segmentation import ToTensor
 
 class _SemanticSegmentationDataset(_ContinuumDataset):
+    """Base class for segmentation-based dataset."""
+
     @property
     def data_type(self) -> str:
         return "segmentation"
@@ -18,7 +20,7 @@ class PascalVOC2012(_SemanticSegmentationDataset):
 
     :param data_path: Path where the data is present or will be downloaded.
     :param download: Whether to download.
-    :param augmented: Use augmented version of PascalVOC (recommended).
+    :param augmented: Use augmented version of PascalVOC with more images (recommended).
     """
 
     data_url = "http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar"

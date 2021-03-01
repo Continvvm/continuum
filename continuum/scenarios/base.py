@@ -82,14 +82,22 @@ class _BaseScenario(abc.ABC):
         x, y, t, _ = self._select_data_by_task(task_index)
         return TaskSet(x, y, t, self.trsf, data_type=self.cl_dataset.data_type)
 
-    def _select_data_by_task(self, task_index: Union[int, slice]):
+    def _select_data_by_task(
+        self,
+        task_index: Union[int, slice]
+    ) -> Union[np.ndarray, np.ndarray, np.ndarray, Union[int, List[int]]]:
         """Selects a subset of the whole data for a given task.
+
+        This class returns the "task_index" in addition of the x, y, t data.
+        This task index is either an integer or a list of integer when the user
+        used a slice. We need this variable when in segmentation to disangle
+        samples with multiple task ids.
 
         :param task_index: The unique index of a task. As for List, you can use
                            indexing between [0, len], negative indexing, or
                            even slices.
-        :return: A tuple of numpy array, the first item being the data and the
-                 second the associated targets.
+        :return: A tuple of numpy array being resp. (1) the data, (2) the targets,
+                 (3) task ids, and (4) the actual task required by the user.
         """
         x, y, t = self.dataset  # type: ignore
 
