@@ -124,13 +124,13 @@ class ImageFolderDataset(_ContinuumDataset):
         self.data_folder = data_folder
         super().__init__(train=train, download=download)
 
-        self.dataset = torchdata.ImageFolder(data_folder)
 
     @property
     def data_type(self) -> str:
         return "image_path"
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
+        self.dataset = torchdata.ImageFolder(self.data_folder)
         return self._format(self.dataset.imgs)
 
     @staticmethod
