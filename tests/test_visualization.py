@@ -22,7 +22,7 @@ def test_visualization_ClassIncremental(tmpdir, dataset, name, shape):
     scenario = ClassIncremental(cl_dataset=dataset(data_path=tmpdir, download=True, train=True),
                                 increment=increment)
 
-    folder = "./tests/Samples/ClassIncremental/"
+    folder = os.path.join(tmpdir, "tests/Samples/ClassIncremental/")
     if not os.path.exists(folder):
         os.makedirs(folder)
 
