@@ -134,15 +134,18 @@ class SegmentationClassIncremental(ClassIncremental):
         :param task_index: The selected task id.
         :return: A pytorch transformation.
         """
+        if isinstance(task_index, int):
+            task_index = [task_index]
+        if not self.train:
+            # In testing mode, all labels brought by previous tasks are revealed
+            task_index = list(range(max(task_index) + 1))
+
         if self.mode in ("overlap", "disjoint"):
             # Previous and future (for disjoint) classes are hidden
             labels = self._get_task_labels(task_index)
         elif self.mode == "sequential":
             # Previous classes are not hidden, no future classes are present
-            if isinstance(task_index, int):
-                labels = self._get_task_labels(list(range(task_index + 1)))
-            else:
-                labels = self._get_task_labels(list(range(max(task_index) + 1)))
+            labels = self._get_task_labels(list(range(max(task_index) + 1)))
         else:
             raise ValueError(f"Unknown mode={mode}.")
 
@@ -150,7 +153,7 @@ class SegmentationClassIncremental(ClassIncremental):
         inverted_order[255] = 255
 
         masking_value = 0
-        if not self.cl_dataset.train:
+        if not self.train:
             if self.test_background:
                 inverted_order[0] = 0
             else:

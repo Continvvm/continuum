@@ -46,6 +46,37 @@ def create_dataset(tmpdir, prefix, png=False, train=True):
     )
 
 
+def create_dense_dataset(tmpdir, png=False, train=False):
+    prefix = "dense"
+    nb_samples = 20
+
+    x = np.random.randint(0, 255, (nb_samples, 3, 3, 3), dtype=np.uint8)
+    y = np.zeros((nb_samples, 3, 3), dtype=np.uint8)
+    y[:, 0, 0] = 255
+    y[:, 0, 1] = 0
+    y[:, 0, 2] = 1
+    y[:, 1, 0] = 2
+    y[:, 2, 0] = 3
+    y[:, 1, 1] = 4
+
+    x_paths, y_paths = [], []
+    for i in range(nb_samples):
+        if png:
+            x_paths.append(os.path.join(tmpdir, f"{prefix}_{i}.png"))
+        else:
+            x_paths.append(os.path.join(tmpdir, f"{prefix}_{i}.jpg"))
+        y_paths.append(os.path.join(tmpdir, f"{prefix}_{i}.png"))
+
+        Image.fromarray(x[i]).save(x_paths[-1])
+        Image.fromarray(y[i]).save(y_paths[-1])
+
+    return InMemoryDataset(
+        np.array(x_paths), np.array(y_paths),
+        data_type="segmentation",
+        train=train
+    )
+
+
 @pytest.fixture
 def dataset(tmpdir):
     return create_dataset(tmpdir, "seg")
@@ -54,6 +85,11 @@ def dataset(tmpdir):
 @pytest.fixture
 def dataset_test(tmpdir):
     return create_dataset(tmpdir, "seg_test", train=False)
+
+
+@pytest.fixture
+def dataset_dense_test(tmpdir):
+    return create_dense_dataset(tmpdir, "seg_dense_test", train=False)
 
 
 @pytest.fixture
@@ -112,6 +148,67 @@ def test_save_indexes(tmpdir):
         mode="overlap",
         save_indexes=os.path.join(tmpdir, "indexes.npy")
     )
+
+
+@pytest.mark.parametrize("mode,all_seen_tasks", [
+    ("overlap", False),
+    ("overlap", True),
+    ("disjoint", True),
+    ("disjoint", False),
+    ("sequential", True),
+    ("sequential", False),
+])
+def test_labels_test(dataset_test, mode, all_seen_tasks):
+    scenario = SegmentationClassIncremental(
+        dataset_test,
+        nb_classes=4,
+        increment=1,
+        mode=mode
+    )
+    classes = [0, 255, 1, 2, 3, 4]
+
+    for task_id in range(len(scenario)):
+        if all_seen_tasks:
+            task_set = scenario[:task_id+1]
+        else:
+            task_set = scenario[task_id]
+
+        loader = DataLoader(task_set, batch_size=200, drop_last=False)
+        x, y, _ = next(iter(loader))
+        seen_classes = torch.unique(y)
+
+        inv_subset_classes = classes[task_id + 3:]
+        for c in inv_subset_classes:
+            assert c not in seen_classes, task_id
+        if all_seen_tasks:
+            subset_classes = classes[:task_id + 3]
+            for c in subset_classes:
+                assert c in seen_classes, task_id
+        else:
+            assert classes[task_id + 2] in seen_classes
+
+
+def test_labels_overlap_dense_test(dataset_dense_test):
+    scenario = SegmentationClassIncremental(
+        dataset_dense_test,
+        nb_classes=4,
+        increment=1,
+        mode="overlap"
+    )
+    classes = [0, 255, 1, 2, 3, 4]
+
+    for task_id, task_set in enumerate(scenario):
+        loader = DataLoader(task_set, batch_size=200, drop_last=False)
+        x, y, _ = next(iter(loader))
+        seen_classes = torch.unique(y)
+
+        subset_classes = classes[:task_id + 3]
+        for c in subset_classes:
+            assert c in seen_classes, task_id
+        inv_subset_classes = classes[task_id + 3:]
+        for c in inv_subset_classes:
+            assert c not in seen_classes, task_id
+        assert len(x) == 20
 
 
 @pytest.mark.parametrize("mode,test_background,train", [

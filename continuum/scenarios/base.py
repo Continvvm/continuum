@@ -42,6 +42,14 @@ class _BaseScenario(abc.ABC):
         raise NotImplementedError
 
     @property
+    def train(self) -> bool:
+        """Returns whether we are in training or testing mode.
+
+        This property is dependent on the dataset, not the actual scenario.
+        """
+        return self.cl_dataset.train
+
+    @property
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
         return len(np.unique(self.dataset[1]))  # type: ignore

@@ -62,7 +62,7 @@ class PascalVOC2012(_SemanticSegmentationDataset):
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.train and self.augmented:
             list_path = os.path.join(self.data_path, "list", "train_aug.txt")
-        elif train:
+        elif self.train:
             list_path = os.path.join(self.data_path, "list", "train.txt")
         else:
             list_path = os.path.join(self.data_path, "list", "val.txt")
