@@ -5,7 +5,7 @@ from continuum.tasks import TaskSet, split_train_val, concat
 
 
 @pytest.mark.parametrize("nb_others", [0, 1, 2])
-def test_concat(nb_others):
+def test_concat_function(nb_others):
     x = np.random.rand(10, 2, 2, 3)
     y = np.ones((10,))
     t = np.ones((10,))
@@ -18,6 +18,22 @@ def test_concat(nb_others):
 
     concatenation = concat(base_set, *others)
     assert len(concatenation) == len(base_set) + nb_others * len(base_set)
+
+
+@pytest.mark.parametrize("nb_others", [0, 1, 2])
+def test_concat_method(nb_others):
+    x = np.random.rand(10, 2, 2, 3)
+    y = np.ones((10,))
+    t = np.ones((10,))
+
+    base_set = TaskSet(x, y, t, None)
+    initial_len = len(base_set)
+
+    others = [
+        TaskSet(np.copy(x), np.copy(y), np.copy(t), None) for _ in range(nb_others)
+    ]
+    base_set.concat(*others)
+    assert len(base_set) == initial_len + nb_others * initial_len
 
 
 

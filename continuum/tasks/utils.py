@@ -38,15 +38,15 @@ def concat(dataset: TaskSet, *others: TaskSet) -> TaskSet:
     """
     x, y, t = [dataset._x], [dataset._y], [dataset._t]
 
-    for taskset in others:
-        if taskset.data_type != dataset.data_type:
+    for task_set in others:
+        if task_set.data_type != dataset.data_type:
             raise Exception(
-                f"Invalid data type {taskset.data_type} != {dataset.data_type}"
+                f"Invalid data type {task_set.data_type} != {dataset.data_type}"
             )
 
-        x.append(taskset._x)
-        y.append(taskset._y)
-        t.append(taskset._t)
+        x.append(task_set._x)
+        y.append(task_set._y)
+        t.append(task_set._t)
 
     return TaskSet(
         np.concatenate(x),
