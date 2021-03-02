@@ -3,6 +3,7 @@ from continuum.tasks import TaskSet
 
 import numpy as np
 
+
 def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, TaskSet]:
     """Split train dataset into two datasets, one for training and one for validation.
 
@@ -24,3 +25,33 @@ def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, 
     val_dataset = TaskSet(x_val, y_val, t_val, dataset.trsf, dataset.data_type)
 
     return train_dataset, val_dataset
+
+
+def concat(dataset: TaskSet, *others: TaskSet) -> TaskSet:
+    """Concatenate a dataset A with one or many *other* datasets.
+
+    The transformations will be those of the first dataset.
+
+    :param dataset: A task set.
+    :param others: One or many others task sets.
+    :return: A concatenated task set.
+    """
+    x, y, t = [dataset._x], [dataset._y], [dataset._t]
+
+    for taskset in others:
+        if taskset.data_type != dataset.data_type:
+            raise Exception(
+                f"Invalid data type {taskset.data_type} != {dataset.data_type}"
+            )
+
+        x.append(taskset._x)
+        y.append(taskset._y)
+        t.append(taskset._t)
+
+    return TaskSet(
+        np.concatenate(x),
+        np.concatenate(y),
+        np.concatenate(t),
+        trsf=dataset.trsf,
+        data_type=dataset.data_type
+    )

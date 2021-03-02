@@ -1,7 +1,24 @@
 import numpy as np
 import pytest
 
-from continuum.tasks import TaskSet, split_train_val
+from continuum.tasks import TaskSet, split_train_val, concat
+
+
+@pytest.mark.parametrize("nb_others", [0, 1, 2])
+def test_concat(nb_others):
+    x = np.random.rand(10, 2, 2, 3)
+    y = np.ones((10,))
+    t = np.ones((10,))
+
+    base_set = TaskSet(x, y, t, None)
+
+    others = [
+        TaskSet(np.copy(x), np.copy(y), np.copy(t), None) for _ in range(nb_others)
+    ]
+
+    concatenation = concat(base_set, *others)
+    assert len(concatenation) == len(base_set) + nb_others * len(base_set)
+
 
 
 @pytest.mark.parametrize("val_split,nb_val", [(0., 0), (0.1, 1), (0.8, 8), (0.99, 9), (1.0, 10)])
