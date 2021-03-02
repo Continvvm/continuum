@@ -82,6 +82,13 @@ class ImageNet100(ImageNet1000):
 
 
 class TinyImageNet200(ImageFolderDataset):
+    """Smaller version of ImageNet.
+
+    - 200 classes
+    - 500 images per class
+    - size 64x64
+    """
+
     url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
 
     def _download(self):
