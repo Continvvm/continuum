@@ -150,6 +150,50 @@ def test_save_indexes(tmpdir):
     )
 
 
+def test_advanced_indexing_step(dataset):
+    scenario = SegmentationClassIncremental(
+        dataset,
+        nb_classes=4,
+        increment=1,
+        mode="overlap"
+    )
+
+    with pytest.raises(ValueError):
+        task_set = scenario[0:4:2]
+
+
+@pytest.mark.parametrize("mode,start,end,classes,train", [
+    ("overlap", 0, 4, [1, 2, 3, 4], False),
+    ("overlap", 0, 4, [1, 2, 3, 4], True),
+    ("overlap", 3, 4, [4], True),
+    ("overlap", 1, 3, [2, 3], True),
+    ("disjoint", 0, 4, [1, 2, 3, 4], True),
+    ("disjoint", 3, 4, [4], True),
+    ("disjoint", 1, 3, [2, 3], True),
+    ("sequential", 0, 4, [1, 2, 3, 4], True),
+    ("sequential", 3, 4, [3, 4], True),
+    ("sequential", 1, 3, [1, 2, 3], True),
+])
+def test_advanced_indexing(dataset, dataset_test, mode, start, end, classes, train):
+    scenario = SegmentationClassIncremental(
+        dataset if train else dataset_test,
+        nb_classes=4,
+        increment=1,
+        mode=mode
+    )
+
+    task_set = scenario[start:end]
+    loader = DataLoader(task_set, batch_size=200, drop_last=False)
+    _, y, t = next(iter(loader))
+
+    t = torch.unique(t)
+    y = torch.unique(y)
+
+    assert len(t) == 1 and t[0] == end - 1
+    assert set(y.numpy().tolist()) - set([0, 255]) == set(classes)
+
+
+
 @pytest.mark.parametrize("mode,all_seen_tasks", [
     ("overlap", False),
     ("overlap", True),
