@@ -4,20 +4,18 @@ import pytest
 from continuum.tasks import TaskSet, split_train_val, concat
 
 
-@pytest.mark.parametrize("nb_others", [0, 1, 2])
+@pytest.mark.parametrize("nb_others", [1, 2])
 def test_concat_function(nb_others):
     x = np.random.rand(10, 2, 2, 3)
     y = np.ones((10,))
     t = np.ones((10,))
 
-    base_set = TaskSet(x, y, t, None)
-
-    others = [
+    task_sets = [
         TaskSet(np.copy(x), np.copy(y), np.copy(t), None) for _ in range(nb_others)
     ]
 
-    concatenation = concat(base_set, *others)
-    assert len(concatenation) == len(base_set) + nb_others * len(base_set)
+    concatenation = concat(task_sets)
+    assert len(concatenation) == nb_others * 10
 
 
 @pytest.mark.parametrize("nb_others", [0, 1, 2])
