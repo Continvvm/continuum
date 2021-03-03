@@ -28,7 +28,8 @@ class TaskSet(TorchDataset):
         t: np.ndarray,
         trsf: transforms.Compose,
         target_trsf: Optional[transforms.Compose] = None,
-        data_type: str = "image_array"
+        data_type: str = "image_array",
+        bounding_boxes: Optional[np.ndarray] = None
     ):
         self._x, self._y, self._t = x, y, t
 
@@ -39,6 +40,7 @@ class TaskSet(TorchDataset):
         self.trsf = trsf
         self.target_trsf = target_trsf
         self.data_type = data_type
+        self.bounding_boxes = bounding_boxes
 
         self._to_tensor = transforms.ToTensor()
 
@@ -153,12 +155,27 @@ class TaskSet(TorchDataset):
         y = self._y[index]
         t = self._t[index]
 
+<<<<<<< HEAD
         if self.data_type == "text":
             x, y, t = self._prepare(x, y, t)
         elif self.data_type == "segmentation":
             x, y, t = self._prepare_segmentation(x, y, t)
         else:
             x, y, t = self._prepare(x, y, y)
+=======
+        if self.bounding_boxes is not None:
+            bbox = self.bounding_boxes[index]
+            sample = sample.crop(
+                min(bbox[0], sample.size[0]),
+                bbox[1],
+                bbox[2],
+                min(bbox[3], sample.size[1])
+            )
+
+        if self.data_type != 'text':
+            if self.trsf is not None:
+                sample = self.trsf(sample)
+>>>>>>> Add Stream51.
 
         if self.target_trsf is not None:
             y = self.target_trsf(y)

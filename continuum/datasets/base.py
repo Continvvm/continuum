@@ -53,6 +53,10 @@ class _ContinuumDataset(abc.ABC):
             return [ToTensorSegmentation()]
         return [transforms.ToTensor()]
 
+    @property
+    def bounding_boxes(self):
+        return None
+
 
 class _SemanticSegmentationDataset(_ContinuumDataset):
     """Base class for segmentation-based dataset."""
