@@ -55,6 +55,7 @@ class _ContinuumDataset(abc.ABC):
 
     @property
     def bounding_boxes(self):
+        """Returns a bounding box (x1, y1, x2, y2) per sample if they need to be cropped."""
         return None
 
 

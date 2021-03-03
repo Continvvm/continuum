@@ -10,9 +10,20 @@ from continuum.download import download, unzip
 
 
 class Stream51(_ContinuumDataset):
-    """
+    """Stream51 dataset.
 
-    https://github.com/tyler-hayes/Stream-51
+    Reference:
+        * Stream-51: Streaming Classification and Novelty Detection From Videos
+          Roady, Ryne and Hayes, Tyler L. and Vaidya, Hitesh and Kanan, Christopher
+          CVPR Workshops 2020
+
+    Official implementation here: https://github.com/tyler-hayes/Stream-51
+
+    :param data_path: The folder path containing the data.
+    :param train: Train or Test mode.
+    :param download: Auto-download of the dataset if it doesn't exist.
+    :param crop: Uses the bounding boxes to crop objects intead of taking whole images.
+    :param ratio: A ratio factor to take a bit more pixels than just the bounding box.
     """
 
     url = "http://klab.cis.rit.edu/files/Stream-51.zip"
@@ -22,13 +33,13 @@ class Stream51(_ContinuumDataset):
         data_path: str = "",
         train: bool = True,
         download: bool = True,
-        ratio : float = 1.1,
-        crop: bool = True
+        crop: bool = True,
+        ratio : float = 1.1
     ):
         super().__init__(data_path=data_path, train=train, download=download)
 
-        self.ratio = ratio
         self.crop = crop
+        self.ratio = ratio
         self._bounding_boxes = None
 
     def _download(self):
@@ -49,8 +60,12 @@ class Stream51(_ContinuumDataset):
         return x, y, t
 
     def _set_bounding_boxes(self, bounding_boxes: np.ndarray):
-        """
-        cf https://github.com/tyler-hayes/Stream-51/blob/master/experiments/StreamDataset.py#L139
+        """Format the bounding boxes in order to enlarge them through ratio param.
+
+        See official code about it, there:
+        https://github.com/tyler-hayes/Stream-51/blob/master/experiments/StreamDataset.py#L139
+
+        :param bounding_boxes: A list of bounding boxes as provided by the dataset.
         """
         formatted_bounding_boxes = []
 
