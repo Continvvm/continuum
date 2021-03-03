@@ -1,10 +1,11 @@
 import os
 from typing import Tuple, Union
 
+from torchvision import datasets as torchdata
 import numpy as np
 
 from continuum.datasets import ImageFolderDataset
-from continuum.download import download
+from continuum.download import download, unzip
 
 
 class ImageNet1000(ImageFolderDataset):
@@ -78,3 +79,30 @@ class ImageNet100(ImageNet1000):
             y = np.array(y)
             return x, y
         return subset  # type: ignore
+
+
+class TinyImageNet200(ImageFolderDataset):
+    """Smaller version of ImageNet.
+
+    - 200 classes
+    - 500 images per class
+    - size 64x64
+    """
+
+    url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
+
+    def _download(self):
+        path = os.path.join(self.data_folder, "tiny-imagenet-200")
+        if not os.path.exists(f"{path}.zip"):
+            download(self.subset_url, self.data_folder)
+        if not os.path.exists(path):
+            upzip(f"{path}.zip")
+
+        print("TinyImagenet is downloaded.")
+
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
+        return self._format(
+            torchdata.ImageFolder(
+                os.path.join(self.data_folder, "tiny-imagenet-200", "train" if self.train else "val")
+            ).imgs
+        )
