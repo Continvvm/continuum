@@ -1,4 +1,5 @@
 import os
+import json
 from typing import Tuple, Optional
 
 from torchvision import datasets as torchdata
@@ -57,15 +58,11 @@ class Stream51(_ContinuumDataset):
             cw = bbox[0] - bbox[1]
             ch = bbox[2] - bbox[3]
             center = [int(bbox[1] + cw / 2), int(bbox[3] + ch / 2)]
-            #bbox = [min(int(center[0] + (cw * self.ratio / 2)), sample.size[0]),
-            #        max(int(center[0] - (cw * self.ratio / 2)), 0),
-            #        min(int(center[1] + (ch * self.ratio / 2)), sample.size[1]),
-            #        max(int(center[1] - (ch * self.ratio / 2)), 0)]
             formatted_bounding_boxes.append([
-                int(center[0] + (cw * self.ratio / 2)),
-                max(int(center[0] - (cw * self.ratio / 2)), 0),
-                int(center[1] + (ch * self.ratio / 2)),
-                max(int(center[1] - (ch * self.ratio / 2)), 0)
+                int(center[0] - (cw * self.ratio / 2)), # x1
+                int(center[1] - (ch * self.ratio / 2)), # y1
+                int(center[0] + (cw * self.ratio / 2)), # x2
+                int(center[1] + (ch * self.ratio / 2)), # y2
             ])
 
         self._bounding_boxes = np.array(formatted_bounding_boxes)
@@ -73,6 +70,10 @@ class Stream51(_ContinuumDataset):
     @property
     def bounding_boxes(self):
         return self._bounding_boxes
+
+    @property
+    def data_type(self) -> str:
+        return "image_path"
 
     def _parse_json(self):
         if self.train:
@@ -86,7 +87,7 @@ class Stream51(_ContinuumDataset):
             data = json.load(f)
 
         for line in data:
-            x.append(line[-1])
+            x.append(os.path.join(self.data_path, "Stream-51", line[-1]))
             y.append(line[0])
             if self.train:
                 t.append(line[2])

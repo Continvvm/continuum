@@ -165,12 +165,12 @@ class TaskSet(TorchDataset):
 =======
         if self.bounding_boxes is not None:
             bbox = self.bounding_boxes[index]
-            sample = sample.crop(
-                min(bbox[0], sample.size[0]),
-                bbox[1],
-                bbox[2],
-                min(bbox[3], sample.size[1])
-            )
+            sample = sample.crop((
+                max(bbox[0], 0),               # x1
+                max(bbox[1], 0),               # y1
+                min(bbox[2], sample.size[0]),  # x2
+                min(bbox[3], sample.size[1]),  # y2
+            ))
 
         if self.data_type != 'text':
             if self.trsf is not None:
