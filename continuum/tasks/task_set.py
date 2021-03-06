@@ -51,6 +51,18 @@ class TaskSet(TorchDataset):
         """Array of all classes contained in the current task."""
         return np.unique(self._y)
 
+    def concat(self, *task_sets):
+        """Concat others task sets.
+
+        :param task_sets: One or many task sets.
+        """
+        for task_set in task_sets:
+            if task_set.data_type != self.data_type:
+                raise Exception(
+                    f"Invalid data type {task_set.data_type} != {self.data_type}"
+                )
+            self.add_samples(task_set._x, task_set._y, task_set._t)
+
     def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
         """Add memory for rehearsal.
 

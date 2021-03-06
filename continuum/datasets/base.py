@@ -136,7 +136,6 @@ class ImageFolderDataset(_ContinuumDataset):
         self.data_folder = data_folder
         super().__init__(train=train, download=download)
 
-        self.dataset = torchdata.ImageFolder(data_folder)
 
         allowed_data_types = ("image_path", "segmentation")
         if data_type not in allowed_data_types:
@@ -148,6 +147,7 @@ class ImageFolderDataset(_ContinuumDataset):
         return self._data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
+        self.dataset = torchdata.ImageFolder(self.data_folder)
         return self._format(self.dataset.imgs)
 
     @staticmethod
