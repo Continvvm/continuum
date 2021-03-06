@@ -53,6 +53,11 @@ class _ContinuumDataset(abc.ABC):
             return [ToTensorSegmentation()]
         return [transforms.ToTensor()]
 
+    @property
+    def bounding_boxes(self):
+        """Returns a bounding box (x1, y1, x2, y2) per sample if they need to be cropped."""
+        return None
+
 
 class _SemanticSegmentationDataset(_ContinuumDataset):
     """Base class for segmentation-based dataset."""
@@ -108,7 +113,7 @@ class InMemoryDataset(_ContinuumDataset):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.data = (x, y, t)
-        if data_type not in ("image_array", "path_array", "text", "segmentation"):
+        if data_type not in ("image_array", "image_path", "text", "segmentation"):
             raise ValueError(f"Unrecognized data_type={data_type} for InMemoryDataset!")
         self._data_type = data_type
 

@@ -28,7 +28,8 @@ class TaskSet(TorchDataset):
         t: np.ndarray,
         trsf: transforms.Compose,
         target_trsf: Optional[transforms.Compose] = None,
-        data_type: str = "image_array"
+        data_type: str = "image_array",
+        bounding_boxes: Optional[np.ndarray] = None
     ):
         self._x, self._y, self._t = x, y, t
 
@@ -39,6 +40,7 @@ class TaskSet(TorchDataset):
         self.trsf = trsf
         self.target_trsf = target_trsf
         self.data_type = data_type
+        self.bounding_boxes = bounding_boxes
 
         self._to_tensor = transforms.ToTensor()
 
@@ -152,6 +154,15 @@ class TaskSet(TorchDataset):
         x = self.get_sample(index)
         y = self._y[index]
         t = self._t[index]
+
+        if self.bounding_boxes is not None:
+            bbox = self.bounding_boxes[index]
+            x = x.crop((
+                max(bbox[0], 0),               # x1
+                max(bbox[1], 0),               # y1
+                min(bbox[2], x.size[0]),  # x2
+                min(bbox[3], x.size[1]),  # y2
+            ))
 
         if self.data_type == "text":
             x, y, t = self._prepare(x, y, t)
