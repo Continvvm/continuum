@@ -6,9 +6,14 @@ from continuum.scenarios.instance_incremental import InstanceIncremental
 from continuum.scenarios.transformation_incremental import TransformationIncremental
 from continuum.scenarios.rotations import Rotations
 from continuum.scenarios.permutations import Permutations
+from continuum.scenarios.segmentation import SegmentationClassIncremental
 
-__all__ = ["ClassIncremental",
-           "InstanceIncremental",
-           "Rotations",
-           "Permutations",
-           "TransformationIncremental"]
+__all__ = [
+    "ClassIncremental",
+    "InstanceIncremental",
+    "Rotations",
+    "Permutations",
+    "TransformationIncremental",
+    "SegmentationClassIncremental"
+]
+

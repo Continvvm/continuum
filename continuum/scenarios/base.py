@@ -6,6 +6,7 @@ from torchvision import transforms
 
 from continuum.datasets import _ContinuumDataset
 from continuum.tasks import TaskSet
+from continuum.transforms.segmentation import Compose as SegmentationCompose
 
 
 class _BaseScenario(abc.ABC):
@@ -31,11 +32,22 @@ class _BaseScenario(abc.ABC):
 
         if transformations is None:
             transformations = self.cl_dataset.transformations
-        self.trsf = transforms.Compose(transformations)
+        if self.cl_dataset.data_type == "segmentation":
+            self.trsf = SegmentationCompose(transformations)
+        else:
+            self.trsf = transforms.Compose(transformations)
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
         raise NotImplementedError
+
+    @property
+    def train(self) -> bool:
+        """Returns whether we are in training or testing mode.
+
+        This property is dependent on the dataset, not the actual scenario.
+        """
+        return self.cl_dataset.train
 
     @property
     def nb_classes(self) -> int:
@@ -75,17 +87,25 @@ class _BaseScenario(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
-        x, y, t = self._select_data_by_task(task_index)
+        x, y, t, _ = self._select_data_by_task(task_index)
         return TaskSet(x, y, t, self.trsf, data_type=self.cl_dataset.data_type)
 
-    def _select_data_by_task(self, task_index: Union[int, slice]):
+    def _select_data_by_task(
+        self,
+        task_index: Union[int, slice]
+    ) -> Union[np.ndarray, np.ndarray, np.ndarray, Union[int, List[int]]]:
         """Selects a subset of the whole data for a given task.
+
+        This class returns the "task_index" in addition of the x, y, t data.
+        This task index is either an integer or a list of integer when the user
+        used a slice. We need this variable when in segmentation to disangle
+        samples with multiple task ids.
 
         :param task_index: The unique index of a task. As for List, you can use
                            indexing between [0, len], negative indexing, or
                            even slices.
-        :return: A tuple of numpy array, the first item being the data and the
-                 second the associated targets.
+        :return: A tuple of numpy array being resp. (1) the data, (2) the targets,
+                 (3) task ids, and (4) the actual task required by the user.
         """
         x, y, t = self.dataset  # type: ignore
 
@@ -93,15 +113,23 @@ class _BaseScenario(abc.ABC):
             start = task_index.start or 0
             stop = task_index.stop or len(self) + 1
             step = task_index.step or 1
-            task_indexes = list(range(start, stop, step))
-            task_indexes = [
-                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_indexes
+            task_index = list(range(start, stop, step))
+            task_index = [
+                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
             ]
-            indexes = np.where(np.isin(t, task_indexes))[0]
+            if len(t.shape) == 2:
+                indexes = np.unique(np.where(t[:, task_index] == 1)[0])
+            else:
+                indexes = np.where(np.isin(t, task_index))[0]
         else:
             if task_index < 0:
                 task_index = _handle_negative_indexes(task_index, len(self))
-            indexes = np.where(t == task_index)[0]
+
+            if len(t.shape) == 2:
+                indexes = np.where(t[:, task_index] == 1)[0]
+            else:
+                indexes = np.where(t == task_index)[0]
+
         selected_x = x[indexes]
         selected_y = y[indexes]
         selected_t = t[indexes]
@@ -111,7 +139,7 @@ class _BaseScenario(abc.ABC):
             # like PermutedMNIST or RotatedMNIST.
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
-        return selected_x, selected_y, selected_t
+        return selected_x, selected_y, selected_t, task_index
 
 
 def _handle_negative_indexes(index: int, total_len: int) -> int:

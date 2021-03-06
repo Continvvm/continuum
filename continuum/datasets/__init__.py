@@ -11,3 +11,4 @@ from continuum.datasets.nlp import MultiNLI
 from continuum.datasets.pytorch import (
     CIFAR10, CIFAR100, EMNIST, KMNIST, MNIST, QMNIST, FashionMNIST
 )
+from continuum.datasets.pascalvoc import PascalVOC2012

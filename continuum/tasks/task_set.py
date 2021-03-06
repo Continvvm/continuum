@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import numpy as np
 import torch
@@ -17,7 +17,8 @@ class TaskSet(TorchDataset):
     :param y: The targets, not one-hot encoded.
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
-    :param data_type: Type of the data, either "image_path", "image_array", or "text".
+    :param data_type: Type of the data, either "image_path", "image_array",
+                      "text", or "segmentation".
     """
 
     def __init__(
@@ -26,6 +27,7 @@ class TaskSet(TorchDataset):
         y: np.ndarray,
         t: np.ndarray,
         trsf: transforms.Compose,
+        target_trsf: Optional[transforms.Compose] = None,
         data_type: str = "image_array"
     ):
         self._x, self._y, self._t = x, y, t
@@ -35,7 +37,10 @@ class TaskSet(TorchDataset):
             self._t = -1 * np.ones_like(y)
 
         self.trsf = trsf
+        self.target_trsf = target_trsf
         self.data_type = data_type
+
+        self._to_tensor = transforms.ToTensor()
 
     @property
     def nb_classes(self):
@@ -78,7 +83,7 @@ class TaskSet(TorchDataset):
         path: Union[str, None] = None,
         title: str = "",
         nb_samples: int = 100,
-        shape=None
+        shape: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -87,7 +92,8 @@ class TaskSet(TorchDataset):
         :param nb_samples: Amount of samples randomly selected.
         :param shape: Shape to resize the image before plotting.
         """
-        plot_samples(self, title=title, path=path, nb_samples=nb_samples, shape=shape)
+        plot_samples(self, title=title, path=path, nb_samples=nb_samples,
+                     shape=shape, data_type=self.data_type)
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
@@ -101,15 +107,28 @@ class TaskSet(TorchDataset):
     def get_samples(self, indexes):
         images, targets, tasks = [], [], []
 
+        w, h = None, None
         for index in indexes:
             # we need to use __getitem__ to have the transform used
             img, y, t = self[index]
+
+            if w is None:
+                w, h = img.shape[:2]
+            elif w != img.shape[0] or h != img.shape[1]:
+                raise Exception(
+                    "Images dimension are inconsistent, resize them to a "
+                    "common size using a transformation."
+                )
 
             images.append(img)
             targets.append(y)
             tasks.append(t)
 
-        return torch.stack(images), torch.Tensor(targets), torch.Tensor(tasks)
+        return _tensorize_list(images), _tensorize_list(targets), _tensorize_list(tasks)
+
+    def get_raw_samples(self, indexes):
+        """Get samples without preprocessing, for split train/val for example."""
+        return self._x[indexes], self._y[indexes], self._t[indexes]
 
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
@@ -119,7 +138,7 @@ class TaskSet(TorchDataset):
         """
         x = self._x[index]
 
-        if self.data_type == "image_path":
+        if self.data_type in ("image_path", "segmentation"):
             x = Image.open(x).convert("RGB")
         elif self.data_type == "image_array":
             x = Image.fromarray(x.astype("uint8"))
@@ -130,20 +149,48 @@ class TaskSet(TorchDataset):
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
-        sample = self.get_sample(index)
+        x = self.get_sample(index)
         y = self._y[index]
         t = self._t[index]
 
-        if self.data_type != 'text':
-            if self.trsf is not None:
-                sample = self.trsf(sample)
+        if self.data_type == "text":
+            x, y, t = self._prepare(x, y, t)
+        elif self.data_type == "segmentation":
+            x, y, t = self._prepare_segmentation(x, y, t)
+        else:
+            x, y, t = self._prepare(x, y, y)
 
-            # we impose output data to be Tensor
-            if not isinstance(sample, torch.Tensor):
-                sample = transforms.ToTensor()(sample)
+        if self.target_trsf is not None:
+            y = self.target_trsf(y)
 
-        return sample, y, t
+        return x, y, t
 
-    def get_raw_samples(self, indexes):
-        """Get samples without preprocessing, for split train/val for example."""
-        return self._x[indexes], self._y[indexes], self._t[indexes]
+    def _prepare(self, x, y, t):
+        if self.trsf is not None:
+            x = self.trsf(x)
+        if not isinstance(x, torch.Tensor):
+            x = self._to_tensor(x)
+
+        return x, y, t
+
+    def _prepare_segmentation(self, x, y, t):
+        y = Image.open(y)
+        if self.trsf is not None:
+            x, y = self.trsf(x, y)
+
+        if not isinstance(x, torch.Tensor):
+            x = self._to_tensor(x)
+        if not isinstance(y, torch.Tensor):
+            y = self._to_tensor(y)
+
+        return x, y, t
+
+    def _prepare_text(self, x, y, t):
+        # Nothing in particular for now, TODO latter
+        return x, y, t
+
+
+def _tensorize_list(x):
+    if isinstance(x[0], torch.Tensor):
+        return torch.stack(x)
+    return torch.tensor(x)

@@ -310,6 +310,60 @@ supports this setting.
     # Not implemented yet
 
 
+Incremental Semantic Segmentation
+---------------------------------
+
+Brought by [Michieli et al. ICCV-W 2017](https://openaccess.thecvf.com/content_ICCVW_2019/papers/TASK-CV/Michieli_Incremental_Learning_Techniques_for_Semantic_Segmentation_ICCVW_2019_paper.pdf)
+and [Cermelli et al. CVPR 2020](https://arxiv.org/abs/2002.00718), continual learning
+for segmentation is very different from previous scenarios.
+
+Semantic segmentation aims at classifying all pixels in an image, therefore
+multiple classes can co-exist in the same image. This distinction leads to three kinds of scenarios:
+
+- **Sequential**: where for a given task T, with current classes C, the model sees all
+  images that contain at least one pixel labeled as a current classes C. If the image contains
+  future classes, yet unseen, then it is discarded. In the sequential setting, all pixels
+  are labeled, either with a old or current class label, background label (0), or
+  unknown label (255).
+- **Disjoint**: It's the same scenario as Sequential, but on one point. An image's pixel is
+  only labeled for the current classes. Therefore, during training, if an old class is
+  present in the image, its labels would be 0 (aka background). However, during the test
+  phase, all labels (current + old) are present.
+- **Overlap**: It's the same scenario as Disjoint except that the model can also
+  see images containing a future class, as long as a current class is present.
+
+Here is a quick example on how to do the challenging Overlap 15-1 scenario on Pascal-VOC2012:
+
+.. code-block:: python
+
+    from continuum.datasets import PascalVOC2012
+    from continuum.scenarios import SegmentationClassIncremental
+    from continuum.transforms.segmentation import ToTensor, Resize
+
+    dataset = PascalVOC2012(
+        data_path="/my/data/path/",
+        train=True,
+        download=True
+    )
+
+    scenario = SegmentationClassIncremental(
+        dataset,
+        nb_classes=20,
+        initial_increment=15, increment=1,
+        mode="overlap",
+        transformations=[Resize((512, 512)), ToTensor()]
+    )
+
+NB: Following Cermelli et al., 15-1 means first a task of 15 classes, then followed by
+multiple tasks made of new 1 class each.
+
+Note that to build the different tasks, `SegmentationClassIncremental` has to
+open every ground-truth segmentation maps which can take a few minutes. Therefore,
+you can provide to the scenario the option `save_indexes="/path/where/to/save/indexes"`
+that will save the computed task indexes. Then, if re-run a second time,
+the scenario can quickly load the indexes.
+
+
 Adding Your Own Scenarios
 ----------------------------------
 

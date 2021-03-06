@@ -113,11 +113,8 @@ This project was started by a joint effort from [Arthur Douillard](https://arthu
 
 Feel free to contribute! If you want to propose new features, please create an issue.
 
-Contributors list:
-
-- [prlz77](https://github.com/prlz77)
-- [yantonov](https://github.com/yantonov)
-- [psychicmario](https://github.com/psychicmario)
+Contributors: [prlz77](https://github.com/prlz77), [yantonov](https://github.com/yantonov),
+[psychicmario](https://github.com/psychicmario), [fcld94](https://github.com/fcdl94)
 
 
 ### On PyPi
