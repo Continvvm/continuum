@@ -24,6 +24,11 @@ class Stream51(_ContinuumDataset):
     :param download: Auto-download of the dataset if it doesn't exist.
     :param crop: Uses the bounding boxes to crop objects intead of taking whole images.
     :param ratio: A ratio factor to take a bit more pixels than just the bounding box.
+    :param task_criterion: Criterion to split instances into tasks (other than class).
+                           Can be either "clip" or "video". This parameter only
+                           has effect in the InstanceIncremental scenario. If you
+                           use the ClassIncremental scenario, only the class ids
+                           will be taken in account to create tasks.
     """
 
     url = "http://klab.cis.rit.edu/files/Stream-51.zip"
@@ -34,12 +39,19 @@ class Stream51(_ContinuumDataset):
         train: bool = True,
         download: bool = True,
         crop: bool = True,
-        ratio : float = 1.1
+        ratio : float = 1.1,
+        task_criterion: str = "clip"
     ):
+        if task_criterion not in ("clip", "video"):
+            raise ValueError(
+                f"Invalid task criterion: {task_criterion}, expect 'clip' or 'video'."
+            )
+
         super().__init__(data_path=data_path, train=train, download=download)
 
         self.crop = crop
         self.ratio = ratio
+        self.task_criterion = task_criterion
         self._bounding_boxes = None
 
     def _download(self):
@@ -96,7 +108,7 @@ class Stream51(_ContinuumDataset):
         else:
             path = os.path.join(self.data_path, "Stream-51", "Stream-51_meta_test.json")
 
-        # X: path, Y: class id, T: task id (aka video id), B: bounding box
+        # X: path, Y: class id, T: task id (aka clip or video id), B: bounding box
         x, y, t, b = [], [], [], []
         with open(path) as f:
             data = json.load(f)
@@ -105,9 +117,13 @@ class Stream51(_ContinuumDataset):
             x.append(os.path.join(self.data_path, "Stream-51", line[-1]))
             y.append(line[0])
             if self.train:
-                t.append(line[2])
+                t.append(line[1] if self.task_criterion == "clip" else line[2])
             else:
                 t.append(0)
             b.append(line[-2])
 
-        return np.array(x), np.array(y), np.array(t), np.array(b)
+        t = np.array(t)
+        for index, unique_task_id in enumerate(np.unique(t)):
+            t[t == unique_task_id] = index
+
+        return np.array(x), np.array(y), t, np.array(b)
