@@ -155,27 +155,21 @@ class TaskSet(TorchDataset):
         y = self._y[index]
         t = self._t[index]
 
-<<<<<<< HEAD
+        if self.bounding_boxes is not None:
+            bbox = self.bounding_boxes[index]
+            x = x.crop((
+                max(bbox[0], 0),               # x1
+                max(bbox[1], 0),               # y1
+                min(bbox[2], x.size[0]),  # x2
+                min(bbox[3], x.size[1]),  # y2
+            ))
+
         if self.data_type == "text":
             x, y, t = self._prepare(x, y, t)
         elif self.data_type == "segmentation":
             x, y, t = self._prepare_segmentation(x, y, t)
         else:
             x, y, t = self._prepare(x, y, y)
-=======
-        if self.bounding_boxes is not None:
-            bbox = self.bounding_boxes[index]
-            sample = sample.crop((
-                max(bbox[0], 0),               # x1
-                max(bbox[1], 0),               # y1
-                min(bbox[2], sample.size[0]),  # x2
-                min(bbox[3], sample.size[1]),  # y2
-            ))
-
-        if self.data_type != 'text':
-            if self.trsf is not None:
-                sample = self.trsf(sample)
->>>>>>> Add Stream51.
 
         if self.target_trsf is not None:
             y = self.target_trsf(y)

@@ -87,7 +87,7 @@ class _BaseScenario(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
-        x, y, t = self._select_data_by_task(task_index)
+        x, y, t, _ = self._select_data_by_task(task_index)
         return TaskSet(
             x, y, t,
             self.trsf,
