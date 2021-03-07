@@ -71,8 +71,8 @@ then all 5 following tasks will be made of a single new class each:
       initial_increment=5
    )
 
-   print(f"Number of classes: {clloader.nb_classes}.")
-   print(f"Number of tasks: {clloader.nb_tasks}.")
+   print(f"Number of classes in scenario: {cl_scenario.nb_classes}.")
+   print(f"Number of tasks in scenario: {cl_scenario.nb_tasks}.")
 
    for task_id, train_dataset in enumerate(cl_scenario):
       train_dataset, val_dataset = split_train_val(train_dataset, val_split=0.1)
