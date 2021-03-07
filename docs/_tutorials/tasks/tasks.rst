@@ -1,3 +1,6 @@
+Taskset Class
+-----------------
+
 
 In continual learning, tasks are empirically designed sets of data. Tasks have generally fixed data distribution or a fixed learning objective.
 When the learning scenario jumps from one task to another it means that something has changed in the learning process, i.e. the data or the objective.
