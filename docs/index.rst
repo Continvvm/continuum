@@ -93,6 +93,7 @@ Finally, after training on the 6 tasks, we want to evaluate our model performanc
 on the test set:
 
 .. code-block:: python
+
    cl_scenario_test = ClassIncremental(
       dataset,
       increment=1,

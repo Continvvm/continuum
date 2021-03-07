@@ -18,8 +18,6 @@ Pseudo-code
         logger.end_task()
     print(f"Metric result: {logger.my_pretty_metric}")
 
-
-
 Here is a list of all implemented metrics:
 
 +-------------------------------+-----------------------------+-------+
