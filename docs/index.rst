@@ -14,6 +14,14 @@ The latter is about the different setting you may encounter in Continual Learnin
    :caption: Scenarios:
 
    _tutorials/scenarios/*
+   
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :caption: Tasks:
+
+   _tutorials/tasks/*
 
 .. toctree::
    :glob:
@@ -29,6 +37,13 @@ The latter is about the different setting you may encounter in Continual Learnin
 
    _tutorials/metrics/*
 
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   :caption: Senario Suites:
+
+   _tutorials/scenarios_suites/*
 
 Quick Example
 -------------
