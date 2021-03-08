@@ -37,7 +37,7 @@ Here is a list of all implemented metrics:
 +-------------------------------+-----------------------------+-------+
 | **Forgetting**                | `forgetting`                |   ↓   |
 +-------------------------------+-----------------------------+-------+
-| **Model Size Growth**     | `model_size_growth`     |   ↓   |
+| **Model Size Growth**         | `model_size_growth`         |   ↓   |
 +-------------------------------+-----------------------------+-------+
 
 **Accuracy**::
@@ -118,7 +118,7 @@ Detailed Example
 
 .. code-block:: python
 
-	from torch.utils.data import DataLoader
+    from torch.utils.data import DataLoader
     import numpy as np
 
     from continuum import ClassIncremental
@@ -126,15 +126,16 @@ Detailed Example
     from continuum.metrics import Logger
 
     train_scenario = ClassIncremental(
-        MNIST(data_path="my/data/path", download=True, train=True),
-        increment=2
-     )
-    test_scenario = ClassIncremental(
-        MNIST(data_path="my/data/path", download=True, train=False),
+        MNIST(data_path='my/data/path', download=True, train=True),
         increment=2
      )
 
-    model = ... Initialize your model here ...
+    test_scenario = ClassIncremental(
+        MNIST(data_path='my/data/path', download=True, train=False),
+        increment=2
+     )
+
+    model = a_model() #... Initialize your model here ...
 
     logger = Logger(list_subsets=['train', 'test'])
 
@@ -160,7 +161,7 @@ Detailed Example
 
 
 Advanced Use of logger
--------
+--------------------------
 
 The logger is designed to save any type of tensor with a corresponding keyword.
 For example you may want to save a latent vector at each epoch.
@@ -216,3 +217,5 @@ At the end of training or when you want, you can get all the data logged.
         for epoch_id in range(logs_latent[task_id]):
             # the list of all latent vector you saved as task_id and epoch_id by chronological order.
             list_of_latent_vector_logged = logs_latent[task_id][epoch_id]
+
+We hope it might be useful for you :)

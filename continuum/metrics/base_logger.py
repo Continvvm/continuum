@@ -1,10 +1,7 @@
 import abc
-import collections
 import os
 import torch
 import numpy as np
-from copy import deepcopy
-from continuum.metrics.metrics import get_model_size
 
 
 def convert_numpy(tensor):

@@ -111,7 +111,7 @@ any loaders like you would do with Python's List.
    :maxdepth: 2
    :caption: Code Documentation:
 
-   _autogen/continuum*
+   autoapi/index.rst
 
 This library was developped by `Arthur Douillard <https://arthurdouillard.com/>`__
 and `Timothée Lesort <https://tlesort.github.io/>`__. If you have any new feature
