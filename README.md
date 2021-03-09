@@ -24,9 +24,9 @@ from continuum import ClassIncremental
 from continuum.datasets import MNIST
 from continuum.tasks import split_train_val
 
-
+dataset = MNIST("my/data/path", download=True, train=True)
 scenario = ClassIncremental(
-    MNIST("my/data/path", download=True, train=True),
+    dataset,
     increment=1,
     initial_increment=5
 )
