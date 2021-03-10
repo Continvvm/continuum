@@ -1,7 +1,14 @@
 import os
-import urllib.request
 import zipfile
 import tarfile
+from six.moves import urllib
+
+
+# Fix error when downloading dataset from torchvision
+# https://github.com/pytorch/vision/issues/1938#issuecomment-790730080
+opener = urllib.request.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+urllib.request.install_opener(opener)
 
 
 def download(url, path):
@@ -13,9 +20,6 @@ def download(url, path):
     if os.path.exists(file_name):
         print(f"Dataset already downloaded at {file_name}.")
     else:
-        opener = urllib.request.build_opener()
-        opener.addheaders = [('User-agent', 'Wget/1.20.3 (linux-gnu)')]
-        urllib.request.install_opener(opener)
         urllib.request.urlretrieve(url, file_name, ProgressBar().update)
 
     return file_name
