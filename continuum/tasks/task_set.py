@@ -167,7 +167,7 @@ class TaskSet(TorchDataset):
             ))
 
         if self.data_type == "text":
-            x, y, t = self._prepare(x, y, t)
+            x, y, t = self._prepare_text(x, y, t)
         elif self.data_type == "segmentation":
             x, y, t = self._prepare_segmentation(x, y, t)
         else:
