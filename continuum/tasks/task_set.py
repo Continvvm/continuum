@@ -119,7 +119,9 @@ class TaskSet(TorchDataset):
             elif w != img.shape[0] or h != img.shape[1]:
                 raise Exception(
                     "Images dimension are inconsistent, resize them to a "
-                    "common size using a transformation."
+                    "common size using a transformation.\n"
+                    "For example, give to the scenario you're using as `transformations` argument "
+                    "the following: [transforms.Resize((224, 224)), transforms.ToTensor()]"
                 )
 
             images.append(img)
