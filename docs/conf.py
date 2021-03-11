@@ -47,10 +47,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinx_rtd_theme',
-    'autoapi.extension'
 ]
-autoapi_dirs = ['../continuum']
-autoapi_type = 'python'
 
 # To avoid generating docs for the following libraries:
 autodoc_mock_imports = ['matplotlib', 'numpy', 'scipy', 'sys', 'torch', 'torchvision', 'skimage']
