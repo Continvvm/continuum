@@ -86,6 +86,7 @@ class TaskSet(TorchDataset):
         title: str = "",
         nb_samples: int = 100,
         shape: Optional[Tuple[int, int]] = None,
+        random=True,
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -95,7 +96,7 @@ class TaskSet(TorchDataset):
         :param shape: Shape to resize the image before plotting.
         """
         plot_samples(self, title=title, path=path, nb_samples=nb_samples,
-                     shape=shape, data_type=self.data_type)
+                     shape=shape, data_type=self.data_type, random=random)
 
     def __len__(self) -> int:
         """The amount of images in the current task."""

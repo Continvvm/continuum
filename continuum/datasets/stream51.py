@@ -40,11 +40,11 @@ class Stream51(_ContinuumDataset):
             download: bool = True,
             crop: bool = True,
             ratio: float = 1.1,
-            task_criterion: str = "clip"
+            task_criterion: str = "class_incremental"
     ):
-        if task_criterion not in ("clip", "video"):
+        if task_criterion not in ("class_incremental", "rand_clip"):
             raise ValueError(
-                f"Invalid task criterion: {task_criterion}, expect 'clip' or 'video'."
+                f"Invalid task criterion: {task_criterion}, expect 'class_incremental' or 'rand_clip'."
             )
 
         super().__init__(data_path=data_path, train=train, download=download)
@@ -102,6 +102,51 @@ class Stream51(_ContinuumDataset):
     def data_type(self) -> str:
         return "image_path"
 
+    def _convert_relative_2_absolut(self, data):
+
+        new_clip_num = -1
+
+        current_frame = -1
+        current_clip = -1
+        current_class = -1
+
+        new_data_dic = {}
+
+        for line in data:
+            # line : [class_id, clip_num, video_num, frame_num, img_shape, bbox, file_loc]
+            class_id = line[0]
+            clip_num = line[1]
+            video_num = line[2]
+            frame_num = line[3]
+
+            assert current_frame < frame_num or frame_num == 0
+
+            # frame_num == 0 means new clip
+            if frame_num == 0:
+                new_clip_num += 1
+                new_data_dic[new_clip_num] = []
+                current_clip = clip_num
+                current_class = class_id
+            else:
+                assert current_clip == clip_num
+                assert current_class == class_id
+
+            current_frame = frame_num
+
+            new_data_dic[new_clip_num].append(
+                [line[0], new_clip_num, video_num, frame_num, line[4], line[5], line[6]])
+
+        return new_data_dic
+
+    def _shuffle_clips(self, data_dic):
+
+        new_list = []
+        indexes = np.random.choice(len(data_dic), len(data_dic), replace=False)
+        for index in indexes:
+            new_list += data_dic[index]  # concatenation of lists
+
+        return new_list
+
     def _parse_json(self):
         if self.train:
             path = os.path.join(self.data_path, "Stream-51", "Stream-51_meta_train.json")
@@ -113,17 +158,42 @@ class Stream51(_ContinuumDataset):
         with open(path) as f:
             data = json.load(f)
 
-        for line in data:
-            # line : [class_id, clip_num, video_num, frame_num, img_shape, bbox, file_loc]
-            # clip_num, video_num and frame_num relative
+        print(len(data))
+        if self.train:
+            # convert into dic to make it easier to shuffle
+            data_dic = self._convert_relative_2_absolut(data)
+
+            if self.task_criterion == "rand_clip":
+                data_list = self._shuffle_clips(data_dic)
+            else:
+                data_list = sum(data_dic.values(), [])
+
+        change_task_counter = 0
+        task_id = 0
+
+        print(len(data_list))
+        for line in data_list:
+            if self.train:
+                assert len(line) == 7
+            else:
+                assert len(line) == 4
+
+            #   train line : [class_id, clip_num, video_num, frame_num, img_shape, bbox, file_loc]
+            #  test line : [class_id, img_shape, bbox, file_loc]
+            # clip_num, video_num and frame_num were relative and are now absolut
             x.append(os.path.join(self.data_path, "Stream-51", line[-1]))
             y.append(line[0])
             if self.train:
-                if self.task_criterion == "clip":
-                    num = line[1] #clip_num
+                if self.task_criterion == "rand_clip":
+                    # there is only one big tasks with a big sequence of clips
+                    change_task_counter += 1
+                    if change_task_counter > 30000 and line[3] == 0:
+                        # 300000 arbitrarly chosen by some designer, and line[3]==0 means new clip
+                        change_task_counter = 0
+                        task_id += 1
+                    t.append(task_id)
                 else:
-                    num = line[2] #video_num
-                t.append(num)
+                    t.append(line[0])
             else:
                 t.append(0)
             b.append(line[-2])

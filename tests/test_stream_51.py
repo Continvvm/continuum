@@ -1,5 +1,4 @@
 import pytest
-import numpy as np
 from torchvision.transforms import Resize, ToTensor
 
 from continuum.datasets import Stream51
@@ -12,20 +11,18 @@ from continuum.scenarios import ClassIncremental
 Test the visualization with instance_class scenario
 '''
 @pytest.mark.slow
-def test_scenario_clip_ClassIncremental(tmpdir):
+def test_scenario_clip_ClassIncremental():
 
-    dataset = Stream51('../Datasets', task_criterion="clip")
-    # dataset = Stream51('../Datasets', task_criterion="video")
-    # scenario = InstanceIncremental(dataset, transformations=[Resize((224, 224)), ToTensor()])
-    scenario = ClassIncremental(dataset, increment=1, transformations=[Resize((224, 224)), ToTensor()])
+     dataset = Stream51('../Datasets', task_criterion="class_incremental")
+     scenario = ClassIncremental(dataset, increment=1, transformations=[Resize((224, 224)), ToTensor()])
 
-    print(f"Nb classes : {scenario.nb_classes} ")
-    print(f"Nb tasks : {scenario.nb_tasks} ")
-    for task_id, task_set in enumerate(scenario):
-        print(f"Task {task_id} : {task_set.nb_classes} classes")
-        task_set.plot(path="Archives/Samples/Stream51/CI",
-                      title="Stream51_InstanceIncremental_{}.jpg".format(task_id),
-                      nb_samples=100)
+     print(f"Nb classes : {scenario.nb_classes} ")
+     print(f"Nb tasks : {scenario.nb_tasks} ")
+     for task_id, task_set in enumerate(scenario):
+         print(f"Task {task_id} : {task_set.nb_classes} classes")
+         task_set.plot(path="Archives/Samples/Stream51/CI",
+                       title="Stream51_InstanceIncremental_{}.jpg".format(task_id),
+                       nb_samples=100)
 
 
 
@@ -33,27 +30,16 @@ def test_scenario_clip_ClassIncremental(tmpdir):
 Test the visualization with instance scenario
 '''
 @pytest.mark.slow
-def test_scenario_clip_InstanceIncremental(tmpdir):
+def test_scenario_clip_InstanceIncremental():
 
-    dataset = Stream51('../Datasets', task_criterion="clip")
+    dataset = Stream51('../Datasets', task_criterion="rand_clip")
     scenario = InstanceIncremental(dataset, transformations=[Resize((224, 224)), ToTensor()])
 
     print(f"Nb classes : {scenario.nb_classes} ")
     print(f"Nb tasks : {scenario.nb_tasks} ")
     for task_id, task_set in enumerate(scenario):
         print(f"Task {task_id} : {task_set.nb_classes} classes")
-        task_set.plot(path="Archives/Samples/Stream51/CI",
+        task_set.plot(path="Archives/Samples/Stream51/II",
                       title="Stream51_InstanceIncremental_{}.jpg".format(task_id),
-                      nb_samples=100)
-
-
-def test_simple(tmpdir):
-
-    dataset = Stream51('../Datasets', task_criterion="clip")
-
-    print("bonjour")
-    x, y, task_labels = dataset.get_data()
-    print(len(np.unique(task_labels)))
-    print(len(np.unique(y)))
-
-    assert True==False
+                      nb_samples=100,
+                      random=False)

@@ -5,8 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None, data_type="image_array"):
-    batch, y, _ = dataset.get_random_samples(nb_samples)
+def plot_samples(dataset, title="", path=None, nb_samples=100, shape=None, data_type="image_array", random=True):
+
+    if random:
+        batch, y, _ = dataset.get_random_samples(nb_samples)
+    else:
+        index = np.arange(nb_samples) % len(dataset)
+        batch, y, _ = dataset.get_samples(index)
 
     if len(y.shape) == 1:
         y, order = y.sort()
