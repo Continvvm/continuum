@@ -171,7 +171,7 @@ class TaskSet(TorchDataset):
         elif self.data_type == "segmentation":
             x, y, t = self._prepare_segmentation(x, y, t)
         else:
-            x, y, t = self._prepare(x, y, y)
+            x, y, t = self._prepare(x, y, t)
 
         if self.target_trsf is not None:
             y = self.target_trsf(y)
