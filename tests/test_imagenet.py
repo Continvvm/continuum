@@ -54,7 +54,7 @@ def test_customsubset_imagenet100(ImageNet100Train, ImageNet100Test, train, div)
     new_x = x[:len(x) // div]
     new_y = y[:len(y) // div]
 
-    subset = ImageNet100(dataset.data_folder, data_subset=(new_x, new_y), download=False, train=train)
+    subset = ImageNet100(dataset.data_path, data_subset=(new_x, new_y), download=False, train=train)
     x2, y2, t2 = subset.get_data()
 
     assert len(x) // div == len(x2)

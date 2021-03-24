@@ -16,7 +16,7 @@ class ImageNet1000(ImageFolderDataset):
     """
 
     def _download(self):
-        if not os.path.exists(self.data_folder):
+        if not os.path.exists(self.data_path):
             raise IOError(
                 "You must download yourself the ImageNet dataset."
                 " Please go to http://www.image-net.org/challenges/LSVRC/2012/downloads and"
@@ -54,8 +54,8 @@ class ImageNet100(ImageNet1000):
             self.subset_url = self.train_subset_url
 
         if self.data_subset is None:
-            self.data_subset = os.path.join(self.data_folder, filename)
-            download(self.subset_url, self.data_folder)
+            self.data_subset = os.path.join(self.data_path, filename)
+            download(self.subset_url, self.data_path)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
         data = self._parse_subset(self.data_subset, train=self.train)  # type: ignore
@@ -73,7 +73,7 @@ class ImageNet100(ImageNet1000):
                 for line in f:
                     split_line = line.split(" ")
                     path = split_line[0].strip()
-                    x.append(os.path.join(self.data_folder, path))
+                    x.append(os.path.join(self.data_path, path))
                     y.append(int(split_line[1].strip()))
             x = np.array(x)
             y = np.array(y)
