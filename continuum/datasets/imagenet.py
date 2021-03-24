@@ -92,17 +92,17 @@ class TinyImageNet200(ImageFolderDataset):
     url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
 
     def _download(self):
-        path = os.path.join(self.data_folder, "tiny-imagenet-200")
+        path = os.path.join(self.data_path, "tiny-imagenet-200")
         if not os.path.exists(f"{path}.zip"):
-            download(self.subset_url, self.data_folder)
+            download(self.url, self.data_path)
         if not os.path.exists(path):
-            upzip(f"{path}.zip")
+            unzip(f"{path}.zip")
 
         print("TinyImagenet is downloaded.")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
         return self._format(
             torchdata.ImageFolder(
-                os.path.join(self.data_folder, "tiny-imagenet-200", "train" if self.train else "val")
+                os.path.join(self.data_path, "tiny-imagenet-200", "train" if self.train else "val")
             ).imgs
         )
