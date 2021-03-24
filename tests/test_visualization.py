@@ -16,10 +16,15 @@ from continuum.datasets import MNISTFellowship
                                                   (CIFAR10, "CIFAR10", [32, 32, 3]),
                                                   (CIFAR100, "CIFAR100", [32, 32, 3]),
                                                   (TinyImageNet200, "TinyImageNet200", [64, 64, 3])])
+@pytest.mark.slow
+@pytest.mark.parametrize("dataset, name, shape", [
+                                                  (TinyImageNet200, "TinyImageNet200", [64, 64, 3])])
 def test_visualization_ClassIncremental(tmpdir, dataset, name, shape):
     increment = 2
     if name == "CIFAR100":
         increment = 20
+    if name == "TinyImageNet200":
+        increment = 40
     scenario = ClassIncremental(cl_dataset=dataset(data_path=tmpdir, download=True, train=True),
                                 increment=increment)
 
