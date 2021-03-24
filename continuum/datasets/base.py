@@ -137,9 +137,9 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, data_folder: str, train: bool = True, download: bool = True, data_type: str = "image_path"):
-        self.data_folder = data_folder
-        super().__init__(train=train, download=download)
+    def __init__(self, data_path: str, train: bool = True, download: bool = True, data_type: str = "image_path"):
+        self.data_path = data_path
+        super().__init__(data_path=data_path, train=train, download=download)
 
 
         allowed_data_types = ("image_path", "segmentation")
@@ -152,7 +152,7 @@ class ImageFolderDataset(_ContinuumDataset):
         return self._data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
-        self.dataset = torchdata.ImageFolder(self.data_folder)
+        self.dataset = torchdata.ImageFolder(self.data_path)
         return self._format(self.dataset.imgs)
 
     @staticmethod
