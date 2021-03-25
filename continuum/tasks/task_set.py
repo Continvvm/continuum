@@ -119,7 +119,9 @@ class TaskSet(TorchDataset):
             elif w != img.shape[0] or h != img.shape[1]:
                 raise Exception(
                     "Images dimension are inconsistent, resize them to a "
-                    "common size using a transformation."
+                    "common size using a transformation.\n"
+                    "For example, give to the scenario you're using as `transformations` argument "
+                    "the following: [transforms.Resize((224, 224)), transforms.ToTensor()]"
                 )
 
             images.append(img)
@@ -165,11 +167,11 @@ class TaskSet(TorchDataset):
             ))
 
         if self.data_type == "text":
-            x, y, t = self._prepare(x, y, t)
+            x, y, t = self._prepare_text(x, y, t)
         elif self.data_type == "segmentation":
             x, y, t = self._prepare_segmentation(x, y, t)
         else:
-            x, y, t = self._prepare(x, y, y)
+            x, y, t = self._prepare(x, y, t)
 
         if self.target_trsf is not None:
             y = self.target_trsf(y)

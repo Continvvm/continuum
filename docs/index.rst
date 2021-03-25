@@ -14,7 +14,7 @@ The latter is about the different setting you may encounter in Continual Learnin
    :caption: Scenarios:
 
    _tutorials/scenarios/*
-   
+
 
 .. toctree::
    :glob:
@@ -104,14 +104,6 @@ on the test set:
 From this loader, we can get the first task :code:`cl_scenario_test[0]`, all tasks up to the third
 task :code:`cl_scenario_test[:3]`, or even all tasks :code:`cl_scenario_test[:]`. You can slice
 any loaders like you would do with Python's List.
-
-
-.. toctree::
-   :glob:
-   :maxdepth: 2
-   :caption: Code Documentation:
-
-   autoapi/index.rst
 
 This library was developped by `Arthur Douillard <https://arthurdouillard.com/>`__
 and `Timothée Lesort <https://tlesort.github.io/>`__. If you have any new feature

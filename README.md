@@ -1,7 +1,13 @@
-# Continuum
+<div align="center">
+
+# Continuum: Simple Management of Complex Continual Learning Scenarios
 
 [![PyPI version](https://badge.fury.io/py/continuum.svg)](https://badge.fury.io/py/continuum) [![Build Status](https://travis-ci.com/Continvvm/continuum.svg?branch=master)](https://travis-ci.com/Continvvm/continuum) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c3a31475bebc4036a13e6048c24eb3e0)](https://www.codacy.com/gh/Continvvm/continuum?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Continvvm/continuum&amp;utm_campaign=Badge_Grade) [![DOI](https://zenodo.org/badge/254864913.svg)](https://zenodo.org/badge/latestdoi/254864913) [![Documentation Status](https://readthedocs.org/projects/continuum/badge/?version=latest)](https://continuum.readthedocs.io/en/latest/?badge=latest)
 [![coverage](coverage.svg)]()
+
+[![Doc](https://img.shields.io/badge/Documentation-link-blue)](https://continuum.readthedocs.io/)
+[![Paper](https://img.shields.io/badge/arXiv-2102.06253-brightgreen)](https://arxiv.org/abs/2102.06253)
+</div>
 
 ## A library for PyTorch's loading of datasets in the field of Continual Learning
 
@@ -24,9 +30,9 @@ from continuum import ClassIncremental
 from continuum.datasets import MNIST
 from continuum.tasks import split_train_val
 
-
+dataset = MNIST("my/data/path", download=True, train=True)
 scenario = ClassIncremental(
-    MNIST("my/data/path", download=True, train=True),
+    dataset,
     increment=1,
     initial_increment=5
 )
