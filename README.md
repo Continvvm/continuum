@@ -14,6 +14,7 @@
 Aka Continual Learning, Lifelong-Learning, Incremental Learning, etc.
 
 Read the [documentation](https://continuum.readthedocs.io/en/latest/).
+Test Continuum on [Colab](https://colab.research.google.com/drive/1bRx3M1YFcol9RZxBZ51brxqGWrf4-Bzn?usp=sharing) !
 
 ### Example:
 
