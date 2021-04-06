@@ -88,10 +88,10 @@ be downloaded:
 
     from continuum.datasets import Core50, Core50v2_79, Core50v2_196, Core50v2_391
 
-    dataset = Core50("/data/data/folder/CORe50/", train=True, download=True)
-    dataset_79 = Core50v2_79("/data/douillard/CORe50/", train=True, download=True)
-    dataset_196 = Core50v2_196("/data/douillard/CORe50/", train=True, download=True)
-    dataset_391 = Core50v2_391("/data/douillard/CORe50/", train=True, download=True)
+    dataset = Core50("/my/data/folder/", train=True, download=True)
+    dataset_79 = Core50v2_79("/my/data/folder/", train=True, download=True)
+    dataset_196 = Core50v2_196("/my/data/folder/", train=True, download=True)
+    dataset_391 = Core50v2_391("/my/data/folder/", train=True, download=True)
 
 If you wish to learn CORe50 in the class-incremental scenario (NC), `Core50` suffices. Although,
 for instance-incremental scenario (NI and NIC), you need to use `Core50v2_79`,
