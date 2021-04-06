@@ -386,7 +386,7 @@ You can also create personal scenarios simply by creating your own task label ve
 
     x, y, t = fancy_data_generation_process()
 
-    # t should contains the the task label for each x data point.
+    # t should contains the task label for each data point in x.
     # t should respect : np.unique(t).sort() == np.arange(len(np.unique(t)))
 
     cl_dataset = InMemoryDataset(x, y, t)
