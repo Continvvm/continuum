@@ -364,7 +364,7 @@ that will save the computed task indexes. Then, if re-run a second time,
 the scenario can quickly load the indexes.
 
 
-Adding Your Own Scenarios
+Adding Your Own Scenarios with the `ContinualScenario` Class
 ----------------------------------
 
 Continuum is developed to be flexible and easily adapted to new settings.
@@ -374,3 +374,20 @@ You can also create a new class to create your own scenario with your own rules 
 You can add it in the scenarios folder in the continuum project and make a pull request!
 
 Scenarios can be seen as a list of `tasks <https://continuum.readthedocs.io/en/latest/_tutorials/datasets/tasks.html>`__ , the main thing to define is to define the content of each task to create a meaningful scenario.
+
+You can also create personal scenarios simply by creating your own task label vector `t` with the
+`ContinualScenario` Class. This class is made to just convert a cl_dataset into a scenario without any other processing.
+
+
+.. code-block:: python
+
+    from continuum.datasets import InMemoryDataset
+    from continuum.scenarios import ContinualScenario
+
+    x, y, t = fancy_data_generation_process()
+
+    # t should contains the the task label for each x data point.
+    # t should respect : np.unique(t).sort() == np.arange(len(np.unique(t)))
+
+    cl_dataset = InMemoryDataset(x, y, t)
+    scenario = ContinualScenario(cl_dataset)

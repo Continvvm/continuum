@@ -11,7 +11,7 @@ from continuum.scenarios import _BaseScenario
 class ContinualScenario(_BaseScenario):
     """Continual Loader, generating datasets for the consecutive tasks.
 
-    Scenario: the scenario is defined by the task label vector
+    Scenario: the scenario is entirely defined by the task label vector in the cl_dataset
 
     :param cl_dataset: A continual dataset.
     :param transformations: A list of transformations applied to all tasks.
