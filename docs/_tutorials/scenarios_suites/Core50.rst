@@ -1,13 +1,27 @@
 CORe50
 -----------------
 
+Core50 is a dataset proposed in
+`"CORe50: a new Dataset and Benchmark for Continuous Object Recognition" <http://proceedings.mlr.press/v78/lomonaco17a.html>`__.
+This dataset proposed small videos of of 50 objects from 10 differents classes
+with 11 background environment (more info in `core50 doc <https://vlomonaco.github.io/core50/index.html#dataset>`__ ).
+This dataset was originally created to propose various continual learning settings.
+
 - Class Incremental
 
+We can create a simple class incremental setting.
 
+.. code-block:: python
+
+    from continuum.datasets import Core50
+    # 5 tasks with 2 classes each
+    scenario = ClassIncremental(Core50, nb_tasks=5)
 
 - Instance Incremental
 
+# Todo, object incremental (between 10 and 50 tasks)
 
+# Todo, background incremental (11 tasks)
 
 
 - Class and Instance Incremental
