@@ -45,15 +45,3 @@ def test_scenario_clip_InstanceIncremental(tmpdir):
         task_set.plot(path="Archives/Samples/Stream51/CI",
                       title="Stream51_InstanceIncremental_{}.jpg".format(task_id),
                       nb_samples=100)
-
-
-def test_simple(tmpdir):
-
-    dataset = Stream51('../Datasets', task_criterion="clip")
-
-    print("bonjour")
-    x, y, task_labels = dataset.get_data()
-    print(len(np.unique(task_labels)))
-    print(len(np.unique(y)))
-
-    assert True==False
