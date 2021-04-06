@@ -26,14 +26,18 @@ class Core50(_ContinuumDataset):
     train_ids_url = "https://vlomonaco.github.io/core50/data/core50_train.csv"
 
     def __init__(
-        self,
-        data_path: str,
-        train: bool = True,
-        train_image_ids: Union[str, Iterable[str], None] = None,
-        download: bool = True
+            self,
+            data_path: str,
+            train: bool = True,
+            train_image_ids: Union[str, Iterable[str], None] = None,
+            scenario: str = "classes",
+            download: bool = True
     ):
+        assert scenario in ["classes", "domains", "objects"]
         self.train_image_ids = train_image_ids
         super().__init__(data_path=data_path, train=train, download=download)
+
+        self.scenario = scenario
 
         if self.train_image_ids is None:
             self.train_image_ids = os.path.join(self.data_path, "core50_train.csv")
@@ -80,6 +84,16 @@ class Core50(_ContinuumDataset):
 
         CORe50, in one of its many iterations, is made of 50 objects, each present
         in 10 different domains (in-door, street, garden, etc.).
+        # [o1, ..., o5] -> plug adapters  -> label 1
+        # [o6, ..., o10] -> mobile phones
+        # [o11, ..., o15] -> scissors
+        # [o16, ..., o20] -> light bulbs
+        # [o21, ..., o25] -> cans
+        # [o26, ..., o30] -> glasses
+        # [o31, ..., o35] -> balls
+        # [o36, ..., o40] -> markers
+        # [o41, ..., o45] -> cups
+        # [o46, ..., o50] -> remote controls
 
         In class incremental (NC) setting, those domains won't matter.
 
@@ -106,15 +120,23 @@ class Core50(_ContinuumDataset):
                     image_id = path.split(".")[0]
 
                     if (
-                        (self.train and image_id not in self.train_image_ids) or  # type: ignore
-                        (not self.train and image_id in self.train_image_ids)  # type: ignore
+                            (self.train and image_id not in self.train_image_ids) or  # type: ignore
+                            (not self.train and image_id in self.train_image_ids)  # type: ignore
                     ):
                         continue
 
                     x.append(os.path.join(object_folder, path))
-                    y.append(object_id)
+                    class_label = object_id // 5
+                    y.append(class_label)
+
                     if self.train:  # We add a new domain id for the train set.
-                        t.append(domain_counter)
+                        if self.scenario == "domains":
+                            t.append(domain_counter)
+                        elif self.scenario == "classes":
+                            t.append(class_label)
+                        elif self.scenario == "objects":
+                            t.append(object_id)
+
                     else:  # Test set is fixed, therefore we artificially give a unique domain.
                         t.append(0)
 
@@ -133,7 +155,7 @@ class Core50v2_79(_ContinuumDataset):
     data_url = "http://bias.csr.unibo.it/maltoni/download/core50/core50_128x128.zip"
     splits_url = "https://vlomonaco.github.io/core50/data/batches_filelists_NICv2.zip"
     nb_tasks = 79
-    
+
     @property
     def data_type(self):
         return "image_path"
