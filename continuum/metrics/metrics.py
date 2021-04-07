@@ -1,5 +1,7 @@
 from functools import reduce
 
+import numpy as np
+
 
 def accuracy(task_preds, task_targets):
     """Computes the accuracy of a given task.
@@ -14,7 +16,7 @@ def accuracy(task_preds, task_targets):
     assert task_targets.size == task_preds.size, f"{task_targets.size} vs {task_preds.size}"
 
     metric = (task_preds == task_targets).mean()
-    assert 0. <= metric <= 1.0
+    assert 0. <= metric <= 1.0, metric
     return metric
 
 
@@ -48,7 +50,7 @@ def accuracy_A(all_preds, all_targets, all_tasks):
             A += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
     metric = A / (T * (T + 1) / 2)
-    assert 0. <= metric <= 1.0
+    assert 0. <= metric <= 1.0, metric
     return metric
 
 
@@ -78,7 +80,7 @@ def backward_transfer(all_preds, all_targets, all_tasks):
             bwt += (r_ij - r_jj)
 
     metric = bwt / (T * (T - 1) / 2)
-    assert -1. <= metric <= 1.0
+    assert -1. <= metric <= 1.0, metric
     return metric
 
 
@@ -96,7 +98,7 @@ def positive_backward_transfer(all_preds, all_targets, all_tasks):
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
     metric = 1 - abs(min(bwt, 0.))
-    assert 0. <= metric <= 1.0
+    assert 0. <= metric <= 1.0, metric
     return metric
 
 
@@ -114,7 +116,7 @@ def remembering(all_preds, all_targets, all_tasks):
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
     metric = max(bwt, 0.)
-    assert 0. <= metric <= 1.0
+    assert 0. <= metric <= 1.0, metric
     return metric
 
 
@@ -141,7 +143,7 @@ def forward_transfer(all_preds, all_targets, all_tasks):
             fwt += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
     metric = fwt / (T * (T - 1) / 2)
-    assert -1. <= metric <= 1.0
+    assert -1. <= metric <= 1.0, metric
     return metric
 
 
@@ -164,7 +166,7 @@ def forgetting(all_preds, all_targets, all_tasks):
         f += (r_lj - r_kj)
 
     metric = f / (T - 1)
-    assert 0. <= metric <= 1.0
+    assert 0. <= metric <= 1.0, metric
     return metric
 
 
@@ -241,5 +243,5 @@ def get_model_size_growth(model_sizes):
         ms += (model_sizes[0][0] / model_sizes[i][-1])
 
     metric = min(1., ms / T)
-    assert 0. <= metric <= 1.0
+    assert 0. <= metric <= 1.0, metric
     return metric
