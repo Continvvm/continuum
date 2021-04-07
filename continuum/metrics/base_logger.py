@@ -43,7 +43,6 @@ class _BaseLogger(abc.ABC):
         self._update_dict_architecture(update_task=True)
 
     def add(self, value, keyword="performance", subset="train"):
-
         assert keyword in self.list_keywords, f"Keyword {keyword} is not declared in list_keywords {self.list_keywords}"
         assert subset in self.list_subsets, f"Field {subset} is not declared in list_keywords {self.list_subsets}"
 
@@ -89,7 +88,7 @@ class _BaseLogger(abc.ABC):
         targets = np.concatenate([self._get_current_targets(subset), targets])
         self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["targets"] = targets
 
-        if (task_ids is not None) and self._get_current_task_ids(subset).size > 0:
+        if task_ids is not None:
             task_ids = np.concatenate([self._get_current_task_ids(subset), task_ids])
             self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"] = task_ids
 

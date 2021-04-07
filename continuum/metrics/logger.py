@@ -1,3 +1,5 @@
+import statistics
+
 import numpy as np
 
 from continuum.metrics.base_logger import _BaseLogger
@@ -37,7 +39,7 @@ class Logger(_BaseLogger):
         last_epoch_pred = []
         last_epoch_targets = []
         last_epoch_task_ids = []
-        for task_id in range(self.current_task):
+        for task_id in range(len(self.logger_dict[subset]["performance"])):
             predictions = self.logger_dict[subset]["performance"][task_id][-1]["predictions"]
             targets = self.logger_dict[subset]["performance"][task_id][-1]["targets"]
             task_id = self.logger_dict[subset]["performance"][task_id][-1]["task_ids"]
@@ -48,20 +50,15 @@ class Logger(_BaseLogger):
 
         return last_epoch_pred, last_epoch_targets, last_epoch_task_ids
 
-
     def _get_best_epochs_data(self, keyword, subset):
-
         assert keyword != "performance", f"this method is not mode for performance keyword use _get_best_epochs_perf"
         list_values = []
         for task_id in range(self.current_task):
             list_values.append(self.logger_dict[subset][keyword][task_id][-1])
         return list_values
 
-
-
     def _get_best_epochs(self, keyword="performance", subset="train"):
-
-        if keyword=="performance":
+        if keyword == "performance":
             values = self._get_best_epochs_perf(subset)
         else:
             values = self._get_best_epochs_data(keyword, subset)
@@ -84,7 +81,6 @@ class Logger(_BaseLogger):
         return accuracy(predictions, targets)
 
     @property
-    @cache
     @require_subset("test")
     def accuracy(self):
         return accuracy(
@@ -93,7 +89,6 @@ class Logger(_BaseLogger):
         )
 
     @property
-    @cache
     @require_subset("test")
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
@@ -104,7 +99,6 @@ class Logger(_BaseLogger):
         ]
 
     @property
-    @cache
     @require_subset("train")
     def online_cumulative_performance(self):
         """Computes the accuracy of last task on the train set.
@@ -122,7 +116,6 @@ class Logger(_BaseLogger):
         return accuracy(preds, targets)
 
     @property
-    @cache
     @require_subset("test")
     def average_incremental_accuracy(self):
         """Computes the average of the accuracies computed after each task.
@@ -132,56 +125,48 @@ class Logger(_BaseLogger):
           Rebuffi et al. CVPR 2017
         """
         all_preds, all_targets, _ = self._get_best_epochs(subset="test")
-
         return statistics.mean([
             accuracy(all_preds[t], all_targets[t])
             for t in range(len(all_preds))
         ])
 
     @property
-    @cache
     @require_subset("test")
     def backward_transfer(self):
         all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return backward_transfer(all_preds, all_targets, task_ids)
 
     @property
-    @cache
     @require_subset("test")
     def forward_transfer(self):
         all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return forward_transfer(all_preds, all_targets, task_ids)
 
     @property
-    @cache
     @require_subset("test")
     def positive_backward_transfer(self):
         all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return positive_backward_transfer(all_preds, all_targets, task_ids)
 
     @property
-    @cache
     @require_subset("test")
     def remembering(self):
         all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return remembering(all_preds, all_targets, task_ids)
 
     @property
-    @cache
     @require_subset("test")
     def accuracy_A(self):
         all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return accuracy_A(all_preds, all_targets, task_ids)
 
     @property
-    @cache
     @require_subset("test")
     def forgetting(self):
         all_preds, all_targets, task_ids = self._get_best_epochs(subset="test")
         return forgetting(all_preds, all_targets, task_ids)
 
     @property
-    @cache
     def model_size_growth(self):
         assert "model_size" in self.list_keywords
         sizes = self._get_best_epochs("model_size")

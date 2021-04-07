@@ -115,10 +115,12 @@ class _BaseScenario(abc.ABC):
         x, y, t = self.dataset  # type: ignore
 
         if isinstance(task_index, slice):
-            start = task_index.start or 0
-            stop = task_index.stop or len(self) + 1
-            step = task_index.step or 1
+            start = task_index.start if task_index.start is not None else 0
+            stop = task_index.stop if task_index.stop is not None else len(self) + 1
+            step = task_index.step if task_index.step is not None else 1
             task_index = list(range(start, stop, step))
+            if len(task_index) == 0:
+                raise ValueError(f"Invalid slicing resulting in no data (start={start}, end={stop}, step={step}).")
             task_index = [
                 t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
             ]
