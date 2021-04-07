@@ -49,7 +49,6 @@ def test_slicing_nc(index, classes):
     (0, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
     (3, [6, 7, 8, 9]),
     (4, [8, 9]),
-    (12, [])
 ])
 def test_slicing_nc_no_end(start_index, classes):
     train, test = gen_data()
@@ -59,6 +58,25 @@ def test_slicing_nc_no_end(start_index, classes):
     targets = np.sort(np.unique(taskset._y))
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
+
+
+@pytest.mark.parametrize("start,end", [
+    (12, 100),
+    (0, 0),
+    (3, 3)
+])
+def test_slicing_empty(start, end):
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train)
+    scenario = ClassIncremental(dummy, increment=2)
+
+    has_failed = False
+    try:
+        taskset = scenario[start_index:]
+    except:
+        has_failed = True
+
+    assert has_failed
 
 
 def test_slicing_nc_no_index():
@@ -72,3 +90,5 @@ def test_slicing_nc_no_index():
 
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
+
+
