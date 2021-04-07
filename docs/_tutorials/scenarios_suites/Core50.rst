@@ -7,25 +7,51 @@ This dataset proposed small videos of of 50 objects from 10 differents classes
 with 11 background environment (more info in `core50 doc <https://vlomonaco.github.io/core50/index.html#dataset>`__ ).
 This dataset was originally created to propose various continual learning settings.
 
+Continuum Scenarios
+##########
+
 - Class Incremental
+""""""""
 
 We can create a simple class incremental setting.
 
 .. code-block:: python
 
-    from continuum.datasets import Core50
+    from continuum.datasets import COre50
+    dataset=Core50("/your/path")
     # 5 tasks with 2 classes each
-    scenario = ClassIncremental(Core50, nb_tasks=5)
+    scenario = ClassIncremental(dataset, nb_tasks=5)
 
 - Instance Incremental
+""""""""
+-- Environment incremental Scenario --
 
-# Todo, object incremental (between 10 and 50 tasks)
+.. code-block:: python
 
-# Todo, background incremental (11 tasks)
+    from continuum.datasets import COre50
+    dataset=Core50("/your/path", scenario="domains")
+    # 11 tasks with 10 classes each video in 1 environment each
+    # classes are object class
+    scenario = InstanceIncremental(dataset, nb_tasks=5)
+
+-- Object incremental Scenario --
+.. code-block:: python
+
+    from continuum.datasets import COre50
+    dataset=Core50("/your/path", scenario="objects")
+    # 50 tasks with 1 object videos in the 11 environments
+    # classes are object ids (50 classes then)
+    scenario = InstanceIncremental(dataset, nb_tasks=5)
 
 
-- Class and Instance Incremental
+- Classes and Instances Incremental
+""""""""
 
+Class and Instances Incremental scenarios are proposed in the scenario from the original paper (next section).
+
+
+Original scenarios:
+##########
 
 CORe50 provides domain ids which are automatically picked up by the `InstanceIncremental` scenario:
 
