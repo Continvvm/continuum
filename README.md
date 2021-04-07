@@ -7,6 +7,7 @@
 
 [![Doc](https://img.shields.io/badge/Documentation-link-blue)](https://continuum.readthedocs.io/)
 [![Paper](https://img.shields.io/badge/arXiv-2102.06253-brightgreen)](https://arxiv.org/abs/2102.06253)
+[![Youtube](https://img.shields.io/badge/Youtube-link-purple)](https://www.youtube.com/watch?v=ntSR5oYKyhM)
 </div>
 
 ## A library for PyTorch's loading of datasets in the field of Continual Learning
