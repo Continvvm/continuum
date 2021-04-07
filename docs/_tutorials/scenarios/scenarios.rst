@@ -305,9 +305,21 @@ New Class and Instance Incremental
 NIC setting is a special case of NI setting. For now, only the CORe50 dataset
 supports this setting.
 
+
+The New class and instance incremental setting can be created with the Instance incremental class.
+The `t` vector which define the task of each data point should be defined by the user or loaded from an existing scenario to create NIC scenario.
+
 .. code-block:: python
 
-    # Not implemented yet
+    # given x data point, y class labels, t tasks labels
+    # t define the tasks label for each data point.
+    # Hence, the t vector define the number of tasks for the scenario and the order
+    # task will be ordered in the croissant order
+
+    from continuum import InstanceIncremental
+    from continuum.datasets import InMemoryDataset
+    NIC_Dataset = InMemoryDataset(x, y, t)
+    NIC_Scenario = InstanceIncremental(NIC_Dataset)
 
 
 Incremental Semantic Segmentation

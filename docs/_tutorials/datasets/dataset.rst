@@ -74,8 +74,8 @@ initialization differ:
     from continuum import ClassIncremental
     from continuum.datasets import ImageNet1000
 
-    ImageNet1000("/my/data/folder/imagenet/train/", train=True)
-    ImageNet1000("/my/data/folder/imagenet/val/", train=False)
+    dataset_100 = ImageNet1000("/my/data/folder/imagenet/train/", train=True)
+    dataset_1000 = ImageNet1000("/my/data/folder/imagenet/val/", train=False)
 
 Note that Continuum cannot download ImageNet's data, it's on you! We also provide ImageNet100,
 a subset of 100 classes of ImageNet. The subset meta-data are automatically downloaded,
@@ -88,10 +88,10 @@ be downloaded:
 
     from continuum.datasets import Core50, Core50v2_79, Core50v2_196, Core50v2_391
 
-    Core50("/data/data/folder/CORe50/", train=True, download=True)
-    Core50v2_79("/data/douillard/CORe50/", train=True, download=True)
-    Core50v2_196("/data/douillard/CORe50/", train=True, download=True)
-    Core50v2_391("/data/douillard/CORe50/", train=True, download=True)
+    dataset = Core50("/my/data/folder/", train=True, download=True)
+    dataset_79 = Core50v2_79("/my/data/folder/", train=True, download=True)
+    dataset_196 = Core50v2_196("/my/data/folder/", train=True, download=True)
+    dataset_391 = Core50v2_391("/my/data/folder/", train=True, download=True)
 
 If you wish to learn CORe50 in the class-incremental scenario (NC), `Core50` suffices. Although,
 for instance-incremental scenario (NI and NIC), you need to use `Core50v2_79`,
@@ -105,7 +105,7 @@ In addition to Computer Vision dataset, Continuum also provide one NLP dataset:
 
     from continuum.datasets import MultiNLI
 
-    MultiNLI("/my/data/folder", train=True, download=True)
+    dataset=MultiNLI("/my/data/folder", train=True, download=True)
 
 The MultiNLI dataset provides text written in different styles and categories.
 This dataset can be used in Continual Learning in a New Instances (NI) setting
@@ -127,7 +127,7 @@ For example, the type of scenarios are easy to use with others dataset:
     from continuum.datasets import InMemoryDataset
 
     x_train, y_train = gen_numpy_array()
-    InMemoryDataset(x_train, y_train)
+    dataset = InMemoryDataset(x_train, y_train)
 
 
 **PyTorchDataset**,for datasets defined in torchvision:
@@ -135,7 +135,8 @@ For example, the type of scenarios are easy to use with others dataset:
 .. code-block:: python
 
     from torchvision.datasets import CIFAR10
-    PyTorchDataset("/my/data/folder/", dataset_type=CIFAR10, train=True, download=True)
+    from continuum.datasets import PyTorchDataset
+    dataset = PyTorchDataset("/my/data/folder/", dataset_type=CIFAR10, train=True, download=True)
 
 
 **ImageFolderDataset**, for datasets having a tree-like structure, with one folder per class:
@@ -144,8 +145,8 @@ For example, the type of scenarios are easy to use with others dataset:
 
     from continuum.datasets import ImageFolderDataset
 
-    ImageFolderDataset("/my/data/folder/train/")
-    ImageFolderDataset("/my/data/folder/test/")
+    dataset_train = ImageFolderDataset("/my/data/folder/train/")
+    dataset_test = ImageFolderDataset("/my/data/folder/test/")
 
 **Fellowship**, to combine several continual datasets.:
 
@@ -154,7 +155,7 @@ For example, the type of scenarios are easy to use with others dataset:
     from torchvision.datasets import CIFAR10, CIFAR100
     from continuum.datasets import Fellowship
 
-    Fellowship(datasets=[
+    dataset = Fellowship(datasets=[
             CIFAR10(data_path="/my/data/folder1/", train=True),
             CIFAR100(data_path="/my/data/folder1/", train=True)
         ],
@@ -169,8 +170,8 @@ Note that Continuum already provide pre-made Fellowship:
 
     from continuum.datasets import MNISTFellowship, CIFARFellowship
 
-    MNISTFellowship("/my/data/folder", train=True)
-    CIFARFellowship("/my/data/folder", train=True)
+    dataset_MNIST = MNISTFellowship("/my/data/folder", train=True)
+    dataset_CIFAR = CIFARFellowship("/my/data/folder", train=True)
 
 You may want datasets that have a different transformation for each new task, e.g.
 MNIST with different rotations or pixel permutations. Continuum also handles it!
