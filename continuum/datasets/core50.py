@@ -107,8 +107,8 @@ class Core50(_ContinuumDataset):
         x, y, t = [], [], []
 
         domain_counter = 0
-        for domain_id in range(10):
-            # We walk through the 10 available domains.
+        for domain_id in range(11):
+            # We walk through the 11 available domains.
             domain_folder = os.path.join(self.data_path, "core50_128x128", f"s{domain_id + 1}")
 
             has_images = False
