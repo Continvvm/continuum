@@ -66,27 +66,8 @@ class _SemanticSegmentationDataset(_ContinuumDataset):
     def data_type(self) -> str:
         return "segmentation"
 
-class ContinuumDataset(_ContinuumDataset):
-    """Continuum version of torchvision datasets.
-
-    :param dataset: A Torchvision dataset, like MNIST or CIFAR100.
-
-    This class avoid to have to deal with specific parameters of some Pytorch dataset while creating them
-    """
-    def __init__(
-        self, dataset
-    ):
-        super().__init__(data_path=dataset.root, train=dataset.train, download=False)
-        self.dataset = dataset
-
-    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
-        return x, y, None
-
-
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.
-
     :param dataset_type: A Torchvision dataset, like MNIST or CIFAR100.
     :param train: train flag
     :param download: download
@@ -94,12 +75,10 @@ class PyTorchDataset(_ContinuumDataset):
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(
-        self, data_path: str = "", dataset_type=None, train: bool = True, download: bool = True
-    ):
+            self, data_path: str = "", dataset_type=None, train: bool = True, download: bool = True, **kwargs):
         super().__init__(data_path=data_path, train=train, download=download)
-
         self.dataset_type = dataset_type
-        self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train)
+        self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train, **kwargs)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
@@ -116,13 +95,13 @@ class InMemoryDataset(_ContinuumDataset):
     """
 
     def __init__(
-        self,
-        x: np.ndarray,
-        y: np.ndarray,
-        t: Union[None, np.ndarray] = None,
-        data_type: str = "image_array",
-        train: bool = True,
-        download: bool = True,
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            t: Union[None, np.ndarray] = None,
+            data_type: str = "image_array",
+            train: bool = True,
+            download: bool = True,
     ):
         super().__init__(train=train, download=download)
 
@@ -159,7 +138,6 @@ class ImageFolderDataset(_ContinuumDataset):
     def __init__(self, data_path: str, train: bool = True, download: bool = True, data_type: str = "image_path"):
         self.data_path = data_path
         super().__init__(data_path=data_path, train=train, download=download)
-
 
         allowed_data_types = ("image_path", "segmentation")
         if data_type not in allowed_data_types:
