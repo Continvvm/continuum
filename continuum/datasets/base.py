@@ -66,11 +66,30 @@ class _SemanticSegmentationDataset(_ContinuumDataset):
     def data_type(self) -> str:
         return "segmentation"
 
+class ContinuumDataset(_ContinuumDataset):
+    """Continuum version of torchvision datasets.
+
+    :param dataset: A Torchvision dataset, like MNIST or CIFAR100.
+
+    This class avoid to have to deal with specific parameters of some Pytorch dataset while creating them
+    """
+    def __init__(
+        self, dataset
+    ):
+        super().__init__(data_path=dataset.root, train=dataset.train, download=False)
+        self.dataset = dataset
+
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
+        return x, y, None
+
 
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.
 
     :param dataset_type: A Torchvision dataset, like MNIST or CIFAR100.
+    :param train: train flag
+    :param download: download
     """
 
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
