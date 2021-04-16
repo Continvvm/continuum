@@ -31,13 +31,16 @@ class Core50(_ContinuumDataset):
             train: bool = True,
             train_image_ids: Union[str, Iterable[str], None] = None,
             scenario: str = "classes",
-            download: bool = True
+            download: bool = True,
+            classification: str = "object"
     ):
         assert scenario in ["classes", "domains", "objects"]
+        assert classification in ["object", "category"]
         self.train_image_ids = train_image_ids
         super().__init__(data_path=data_path, train=train, download=download)
 
         self.scenario = scenario
+        self.classification = classification
 
         if self.train_image_ids is None:
             self.train_image_ids = os.path.join(self.data_path, "core50_train.csv")
@@ -126,7 +129,12 @@ class Core50(_ContinuumDataset):
                         continue
 
                     x.append(os.path.join(object_folder, path))
-                    class_label = object_id // 5
+                    if self.classification == "object":
+                        # Ranges from 0-49
+                        class_label = object_id
+                    else:
+                        # Ranges from 0-9
+                        class_label = object_id // 5
                     y.append(class_label)
 
                     if self.train:  # We add a new domain id for the train set.
