@@ -1,5 +1,6 @@
 import abc
 from typing import List, Tuple, Union
+import warnings
 
 import numpy as np
 from torchvision import datasets as torchdata
@@ -66,6 +67,7 @@ class _SemanticSegmentationDataset(_ContinuumDataset):
     def data_type(self) -> str:
         return "segmentation"
 
+
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.
     :param dataset_type: A Torchvision dataset, like MNIST or CIFAR100.
@@ -82,6 +84,11 @@ class PyTorchDataset(_ContinuumDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
+
+        if 0 not in y:
+            warnings.warn("Converting 1-based class ids to 0-based class ids.")
+            y -= 1
+
         return x, y, None
 
 
