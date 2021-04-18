@@ -86,6 +86,9 @@ class PyTorchDataset(_ContinuumDataset):
         x, y = np.array(self.dataset.data), np.array(self.dataset.targets)
 
         if 0 not in y:
+            # This case can happen when the first class id is 1 and not 0.
+            # For example in EMNIST with 'letters' split (WTF right).
+            # TODO: We should handle this case in a more generic fashion later.
             warnings.warn("Converting 1-based class ids to 0-based class ids.")
             y -= 1
 
