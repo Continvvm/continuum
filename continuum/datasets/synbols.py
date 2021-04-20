@@ -229,7 +229,7 @@ def get_data_path_or_download(dataset, data_root):
     Returns:
         str: dataset final path 
     """
-    url_prefix = 'https://github.com/ElementAI/synbols-resources/raw/master/datasets/generated/'
+    url = 'https://zenodo.org/record/4701316/files/%s?download=1' % dataset
     if data_root == "":
         data_root = os.environ.get("TMPDIR", "/tmp")
     full_path = os.path.join(data_root, dataset)
@@ -240,11 +240,11 @@ def get_data_path_or_download(dataset, data_root):
     else:
         print("Downloading %s..." % full_path)
 
-    r = requests.head(os.path.join(url_prefix, dataset))
+    r = requests.head(url)
     is_big = not r.ok
 
     if is_big:
-        r = requests.head(os.path.join(url_prefix, dataset + ".aa"))
+        r = requests.head(url + ".aa")
         if not r.ok:
             raise ValueError("Dataset %s" % dataset, "not found in remote.")
         response = input("Download more than 3GB (Y/N)?: ").lower()
@@ -256,21 +256,19 @@ def get_data_path_or_download(dataset, data_root):
         parts = []
         current_part = "a"
         while r.ok:
-            r = requests.head(os.path.join(
-                url_prefix, dataset + ".a%s" % current_part))
-            parts.append(".a" + current_part)
+            r = requests.head(url + ".a%s" % current_part)
+            parts.append(url + ".a" + current_part)
             current_part = chr(ord(current_part) + 1)
     else:
-        parts = [""]
+        parts = [url]
 
     if not os.path.isfile(full_path):
         with open(full_path, 'wb') as file:
             for i, part in enumerate(parts):
                 print("Downloading part %d/%d" % (i + 1, len(parts)))
-                url = os.path.join(url_prefix, "%s%s" % (dataset, part))
 
                 # Streaming, so we can iterate over the response.
-                response = requests.get(url, stream=True)
+                response = requests.get(part, stream=True)
                 total_size_in_bytes = int(
                     response.headers.get('content-length', 0))
                 block_size = 1024  # 1 Kilobyte
