@@ -9,7 +9,7 @@ from continuum.datasets.imagenet import ImageNet100, ImageNet1000, TinyImageNet2
 from continuum.datasets.synbols import Synbols
 from continuum.datasets.nlp import MultiNLI
 from continuum.datasets.pytorch import (
-    CIFAR10, CIFAR100, EMNIST, KMNIST, MNIST, QMNIST, FashionMNIST
+    CIFAR10, CIFAR100, EMNIST, KMNIST, MNIST, QMNIST, FashionMNIST, SVHN
 )
 from continuum.datasets.pascalvoc import PascalVOC2012
 from continuum.datasets.stream51 import Stream51
