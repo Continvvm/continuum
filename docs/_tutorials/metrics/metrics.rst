@@ -148,12 +148,12 @@ Detailed Example
 
             # Do here your model training with losses and optimizer...
 
-            logger.add([predictions, y, t], 'train')
+            logger.add([predictions, y, t], subset='train')
             print(f"Online accuracy: {logger.online_accuracy}")
 
         for x, y, t in test_loader:
             pred = model(x, t)
-            logger.add([pred, y, t], 'test')
+            logger.add([pred, y, t], subset='test')
 
         print(f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
         print(f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
