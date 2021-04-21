@@ -33,7 +33,7 @@ def unzip(path):
 
 def untar(path):
     directory_path = os.path.dirname(path)
-    with tarfile.TarFile(path, 'r') as tar_file:
+    with tarfile.open(path) as tar_file:
         tar_file.extractall(directory_path)
 
 
