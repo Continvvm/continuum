@@ -14,3 +14,5 @@ from continuum.datasets.pytorch import (
 from continuum.datasets.pascalvoc import PascalVOC2012
 from continuum.datasets.stream51 import Stream51
 from continuum.datasets.dtd import DTD
+from continuum.datasets.ctrl import CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLpl
+
