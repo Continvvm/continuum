@@ -201,7 +201,16 @@ def _get_R_ij(i, j, all_preds, all_targets, all_tasks):
     targets = all_targets[i]
     tasks = all_tasks[i]
 
-    indexes = tasks == j
+    indexes = np.where(tasks == j)[0]
+    if len(indexes) == 0:
+        raise ValueError(
+            f"You haven't evaluated on any samples of task {j} after "
+            f"training on task {i}, therefore it is impossible to compute some "
+            "metrics (e.g. FwT, BwT).\n"
+            "Either don't use those metrics or evaluate on all seen tasks. "
+            "You can do it one by one (`test_scenario[0], test_scenario[1]`) "
+            "or all together (`test_scenario[:task_id + 1]`)."
+        )
     return (preds[indexes] == targets[indexes]).mean()
 
 
