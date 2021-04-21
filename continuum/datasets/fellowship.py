@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -15,32 +15,44 @@ class Fellowship(_ContinuumDataset):
                           shared, e.g. a Fellowship of CIFAR10+CIFAR100 with
                           update_labels=False will share the first 10 classes.
                           In doubt, let this param to True.
+    :param proportions: Amount of data to take from each dataset. If int, take
+                        that amount, if float take that percentage.
+    :param seed: random seed to sample (if proportions is used) deterministically.
     """
     def __init__(
         self,
         datasets: List[_ContinuumDataset],
         update_labels: bool = True,
+        proportions: Union[List[int], List[float], None] = None,
+        seed: int = 1
     ):
         super().__init__()
 
         self.update_labels = update_labels
         self.datasets = datasets
-
+        self.proportions = proportions
+        self.seed = seed
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y, t = [], [], []
         class_counter = 0
 
         for i, dataset in enumerate(self.datasets):
-            data = dataset.get_data()
+            x_, y_, _ = dataset.get_data()
 
-            x.append(data[0])
             if self.update_labels:
-                y.append(data[1] + class_counter)
+                y_ = y_ + class_counter
             else:
-                y.append(data[1])
+                y_ = y_
 
-            t.append(np.ones(len(data[0])) * i)
+            if self.proportions:
+                indexes = _balanced_sampling(_y, self.proportions[i], self.seed)
+                x_ = x_[indexes]
+                y_ = y_[indexes]
+
+            x.append(x_)
+            y.append(y_)
+            t.append(np.ones(len(_x)) * i)
 
             class_counter += len(np.unique(data[1]))
 
@@ -54,6 +66,29 @@ class Fellowship(_ContinuumDataset):
                                                         f' {len(np.unique(t))} task ids'
 
         return x, y, t
+
+
+def _balanced_sampling(y, amount, seed):
+    if isinstance(amount, float):
+        amount = int(len(y) * amount)
+    unique_classes = np.unique(y)
+    if len(unique_classes) > amount:
+        raise ValueError(
+            f"Not enough amount ({amount}) for the number of classes ({len(unique_classes)})."
+        )
+    # There can be a few images lost, but that's not very important.
+    amount_per_class = int(amount / unique_classes)
+
+    rng = np.random.RandomState(seed=seed)
+
+    indexes = []
+    for c in unique_classes:
+        class_indexes = np.where(y == c)
+        indexes.append(
+            rng.choice(class_indexes, size=amount_per_class)
+        )
+
+    return np.concatenate(indexes)
 
 
 class MNISTFellowship(Fellowship):
