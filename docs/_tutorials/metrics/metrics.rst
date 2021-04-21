@@ -139,9 +139,10 @@ Detailed Example
 
     logger = Logger(list_subsets=['train', 'test'])
 
-    for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
-        train_loader = DataLoader(train_taskset)
-        test_loader = DataLoader(test_taskset)
+    for task_id, train_taskset in enumerate(train_scenario):
+        train_loader = DataLoader(train_taskset, batch_size=len(train_taskset))
+        test_taskset = test_scenario[:task_id + 1]  # Evaluating on all seen tasks
+        test_loader = DataLoader(test_taskset, batch_size=len(test_taskset))
 
         for x, y, t in train_loader:
             predictions = model(x)
@@ -157,6 +158,7 @@ Detailed Example
 
         print(f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
         print(f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
+        logger.end_task()
 
 
 
