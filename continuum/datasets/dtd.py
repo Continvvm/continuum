@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
 from continuum import download
@@ -34,7 +35,7 @@ class DTD(ImageFolderDataset):
             download.untar(path)
 
     def get_data(self):
-        x, y, t = super().get_data(os.path.join(self.data_path, "dtd", "images"))
+        x, y, t = self._format(torchdata.ImageFolder(os.path.join(self.data_path, "dtd", "images")).imgs)
 
         if self.train:
             index_files = [

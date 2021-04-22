@@ -158,8 +158,8 @@ class ImageFolderDataset(_ContinuumDataset):
     def data_type(self) -> str:
         return self._data_type
 
-    def get_data(self, path: Union[None, str] = None) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
-        self.dataset = torchdata.ImageFolder(path or self.data_path)
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
+        self.dataset = torchdata.ImageFolder(self.data_path)
         return self._format(self.dataset.imgs)
 
     @staticmethod
