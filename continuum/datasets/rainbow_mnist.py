@@ -3,7 +3,6 @@ import numpy as np
 from continuum.datasets import MNIST
 
 
-
 class RainbowMNIST(MNIST):
     def __init__(*args, color="red", rotation=0., scale=1., **kwargs):
         if rotation != 0. or scale != 1.:
