@@ -17,7 +17,7 @@ class DTD(ImageFolderDataset):
     """
     url = "https://www.robots.ox.ac.uk/~vgg/data/dtd/download/dtd-r1.0.1.tar.gz"
 
-    def __init__(self, data_path, train=True, download=True, split=1):
+    def __init__(self, data_path: str, train: bool = True, download: bool = True, split: int = 1):
         super().__init__(data_path=data_path, train=train, download=download, data_type="image_path")
 
         if not (1 <= int(split) <= 10):
@@ -25,14 +25,13 @@ class DTD(ImageFolderDataset):
         self.split = split
 
     def _download(self):
-        # Downloading images
+        archive_path = os.path.join(self.data_path, "dtd-r1.0.1.tar.gz")
+        if not os.path.exists(archive_path):
+            print("Downloading DTD dataset...")
+            download.download(self.url, self.data_path)
         if not os.path.exists(os.path.join(self.data_path, "dtd")):
-            path = os.path.join(self.data_path, "dtd-r1.0.1.tar.gz")
-            if not os.path.exists(path):
-                print("Downloading DTD dataset...")
-                download.download(self.url, self.data_path)
             print("Uncompressing images...")
-            download.untar(path)
+            download.untar(archive_path)
 
     def get_data(self):
         x, y, t = self._format(torchdata.ImageFolder(os.path.join(self.data_path, "dtd", "images")).imgs)
