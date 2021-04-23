@@ -58,9 +58,3 @@ class QMNIST(PyTorchDataset):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, dataset_type=torchdata.QMNIST, **kwargs)
-
-
-class SVHN(PyTorchDataset):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, dataset_type=torchdata.SVHN, **kwargs)
