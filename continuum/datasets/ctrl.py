@@ -232,7 +232,7 @@ class CTRLout(CTRL):  # S^{out}
         )
 
 
-class CTRLpl(CTRL):  # S^{pl}
+class CTRLplastic(CTRL):  # S^{pl}
     def __init__(self, data_path: str = "", split: str = "train", download: bool = True, seed: int = 1):
         if split not in ("train", "val", "test"):
             raise ValueError(f"Split must be train, val, or test; not {split}.")
@@ -247,9 +247,9 @@ class CTRLpl(CTRL):  # S^{pl}
         ]
 
         if split == "train":
-            proportions = [400, 400, 400, 400, 400, 4000]
+            proportions = [400, 400, 400, 400, 4000]
         elif split == "val":
-            proportions = [200, 200, 200, 200, 200, 2000]
+            proportions = [200, 200, 200, 200, 2000]
         else:
             proportions = None
 
