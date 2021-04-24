@@ -13,6 +13,12 @@ tests: FORCE
 fulltests: FORCE
 	pytest tests/
 
+fulltestsarthur: FORCE
+	CONTINUUM_DATA_PATH=/local/douillard/ pytest tests/
+
+fullteststim: FORCE
+	CONTINUUM_DATA_PATH=../Datasets pytest tests/
+
 clean: FORCE
 	rm -rf dist/
 	rm -rf continuum.egg-info/
