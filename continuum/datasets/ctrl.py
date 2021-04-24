@@ -9,6 +9,25 @@ from continuum.datasets import _ContinuumDataset
 
 
 class CTRL(_ContinuumDataset):
+    """CTRL generic class.
+
+    Reference:
+        * Efficient Continual Learning with Modular Networks and Task-Driven Priors
+          Tom Veniat, Ludovic Denoyer, Marc'Aurelio Ranzato
+          ICLR 2021
+
+    To get a feeling about this class, please look at the actual implementation of
+    the various instances of CTRL datasets (e.g. CTRLminus, CTRLplus, etc.)
+
+    :param datasets: The list of continual datasets to use.
+    :param target_size: The common image size for all.
+    :param split: Which split among train/val/test.
+    :param proportions: How much images (in absolute value or %) to take per dataset.
+    :param class_counter: The initial class counter per dataset, helps when seeing
+                          twice the same dataset we want them to have the same or
+                          different labels.
+    :param seed: A random seed for reproducibility.
+    """
     def __init__(
         self,
         datasets: List[_ContinuumDataset],
@@ -67,20 +86,21 @@ class CTRL(_ContinuumDataset):
 
         return np.concatenate(all_x), np.concatenate(all_y), np.concatenate(all_t)
 
-    def open_and_resize(self, paths, size):
+    def open_and_resize(self, paths: np.ndarray, size: Tuple[int, int]):
         x = np.zeros((len(paths), *size, 3), dtype=np.uint8)
         for i, path in enumerate(paths):
             img = Image.open(path).convert('RGB').resize(size)
             x[i] = np.array(img).astype(np.uint8)
         return x
 
-    def resize(self, arrays, size):
+    def resize(self, arrays: np.ndarray, size: Tuple[int, int]):
         new_arrays = np.zeros((len(arrays), *size, 3), dtype=np.uint8)
         for i, arr in enumerate(arrays):
             new_arrays[i] = resize(arr, size, preserve_range=True).astype(np.uint8)
         return new_arrays
 
-    def balanced_sampling(self, y, amount, seed, split="train"):
+    def balanced_sampling(self, y: np.ndarray, amount: Union[float, int], seed: int, split: str = "train"):
+        """Samples a certain amount of data equally per class."""
         if isinstance(amount, float):
             amount = int(len(y) * amount)
         unique_classes = np.unique(y)
