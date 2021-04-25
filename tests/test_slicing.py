@@ -107,4 +107,4 @@ def test_slicing_list(list_tasks):
     scenario = ClassIncremental(dummy, increment=1)
     taskset = scenario[list_tasks]
     targets = np.sort(np.unique(taskset._y))
-    assert len(targets) == len(list_tasks), print("{targets} - vs - {list_tasks}")
+    assert len(targets) == len(list_tasks), print(f"{len(targets)} - vs - {len(list_tasks)}")
