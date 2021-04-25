@@ -22,14 +22,14 @@ class TaskSet(TorchDataset):
     """
 
     def __init__(
-        self,
-        x: np.ndarray,
-        y: np.ndarray,
-        t: np.ndarray,
-        trsf: transforms.Compose,
-        target_trsf: Optional[transforms.Compose] = None,
-        data_type: str = "image_array",
-        bounding_boxes: Optional[np.ndarray] = None
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            t: np.ndarray,
+            trsf: transforms.Compose,
+            target_trsf: Optional[transforms.Compose] = None,
+            data_type: str = "image_array",
+            bounding_boxes: Optional[np.ndarray] = None
     ):
         self._x, self._y, self._t = x, y, t
 
@@ -81,11 +81,11 @@ class TaskSet(TorchDataset):
             self._t = np.concatenate((self._t, -1 * np.ones(len(x))))
 
     def plot(
-        self,
-        path: Union[str, None] = None,
-        title: str = "",
-        nb_samples: int = 100,
-        shape: Optional[Tuple[int, int]] = None,
+            self,
+            path: Union[str, None] = None,
+            title: str = "",
+            nb_samples: int = 100,
+            shape: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -146,7 +146,10 @@ class TaskSet(TorchDataset):
             x = Image.open(x).convert("RGB")
         elif self.data_type == "image_array":
             x = Image.fromarray(x.astype("uint8"))
-        elif self.data_type == "text" or self.data_type == "tensor":
+        elif self.data_type == "tensor":
+            if not torch.is_tensor(x):
+                x = torch.tensor(x)
+        elif self.data_type == "text":
             pass
 
         return x
@@ -160,8 +163,8 @@ class TaskSet(TorchDataset):
         if self.bounding_boxes is not None:
             bbox = self.bounding_boxes[index]
             x = x.crop((
-                max(bbox[0], 0),               # x1
-                max(bbox[1], 0),               # y1
+                max(bbox[0], 0),  # x1
+                max(bbox[1], 0),  # y1
                 min(bbox[2], x.size[0]),  # x2
                 min(bbox[3], x.size[1]),  # y2
             ))
@@ -170,8 +173,10 @@ class TaskSet(TorchDataset):
             x, y, t = self._prepare_text(x, y, t)
         elif self.data_type == "segmentation":
             x, y, t = self._prepare_segmentation(x, y, t)
-        else:
+        elif self.data_type == "image_array":
             x, y, t = self._prepare(x, y, t)
+        else:  # self.data_type == "tensor"
+            pass
 
         if self.target_trsf is not None:
             y = self.target_trsf(y)
