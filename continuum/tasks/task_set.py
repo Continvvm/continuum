@@ -18,7 +18,7 @@ class TaskSet(TorchDataset):
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
     :param data_type: Type of the data, either "image_path", "image_array",
-                      "text", or "segmentation".
+                      "text", "tensor" or "segmentation".
     """
 
     def __init__(
@@ -146,7 +146,7 @@ class TaskSet(TorchDataset):
             x = Image.open(x).convert("RGB")
         elif self.data_type == "image_array":
             x = Image.fromarray(x.astype("uint8"))
-        elif self.data_type == "text":
+        elif self.data_type == "text" or self.data_type == "tensor":
             pass
 
         return x
