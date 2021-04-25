@@ -1,5 +1,5 @@
 import warnings
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import numpy as np
 
@@ -14,7 +14,9 @@ class InstanceIncremental(_BaseScenario):
 
     :param cl_dataset: A continual dataset.
     :param nb_tasks: The scenario number of tasks.
-    :param transformations: List of transformations to apply to all tasks.
+    :param transformations: A list of transformations applied to all tasks. If
+                            it's a list of list, then the transformation will be
+                            different per task.
     :param random_seed: A random seed to init random processes.
     """
 
@@ -22,7 +24,7 @@ class InstanceIncremental(_BaseScenario):
         self,
         cl_dataset: _ContinuumDataset,
         nb_tasks: Optional[int] = None,
-        transformations: List[Callable] = None,
+        transformations: Union[List[Callable], List[List[Callable]]] = None,
         random_seed: int = 1
     ):
         super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)

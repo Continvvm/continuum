@@ -16,15 +16,16 @@ class _BaseScenario(abc.ABC):
 
     :param cl_dataset: A Continuum dataset.
     :param nb_tasks: The number of tasks to do.
-    :param transformations: The PyTorch transformations.
-    :param train: Boolean flag whether to use the train or test subset.
+    :param transformations: A list of transformations applied to all tasks. If
+                            it's a list of list, then the transformation will be
+                            different per task.
     """
 
     def __init__(
             self,
             cl_dataset: _ContinuumDataset,
             nb_tasks: int,
-            transformations: List[Callable] = None
+            transformations: Union[List[Callable], List[List[Callable]]] = None
     ) -> None:
 
         self.cl_dataset = cl_dataset
@@ -33,9 +34,15 @@ class _BaseScenario(abc.ABC):
         if transformations is None:
             transformations = self.cl_dataset.transformations
         if self.cl_dataset.data_type == "segmentation":
-            self.trsf = SegmentationCompose(transformations)
+            composer = SegmentationCompose
         else:
-            self.trsf = transforms.Compose(transformations)
+            composer = transforms.Compose
+        if transformations is not None and isinstance(transformations[0], list):
+            # We have list of list of callable, where each sublist is dedicated to
+            # a task.
+            self.trsf = [composer(trsf) for trsf in transformations]
+        else:
+            self.trsf = composer(transformations)
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
@@ -87,10 +94,17 @@ class _BaseScenario(abc.ABC):
                            even slices.
         :return: A train PyTorch's Datasets.
         """
+        if isinstance(task_index, slice) and isinstance(self.trsf, list):
+            raise ValueError(
+                f"You cannot select multiple task ({task_index}) when you have a "
+                "different set of transformations per task"
+            )
+
         x, y, t, _ = self._select_data_by_task(task_index)
+
         return TaskSet(
             x, y, t,
-            trsf=self.trsf,
+            trsf=self.trsf[task_index] if isinstance(self.trsf, list) else self.trsf,
             data_type=self.cl_dataset.data_type,
             bounding_boxes=self.cl_dataset.bounding_boxes
         )

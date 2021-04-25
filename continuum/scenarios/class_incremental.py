@@ -20,7 +20,9 @@ class ClassIncremental(_BaseScenario):
                      (e.g. increment=[5,1,1,1,1]).
     :param initial_increment: A different task size applied only for the first task.
                               Desactivated if `increment` is a list.
-    :param transformations: A list of transformations applied to all tasks.
+    :param transformations: A list of transformations applied to all tasks. If
+                            it's a list of list, then the transformation will be
+                            different per task.
     :param class_order: An optional custom class order, used for NC.
                         e.g. [0,1,2,3,4,5,6,7,8,9] or [5,2,4,1,8,6,7,9,0,3]
     """
@@ -31,7 +33,7 @@ class ClassIncremental(_BaseScenario):
         nb_tasks: int = 0,
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,
-        transformations: List[Callable] = None,
+        transformations: Union[List[Callable], List[List[Callable]]] = None,
         class_order: Union[List[int], None]=None
     ) -> None:
 

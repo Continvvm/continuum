@@ -14,16 +14,18 @@ class ContinualScenario(_BaseScenario):
     Scenario: the scenario is entirely defined by the task label vector in the cl_dataset
 
     :param cl_dataset: A continual dataset.
-    :param transformations: A list of transformations applied to all tasks.
+    :param transformations: A list of transformations applied to all tasks. If
+                            it's a list of list, then the transformation will be
+                            different per task.
     """
 
     def __init__(
             self,
             cl_dataset: _ContinuumDataset,
-            transformations: List[Callable] = None,
+            transformations: Union[List[Callable], List[List[Callable]]] = None,
     ) -> None:
         self.check_data(cl_dataset)
-        super().__init__(cl_dataset=cl_dataset, nb_tasks=self.nb_tasks,transformations=transformations)
+        super().__init__(cl_dataset=cl_dataset, nb_tasks=self.nb_tasks, transformations=transformations)
 
     def check_data(self, cl_dataset: _ContinuumDataset):
         x, y, t = cl_dataset.get_data()
