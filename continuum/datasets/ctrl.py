@@ -26,6 +26,7 @@ class CTRL(_ContinuumDataset):
     :param class_counter: The initial class counter per dataset, helps when seeing
                           twice the same dataset we want them to have the same or
                           different labels.
+    :param class_subsets: A subset of classes to sample from the i-th dataset.
     :param seed: A random seed for reproducibility.
     """
     def __init__(
@@ -35,9 +36,11 @@ class CTRL(_ContinuumDataset):
         split: str = "train",
         proportions: Union[None, List[int], List[float]] = None,
         class_counter: Union[None, List[int]] = None,
+        class_subsets: Union[None, List[int]] = None,
         seed: int = 1
     ):
         class_counter = class_counter or [0 for _ in range(len(datasets))]
+        class_subsets = class_subsets or [None for _ in range(len(datasets))]
         proportions = proportions or [None for _ in range(len(datasets))]
         if len(proportions) != len(datasets):
             raise ValueError(
@@ -55,6 +58,7 @@ class CTRL(_ContinuumDataset):
         self.split = split
         self.proportions = proportions
         self.class_counter = class_counter
+        self.class_subsets = class_subsets
         self.seed = seed
 
         super().__init__()
@@ -66,10 +70,12 @@ class CTRL(_ContinuumDataset):
         for i, dataset in enumerate(self.datasets):
             x, y, _ = dataset.get_data()
 
+            if self.class_subsets[i] is not None:
+                indexes = np.where(np.isin(y, self.class_subsets[i]))[0]
+                x, y = x[indexes], y[indexes]
             if self.split in ("train", "val") and self.proportions[i]:
                 indexes = self.balanced_sampling(y, self.proportions[i], self.seed, self.split)
                 x, y = x[indexes], y[indexes]
-
             if x.dtype == "S255":  # String paths
                 x = self.open_and_resize(x, self.target_size)
             if len(x.shape) == 3:  # Grayscale images
