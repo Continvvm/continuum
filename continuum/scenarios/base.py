@@ -128,8 +128,6 @@ class _BaseScenario(abc.ABC):
         """
         x, y, t = self.dataset  # type: ignore
 
-        list_tasks = np.unique(t)
-
         if isinstance(task_index, slice):
             start = task_index.start if task_index.start is not None else 0
             stop = task_index.stop if task_index.stop is not None else len(self) + 1
