@@ -91,14 +91,15 @@ def test_slicing_nc_no_index():
     assert len(targets) == len(classes)
     assert (targets == np.array(classes)).all(), (targets, classes)
 
+
 @pytest.mark.parametrize("list_tasks", [
     np.arange(10),
-    np.arange(5,10),
-    np.arange(3,10,2),
-    np.arange(9,0,-2) ,
-    np.arange(0,10, 2),
-    list(np.arange(0,10, 2)),
-    list(np.arange(5,10))
+    np.arange(5, 10),
+    np.arange(3, 10, 2),
+    np.arange(9, 0, -2),
+    np.arange(0, 10, 2),
+    list(np.arange(0, 10, 2)),
+    list(np.arange(5, 10))
 ])
 def test_slicing_list(list_tasks):
     train, test = gen_data()

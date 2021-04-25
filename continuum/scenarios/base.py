@@ -110,8 +110,8 @@ class _BaseScenario(abc.ABC):
         )
 
     def _select_data_by_task(
-        self,
-        task_index: Union[int, slice, np.ndarray]
+            self,
+            task_index: Union[int, slice, np.ndarray]
     ) -> Union[np.ndarray, np.ndarray, np.ndarray, Union[int, List[int]]]:
         """Selects a subset of the whole data for a given task.
 
@@ -139,7 +139,7 @@ class _BaseScenario(abc.ABC):
                 raise ValueError(f"Invalid slicing resulting in no data (start={start}, end={stop}, step={step}).")
 
         if isinstance(task_index, np.ndarray):
-            task_index=list(task_index)
+            task_index = list(task_index)
 
         if isinstance(task_index, list):
             task_index = [
