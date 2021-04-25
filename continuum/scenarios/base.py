@@ -115,21 +115,21 @@ class _BaseScenario(abc.ABC):
         or both.
         """
 
-        new_x, new_y, new_t= None, None, None
+        new_x, new_y, new_t = None, None, None
 
         for i, index in enumerate(task_indexes):
             taskset = self.__getitem__(index)
             all_task_indexes = np.arange(len(taskset))
-            x,y,t = taskset.get_raw_samples(all_task_indexes)
-            t=np.ones(len(y))*i
+            x, y, t = taskset.get_raw_samples(all_task_indexes)
+            t = np.ones(len(y)) * i
             if new_x is None:
                 new_x = x
                 new_y = y
                 new_t = t
             else:
-                new_x=np.concatenate([new_x,x] , axis=0)
-                new_y=np.concatenate([new_y,y] , axis=0)
-                new_t=np.concatenate([new_t,t] , axis=0)
+                new_x = np.concatenate([new_x, x], axis=0)
+                new_y = np.concatenate([new_y, y], axis=0)
+                new_t = np.concatenate([new_t, t], axis=0)
 
         return new_x, new_y, new_t
 
