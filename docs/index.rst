@@ -103,7 +103,8 @@ on the test set:
 
 From this loader, we can get the first task :code:`cl_scenario_test[0]`, all tasks up to the third
 task :code:`cl_scenario_test[:3]`, or even all tasks :code:`cl_scenario_test[:]`. You can slice
-any loaders like you would do with Python's List.
+any loaders like you would do with Python's List. You can also slide the scenario with a list
+(for example :code:`cl_scenario_test[[0,2,3,4]]` ).
 
 This library was developped by `Arthur Douillard <https://arthurdouillard.com/>`__
 and `Timothée Lesort <https://tlesort.github.io/>`__. If you have any new feature
