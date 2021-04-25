@@ -111,7 +111,7 @@ class _BaseScenario(abc.ABC):
 
     def _select_data_by_task(
         self,
-        task_index: Union[int, slice]
+        task_index: Union[int, slice, np.ndarray]
     ) -> Union[np.ndarray, np.ndarray, np.ndarray, Union[int, List[int]]]:
         """Selects a subset of the whole data for a given task.
 
@@ -128,7 +128,13 @@ class _BaseScenario(abc.ABC):
         """
         x, y, t = self.dataset  # type: ignore
 
-        if isinstance(task_index, slice):
+        list_tasks = np.unique(t)
+
+        if isinstance(task_index, np.ndarray):
+            assert set(list(task_index)).issubset(list(y)), print(
+                f"Some tasks index of the list are not in the scenario of the task: {task_index} vs {list_tasks}")
+            indexes=task_index
+        elif isinstance(task_index, slice):
             start = task_index.start if task_index.start is not None else 0
             stop = task_index.stop if task_index.stop is not None else len(self) + 1
             step = task_index.step if task_index.step is not None else 1
