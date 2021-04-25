@@ -130,17 +130,18 @@ class _BaseScenario(abc.ABC):
 
         list_tasks = np.unique(t)
 
-        if isinstance(task_index, np.ndarray):
-            assert set(list(task_index)).issubset(list(y)), print(
-                f"Some tasks index of the list are not in the scenario of the task: {task_index} vs {list_tasks}")
-            indexes=task_index
-        elif isinstance(task_index, slice):
+        if isinstance(task_index, slice):
             start = task_index.start if task_index.start is not None else 0
             stop = task_index.stop if task_index.stop is not None else len(self) + 1
             step = task_index.step if task_index.step is not None else 1
             task_index = list(range(start, stop, step))
             if len(task_index) == 0:
                 raise ValueError(f"Invalid slicing resulting in no data (start={start}, end={stop}, step={step}).")
+
+        if isinstance(task_index, np.ndarray):
+            task_index=list(task_index)
+
+        if isinstance(task_index, list):
             task_index = [
                 t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
             ]
