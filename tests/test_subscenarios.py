@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from continuum.datasets import InMemoryDataset
-from continuum.scenarios import ClassIncremental, ContinualScenario
+from continuum.scenarios import ClassIncremental, ContinualScenario, create_subscenario
 
 
 def gen_data():
@@ -31,7 +31,5 @@ def test_slicing_list(list_tasks):
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
     scenario = ClassIncremental(dummy, increment=1)
-    x, y, t = scenario.get_subscenario(list_tasks)
-    sub_dataset = InMemoryDataset(x, y, t)
-    subscenario = ContinualScenario(sub_dataset)
+    subscenario = create_subscenario(scenario, list_tasks)
     assert subscenario.nb_tasks == len(list_tasks), print(f"{len(subscenario)} - vs - {len(list_tasks)}")

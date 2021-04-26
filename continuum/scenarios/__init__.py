@@ -9,6 +9,8 @@ from continuum.scenarios.rotations import Rotations
 from continuum.scenarios.permutations import Permutations
 from continuum.scenarios.segmentation import SegmentationClassIncremental
 
+from continuum.scenarios.scenario_utils import create_subscenario
+
 __all__ = [
     "ContinualScenario",
     "ClassIncremental",
@@ -18,4 +20,3 @@ __all__ = [
     "TransformationIncremental",
     "SegmentationClassIncremental"
 ]
-
