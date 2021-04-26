@@ -3,7 +3,7 @@ python:
   - "3.6"
 
 install:
-  - pip3 install -r requirements.txt
+  - python3 setup.py install
 
 script:
   - pytest tests/ -m 'not slow'
