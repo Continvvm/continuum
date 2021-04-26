@@ -173,7 +173,7 @@ class TaskSet(TorchDataset):
             x, y, t = self._prepare_text(x, y, t)
         elif self.data_type == "segmentation":
             x, y, t = self._prepare_segmentation(x, y, t)
-        elif self.data_type == "image_array":
+        elif self.data_type == "image_array" or self.data_type == "image_path":
             x, y, t = self._prepare(x, y, t)
         else:  # self.data_type == "tensor"
             pass
