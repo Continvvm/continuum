@@ -121,7 +121,7 @@ class InMemoryDataset(_ContinuumDataset):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.data = (x, y, t)
-        if data_type not in ("image_array", "image_path", "text", "segmentation"):
+        if data_type not in ("image_array", "image_path", "text", "tensor", "segmentation"):
             raise ValueError(f"Unrecognized data_type={data_type} for InMemoryDataset!")
         self._data_type = data_type
 

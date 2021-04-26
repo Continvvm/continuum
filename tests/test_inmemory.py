@@ -20,6 +20,19 @@ def gen_data():
     return (x_train, y_train), (x_test, y_test)
 
 
+def gen_tensor_data():
+    x_train = np.random.rand(20, 100)
+    y_train = []
+    for i in range(10):
+        y_train.append(np.ones(2) * i)
+    y_train = np.concatenate(y_train)
+
+    x_test = np.random.rand(20, 100)
+    y_test = np.copy(y_train)
+
+    return (x_train, y_train), (x_test, y_test)
+
+
 # this function create data with a mismatch between x and y shape
 def gen_bad_data():
     nb_classes = 6
@@ -94,3 +107,20 @@ def test_split_train_val(val_split):
         train_taskset, val_taskset = split_train_val(taskset, val_split=val_split)
         assert int(val_split * len(taskset)) == len(val_taskset)
         assert len(val_taskset) + len(train_taskset) == len(taskset)
+
+
+@pytest.mark.parametrize("increment,nb_tasks", [
+    (2, 5),
+    (5, 2),
+    (1, 10)
+])
+def test_tensor_type(increment, nb_tasks):
+    train, test = gen_tensor_data()
+    dummy = InMemoryDataset(*train, data_type="tensor")
+    scenario = ClassIncremental(dummy, increment=increment)
+
+    taskset = scenario[0]
+    for x, y, t in DataLoader(taskset):
+        continue
+
+    assert scenario.nb_tasks == nb_tasks
