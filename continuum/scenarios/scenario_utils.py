@@ -10,6 +10,8 @@ def create_subscenario(base_scenario, task_indexes):
     """
 
     new_x, new_y, new_t = None, None, None
+    if base_scenario.cldataset.bounding_boxes is not None:
+        raise ValueError("the function create_subscenario is not compatible with scenario with bounding_boxes yet.")
 
     for i, index in enumerate(task_indexes):
         taskset = base_scenario[index]
