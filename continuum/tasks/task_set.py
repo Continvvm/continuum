@@ -107,28 +107,30 @@ class TaskSet(TorchDataset):
         return self.get_samples(indexes)
 
     def get_samples(self, indexes):
-        images, targets, tasks = [], [], []
+        samples, targets, tasks = [], [], []
 
         w, h = None, None
         for index in indexes:
             # we need to use __getitem__ to have the transform used
-            img, y, t = self[index]
+            sample, y, t = self[index]
 
-            if w is None:
-                w, h = img.shape[:2]
-            elif w != img.shape[0] or h != img.shape[1]:
-                raise Exception(
-                    "Images dimension are inconsistent, resize them to a "
-                    "common size using a transformation.\n"
-                    "For example, give to the scenario you're using as `transformations` argument "
-                    "the following: [transforms.Resize((224, 224)), transforms.ToTensor()]"
-                )
+            if self.data_type in ["image_path", "image_array"]:
+                # we check dimension of images
+                if w is None:
+                    w, h = sample.shape[:2]
+                elif w != sample.shape[0] or h != sample.shape[1]:
+                    raise Exception(
+                        "Images dimension are inconsistent, resize them to a "
+                        "common size using a transformation.\n"
+                        "For example, give to the scenario you're using as `transformations` argument "
+                        "the following: [transforms.Resize((224, 224)), transforms.ToTensor()]"
+                    )
 
-            images.append(img)
+            samples.append(sample)
             targets.append(y)
             tasks.append(t)
 
-        return _tensorize_list(images), _tensorize_list(targets), _tensorize_list(tasks)
+        return _tensorize_list(samples), _tensorize_list(targets), _tensorize_list(tasks)
 
     def get_raw_samples(self, indexes):
         """Get samples without preprocessing, for split train/val for example."""
