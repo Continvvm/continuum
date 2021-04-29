@@ -124,3 +124,19 @@ def test_tensor_type(increment, nb_tasks):
         continue
 
     assert scenario.nb_tasks == nb_tasks
+
+@pytest.mark.parametrize("increment,nb_tasks", [
+    (2, 5),
+    (5, 2),
+    (1, 10)
+])
+def test_tensor_type_get_samples(increment, nb_tasks):
+    train, test = gen_tensor_data()
+    dummy = InMemoryDataset(*train, data_type="tensor")
+    scenario = ClassIncremental(dummy, increment=increment)
+
+    taskset = scenario[0]
+    for x, y, t in DataLoader(taskset):
+        continue
+
+    x, y, t = taskset.get_random_samples(5)
