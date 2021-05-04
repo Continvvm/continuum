@@ -1,7 +1,9 @@
 import abc
-from continuum.scenarios import _BaseScenario, create_subscenario
+
 import torch
 import numpy as np
+
+from continuum.scenarios import _BaseScenario, create_subscenario
 
 
 class _BaseGenerator(abc.ABC):
@@ -59,5 +61,4 @@ class TaskOrderGenerator(_BaseGenerator):
 
         subscenario = create_subscenario(self.base_scenario, task_order[:nb_tasks])
 
-        # return subscenario
         return subscenario
