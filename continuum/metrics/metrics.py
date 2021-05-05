@@ -153,20 +153,22 @@ def forgetting(all_preds, all_targets, all_tasks):
     Reference:
     * Riemannian Walk for Incremental Learning: Understanding Forgetting and Intransigence
       Chaudhry et al. ECCV 2018
+
+    See eq. 3.
     """
-    T = len(all_preds)  # Number of seen tasks so far
+    k = len(all_preds)  # Number of seen tasks so far
     # TODO if we take in account zeroshot, we should take the max of all_tasks?
-    if T <= 1:
+    if k <= 1:
         return 0.
 
     f = 0.
-    for j in range(T - 1):
-        r_kj = _get_R_ij(T - 1, j, all_preds, all_targets, all_tasks)
-        r_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(T - 1))
-        f += (r_lj - r_kj)
+    for j in range(k - 2):
+        a_kj = _get_R_ij(k - 1, j, all_preds, all_targets, all_tasks)
+        max_a_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(k - 2) if l >= j)
+        f += max_a_lj - a_kj
 
-    metric = f / (T - 1)
-    assert 0. <= metric <= 1.0, metric
+    metric = f / (k - 1)
+    assert -1.0 <= metric <= 1.0, metric
     return metric
 
 
@@ -185,6 +187,10 @@ def _get_R_ij(i, j, all_preds, all_targets, all_tasks):
     ============================|
 
     R_13 is the R of the first column and the third row.
+
+    From Chaudhry et al., calling this function with (i, j) equals to a_{i,j}.
+
+    Except OOD and Zeroshot, i should be >= j.
 
     Reference:
     * Don’t forget, there is more than forgetting: newmetrics for Continual Learning
