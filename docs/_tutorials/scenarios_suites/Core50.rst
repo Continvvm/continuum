@@ -9,6 +9,10 @@ This dataset was originally created to propose various continual learning settin
 
 Continuum Scenarios
 ##########
+You can create automatically scenarios with continuum by setting the scenario and classification parameter in Core50 dataset.
+It will provide different types of annotation for targets and tasks.
+For classification, you can choose to use category (10 classes) annotation or object annotation (50 classes)>
+For the task ids, you can choose among "classes", "domains" and "objects" how the task labels will be affected to data.
 
 - Class Incremental
 """"""""
@@ -18,8 +22,10 @@ We can create a simple class incremental setting.
 .. code-block:: python
 
     from continuum.datasets import COre50
+    # Same as :
+    # dataset=Core50("/your/path", scenario="classes", classification="object")
     dataset=Core50("/your/path")
-    # 5 tasks with 2 classes each
+    # 5 tasks with 10 classes each
     scenario = ClassIncremental(dataset, nb_tasks=5)
 
 - Instance Incremental
@@ -29,7 +35,7 @@ We can create a simple class incremental setting.
 .. code-block:: python
 
     from continuum.datasets import COre50
-    dataset=Core50("/your/path", scenario="domains")
+    dataset=Core50("/your/path", scenario="domains", classification="category")
     # 11 tasks with 10 classes each video in 1 environment each
     # classes are object class
     scenario = InstanceIncremental(dataset, nb_tasks=5)
@@ -38,7 +44,7 @@ We can create a simple class incremental setting.
 .. code-block:: python
 
     from continuum.datasets import COre50
-    dataset=Core50("/your/path", scenario="objects")
+    dataset=Core50("/your/path", scenario="objects", classification="object")
     # 50 tasks with 1 object videos in the 11 environments
     # classes are object ids (50 classes then)
     scenario = InstanceIncremental(dataset, nb_tasks=5)
