@@ -4,8 +4,9 @@ CORe50
 Core50 is a dataset proposed in
 `"CORe50: a new Dataset and Benchmark for Continuous Object Recognition" <http://proceedings.mlr.press/v78/lomonaco17a.html>`__.
 This dataset proposed small videos of of 50 objects from 10 differents classes
-with 11 background environment (more info in `core50 doc <https://vlomonaco.github.io/core50/index.html#dataset>`__ ).
+with 11 background environments (more info in `core50 doc <https://vlomonaco.github.io/core50/index.html#dataset>`__ ).
 This dataset was originally created to propose various continual learning settings.
+3 background environments are allocated for test and the remaining for training.
 
 Continuum Scenarios
 ##########
@@ -23,8 +24,8 @@ We can create a simple class incremental setting.
 
     from continuum.datasets import COre50
     # Same as :
-    # dataset=Core50("/your/path", scenario="classes", classification="object")
-    dataset=Core50("/your/path")
+    # dataset=Core50("/your/path", scenario="classes", classification="object", train=True)
+    dataset=Core50("/your/path", train=True)
     # 5 tasks with 10 classes each
     scenario = ClassIncremental(dataset, nb_tasks=5)
 
@@ -35,19 +36,18 @@ We can create a simple class incremental setting.
 .. code-block:: python
 
     from continuum.datasets import COre50
-    dataset=Core50("/your/path", scenario="domains", classification="category")
-    # 11 tasks with 10 classes each video in 1 environment each
-    # classes are object class
-    scenario = InstanceIncremental(dataset, nb_tasks=5)
+    dataset=Core50("/your/path", scenario="domains", classification="category", train=True)
+    # 8 tasks in 1 environment each with 10 classes
+    scenario = ContinualScenario(dataset, nb_tasks=5)
 
 -- Object incremental Scenario --
 .. code-block:: python
 
     from continuum.datasets import COre50
-    dataset=Core50("/your/path", scenario="objects", classification="object")
-    # 50 tasks with 1 object videos in the 11 environments
+    dataset=Core50("/your/path", scenario="objects", classification="object", train=True)
+    # 50 tasks with 1 object videos in the 8 training environments
     # classes are object ids (50 classes then)
-    scenario = InstanceIncremental(dataset, nb_tasks=5)
+    scenario = ContinualScenario(dataset)
 
 
 - Classes and Instances Incremental
