@@ -163,9 +163,11 @@ def forgetting(all_preds, all_targets, all_tasks):
 
     f = 0.
     for j in range(k - 2):
+        # Accuracy on task j after learning current task k
         a_kj = _get_R_ij(k - 1, j, all_preds, all_targets, all_tasks)
+        # Best previous accuracy on task j
         max_a_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(k - 2) if l >= j)
-        f += max_a_lj - a_kj
+        f += max_a_lj - a_kj  # We want this results to be as low as possible
 
     metric = f / (k - 1)
     assert -1.0 <= metric <= 1.0, metric
