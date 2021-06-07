@@ -25,7 +25,7 @@ We can create a simple class incremental setting.
     from continuum.datasets import COre50
     # Same as :
     # dataset=Core50("/your/path", scenario="classes", classification="object", train=True)
-    dataset=Core50("/your/path", train=True)
+    dataset = Core50("/your/path", train=True)
     # 5 tasks with 10 classes each
     scenario = ClassIncremental(dataset, nb_tasks=5)
 
@@ -36,7 +36,7 @@ We can create a simple class incremental setting.
 .. code-block:: python
 
     from continuum.datasets import COre50
-    dataset=Core50("/your/path", scenario="domains", classification="category", train=True)
+    dataset = Core50("/your/path", scenario="domains", classification="category", train=True)
     # 8 tasks in 1 environment each with 10 classes
     scenario = ContinualScenario(dataset, nb_tasks=5)
 
@@ -44,7 +44,7 @@ We can create a simple class incremental setting.
 .. code-block:: python
 
     from continuum.datasets import COre50
-    dataset=Core50("/your/path", scenario="objects", classification="object", train=True)
+    dataset = Core50("/your/path", scenario="objects", classification="object", train=True)
     # 50 tasks with 1 object videos in the 8 training environments
     # classes are object ids (50 classes then)
     scenario = ContinualScenario(dataset)
@@ -58,7 +58,7 @@ Class and Instances Incremental scenarios are proposed in the scenario from the 
 .. code-block:: python
 
     from continuum.datasets import COre50
-    dataset=Core50("/your/path", scenario="objects", classification="category", train=True)
+    dataset = Core50("/your/path", scenario="objects", classification="category", train=True)
     # 50 tasks with 1 object videos in the 8 training environments
     # classes are object ids (10 classes then), new tasks might contains new label or known label
     scenario = ContinualScenario(dataset)
