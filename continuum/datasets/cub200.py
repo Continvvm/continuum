@@ -16,19 +16,24 @@ class CUB200(_ContinuumDataset):
         self.transform = transform
         self.train = train
 
-
     @property
     def data_type(self):
         return "image_path"
 
     def _load_metadata(self):
-        images = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'images.txt'), sep=' ',
-                             names=['img_id', 'filepath'])
+        images = pd.read_csv(
+            os.path.join(self.root, 'CUB_200_2011', 'images.txt'),
+            sep=' ',
+            names=['img_id', 'filepath'])
 
-        image_class_labels = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'image_class_labels.txt'), sep=' ',
-                                         names=['img_id', 'target'])
-        train_test_split = pd.read_csv(os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'),
-                                       sep=' ', names=['img_id', 'is_training_img'])
+        image_class_labels = pd.read_csv(
+            os.path.join(self.root, 'CUB_200_2011', 'image_class_labels.txt'),
+            sep=' ',
+            names=['img_id', 'target'])
+        train_test_split = pd.read_csv(
+            os.path.join(self.root, 'CUB_200_2011', 'train_test_split.txt'),
+            sep=' ',
+            names=['img_id', 'is_training_img'])
 
         data = images.merge(image_class_labels, on='img_id')
         self.data = data.merge(train_test_split, on='img_id')
@@ -57,12 +62,14 @@ class CUB200(_ContinuumDataset):
         return True
 
     def __len__(self):
+        """Len measures the number of data point from csv data."""
         return len(self.data)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         if not self._check_integrity():
             raise RuntimeError(
-                'Dataset not found or corrupted. You need to download the dataset manually at http://www.vision.caltech.edu/visipedia/CUB-200-2011.html')
+                'Dataset not found or corrupted. You need to download the dataset manually'
+                ' at http://www.vision.caltech.edu/visipedia/CUB-200-2011.html')
 
         return self.dataset
