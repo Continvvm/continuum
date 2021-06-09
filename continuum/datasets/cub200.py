@@ -1,11 +1,9 @@
 import os
-import pandas as pd
 from typing import Tuple
+
+import pandas as pd
 import numpy as np
 
-from torchvision.datasets.folder import default_loader
-from continuum import download
-import tarfile
 from continuum.datasets.base import _ContinuumDataset
 
 
@@ -16,12 +14,8 @@ class CUB200(_ContinuumDataset):
     def __init__(self, root_dir, train=True, transform=None):
         self.root = os.path.expanduser(root_dir)
         self.transform = transform
-        self.loader = default_loader
         self.train = train
 
-        if not self._check_integrity():
-            raise RuntimeError(
-                'Dataset not found or corrupted. You need to download the dataset manually at http://www.vision.caltech.edu/visipedia/CUB-200-2011.html')
 
     @property
     def data_type(self):
@@ -66,4 +60,9 @@ class CUB200(_ContinuumDataset):
         return len(self.data)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+
+        if not self._check_integrity():
+            raise RuntimeError(
+                'Dataset not found or corrupted. You need to download the dataset manually at http://www.vision.caltech.edu/visipedia/CUB-200-2011.html')
+
         return self.dataset

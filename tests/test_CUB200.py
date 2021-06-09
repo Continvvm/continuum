@@ -1,19 +1,19 @@
+import os
+
 import pytest
-import numpy as np
 from torchvision.transforms import Resize, ToTensor
 
 from continuum.datasets import CUB200
-from continuum.scenarios import InstanceIncremental
 from continuum.scenarios import ClassIncremental
+
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 '''
 Test the visualization with instance_class scenario
 '''
-
-
 @pytest.mark.slow
 def test_scenario_CUB200_ClassIncremental():
-    dataset = CUB200('../Datasets', train=True, transform=None)
+    dataset = CUB200(DATA_PATH, train=True, transform=None)
     scenario = ClassIncremental(dataset, increment=100, transformations=[Resize((224, 224)), ToTensor()])
 
     print(f"Nb classes : {scenario.nb_classes} ")
