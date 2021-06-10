@@ -21,6 +21,7 @@ fullteststim: FORCE
 
 clean: FORCE
 	rm -rf dist/
+	rm -rf build/
 	rm -rf continuum.egg-info/
 	rm -rf tests/Datasets
 
