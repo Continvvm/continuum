@@ -12,6 +12,7 @@ from continuum.datasets.pytorch import (
     CIFAR10, CIFAR100, EMNIST, KMNIST, MNIST, QMNIST, FashionMNIST
 )
 from continuum.datasets.svhn import SVHN
+from continuum.datasets.cub200 import CUB200
 from continuum.datasets.pascalvoc import PascalVOC2012
 from continuum.datasets.stream51 import Stream51
 from continuum.datasets.dtd import DTD
