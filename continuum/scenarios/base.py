@@ -62,6 +62,11 @@ class _BaseScenario(abc.ABC):
         return len(np.unique(self.dataset[1]))  # type: ignore
 
     @property
+    def classes(self) -> int:
+        """list of classes in the whole continual setting."""
+        return np.unique(self.dataset[1])  # type: ignore
+
+    @property
     def nb_tasks(self) -> int:
         """Number of tasks in the whole continual setting."""
         return len(self)
