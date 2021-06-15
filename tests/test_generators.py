@@ -6,7 +6,7 @@ import string
 
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import ClassIncremental
-from continuum.generators import TaskOrderGenerator
+from continuum.generators import TaskOrderGenerator, ClassOrderGenerator
 
 
 def gen_data():
@@ -33,6 +33,33 @@ def test_task_order_generator():
     assert sample_scenario.nb_tasks == scenario.nb_tasks
 
 
+def test_class_order_generator():
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train)
+    scenario = ClassIncremental(dummy, increment=1)
+
+    scenario_generator = ClassOrderGenerator(scenario)
+    sample_scenario = scenario_generator.sample()
+
+    assert sample_scenario.nb_tasks == scenario.nb_tasks
+    assert sample_scenario.nb_classes == scenario.nb_classes
+    assert (sample_scenario.classes == scenario.classes).all()
+
+@pytest.mark.parametrize("seed",
+    [0, 41, 1992]
+)
+def test_class_order_generator(seed):
+    train, test = gen_data()
+    dummy = InMemoryDataset(*train)
+    scenario = ClassIncremental(dummy, increment=1)
+
+    scenario_generator = ClassOrderGenerator(scenario)
+    sample_scenario = scenario_generator.sample(seed)
+    class_order = scenario_generator.get_class_order(seed)
+
+    assert (np.array(class_order) == np.array(sample_scenario.class_order)).all()
+
+
 @pytest.mark.parametrize("seeds", [
     [0, 1],
     [1664, 41],
@@ -46,9 +73,9 @@ def test_task_order_generator_seed(seeds):
     scenario = ClassIncremental(dummy, increment=1)
 
     scenario_generator = TaskOrderGenerator(scenario)
-    task_order_0 = scenario_generator.get_class_order(seed=seed_0)
-    task_order_1 = scenario_generator.get_class_order(seed=seed_1)
-    task_order_0_2 = scenario_generator.get_class_order(seed=seed_0)
+    task_order_0 = scenario_generator.get_task_order(seed=seed_0)
+    task_order_1 = scenario_generator.get_task_order(seed=seed_1)
+    task_order_0_2 = scenario_generator.get_task_order(seed=seed_0)
 
     assert not torch.all(task_order_0.eq(task_order_1))
     assert torch.all(task_order_0.eq(task_order_0_2))
@@ -66,3 +93,4 @@ def test_task_order_generator_nb_tasks(nb_tasks):
     sample_scenario = scenario_generator.sample(nb_tasks=nb_tasks)
 
     assert sample_scenario.nb_tasks == nb_tasks
+
