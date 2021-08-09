@@ -97,7 +97,7 @@ def positive_backward_transfer(all_preds, all_targets, all_tasks):
     :return: a float metric between 0 and 1.
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
-    metric = 1 - abs(min(bwt, 0.))
+    metric = max(bwt, 0.)
     assert 0. <= metric <= 1.0, metric
     return metric
 
@@ -115,7 +115,7 @@ def remembering(all_preds, all_targets, all_tasks):
     :return: a float metric between 0 and 1.
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
-    metric = max(bwt, 0.)
+    metric = 1 - abs(min(bwt, 0.))
     assert 0. <= metric <= 1.0, metric
     return metric
 
