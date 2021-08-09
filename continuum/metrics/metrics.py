@@ -229,14 +229,17 @@ def get_model_size(model):
     :return: The number of parameters.
     """
     nb_params = 0
-    # we want he number of parameter for inference
+    # store original state
+    orig_state = model.training()
+    # we want the number of parameter for inference
     model.eval()
     for w in model.parameters():
         if len(w.shape) > 0:  # Tensor
             nb_params += reduce(lambda a, b: a * b, w.shape)
         else:  # Scalar
             nb_params += 1
-
+    # restore previous state
+    model.training(orig_state)
     return nb_params
 
 
