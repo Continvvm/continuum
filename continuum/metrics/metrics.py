@@ -230,7 +230,7 @@ def get_model_size(model):
     """
     nb_params = 0
     # store original state
-    orig_state = model.training()
+    orig_state = model.training
     # we want the number of parameter for inference
     model.eval()
     for w in model.parameters():
@@ -239,7 +239,7 @@ def get_model_size(model):
         else:  # Scalar
             nb_params += 1
     # restore previous state
-    model.training(orig_state)
+    model.train(orig_state)
     return nb_params
 
 
