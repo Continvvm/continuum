@@ -163,7 +163,7 @@ class CTRLminus(CTRL):  # S^-
         # DTD class_subsets as followed in MNTDP
         print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
-        class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+        class_subsets[2] = [17, 18, 16, 31, 21, 24, 45, 11, 1, 37]
 
         super().__init__(
             datasets=datasets,
@@ -238,7 +238,7 @@ class CTRLin(CTRL):  # S^{in}
         # DTD class_subsets as followed in MNTDP
         print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
-        class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+        class_subsets[2] = [0, 35, 11, 37, 17, 12, 26, 14, 32, 45]
 
         super().__init__(
             datasets=datasets,
@@ -275,7 +275,7 @@ class CTRLout(CTRL):  # S^{out}
         # DTD class_subsets as followed in MNTDP
         print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
-        class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+        class_subsets[2] = [9, 46, 40, 39, 10, 11, 1, 21, 35, 43]
 
         super().__init__(
             datasets=datasets,
@@ -311,7 +311,7 @@ class CTRLplastic(CTRL):  # S^{pl}
         # DTD class_subsets as followed in MNTDP
         print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
-        class_subsets[1] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+        class_subsets[1] = [38, 43, 27, 25, 10, 17, 31, 16, 24, 4]
 
         super().__init__(
             datasets=datasets,
