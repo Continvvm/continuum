@@ -74,6 +74,10 @@ class CTRL(_ContinuumDataset):
                 indexes = np.where(np.isin(y, self.class_subsets[i]))[0]
                 x, y = x[indexes], y[indexes]
             if self.split in ("train", "val") and self.proportions[i]:
+
+                # we are sending **all data - x and y** to the sampler
+                # we can intervene here, and decide if "y" can be filtered
+
                 indexes = self.balanced_sampling(y, self.proportions[i], self.seed, self.split)
                 x, y = x[indexes], y[indexes]
             if x.dtype == "S255":  # String paths
@@ -155,10 +159,16 @@ class CTRLminus(CTRL):  # S^-
         else:
             proportions = None
 
+
+        # DTD class_subsets as followed in MNTDP
+        class_subsets = [None for _ in range(len(datasets))]
+        class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+
         super().__init__(
             datasets=datasets,
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 87],
+            class_subsets=class_subsets,
             seed=seed,
             split=split
         )
@@ -186,10 +196,15 @@ class CTRLplus(CTRL):  # S^+
         else:
             proportions = None
 
+        # DTD class_subsets as followed in MNTDP
+        class_subsets = [None for _ in range(len(datasets))]
+        class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+
         super().__init__(
             datasets=datasets,
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 87],
+            class_subsets=class_subsets,
             seed=seed,
             split=split
         )
@@ -218,10 +233,15 @@ class CTRLin(CTRL):  # S^{in}
         else:
             proportions = None
 
+        # DTD class_subsets as followed in MNTDP
+        class_subsets = [None for _ in range(len(datasets))]
+        class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+
         super().__init__(
             datasets=datasets,
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 87],
+            class_subsets=class_subsets,
             seed=seed,
             split=split
         )
@@ -249,10 +269,15 @@ class CTRLout(CTRL):  # S^{out}
         else:
             proportions = None
 
+        # DTD class_subsets as followed in MNTDP
+        class_subsets = [None for _ in range(len(datasets))]
+        class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+
         super().__init__(
             datasets=datasets,
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 87],
+            class_subsets=class_subsets,
             seed=seed,
             split=split
         )
@@ -279,10 +304,15 @@ class CTRLplastic(CTRL):  # S^{pl}
         else:
             proportions = None
 
+        # DTD class_subsets as followed in MNTDP
+        class_subsets = [None for _ in range(len(datasets))]
+        class_subsets[1] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
+
         super().__init__(
             datasets=datasets,
             proportions=proportions,
             class_counter=[0, 10, 57, 67, 77],
+            class_subsets=class_subsets,
             seed=seed,
             split=split
         )
