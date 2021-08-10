@@ -161,6 +161,7 @@ class CTRLminus(CTRL):  # S^-
 
 
         # DTD class_subsets as followed in MNTDP
+        print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
         class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
 
@@ -197,6 +198,7 @@ class CTRLplus(CTRL):  # S^+
             proportions = None
 
         # DTD class_subsets as followed in MNTDP
+        print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
         class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
 
@@ -234,6 +236,7 @@ class CTRLin(CTRL):  # S^{in}
             proportions = None
 
         # DTD class_subsets as followed in MNTDP
+        print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
         class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
 
@@ -270,6 +273,7 @@ class CTRLout(CTRL):  # S^{out}
             proportions = None
 
         # DTD class_subsets as followed in MNTDP
+        print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
         class_subsets[2] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
 
@@ -305,6 +309,7 @@ class CTRLplastic(CTRL):  # S^{pl}
             proportions = None
 
         # DTD class_subsets as followed in MNTDP
+        print("DTD - using the class_subset as in MNTDP seeded code")
         class_subsets = [None for _ in range(len(datasets))]
         class_subsets[1] = [22, 14, 25, 34, 39, 24, 40, 44, 13, 1]
 
