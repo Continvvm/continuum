@@ -158,7 +158,7 @@ class CTRLminus(CTRL):  # S^-
         super().__init__(
             datasets=datasets,
             proportions=proportions,
-            class_counter=[0, 10, 20, 67, 77, 0],
+            class_counter=[0, 10, 20, 67, 77, 87],
             seed=seed,
             split=split
         )
@@ -189,7 +189,7 @@ class CTRLplus(CTRL):  # S^+
         super().__init__(
             datasets=datasets,
             proportions=proportions,
-            class_counter=[0, 10, 20, 67, 77, 0],
+            class_counter=[0, 10, 20, 67, 77, 87],
             seed=seed,
             split=split
         )
@@ -221,7 +221,7 @@ class CTRLin(CTRL):  # S^{in}
         super().__init__(
             datasets=datasets,
             proportions=proportions,
-            class_counter=[0, 10, 20, 67, 77, 0],
+            class_counter=[0, 10, 20, 67, 77, 87],
             seed=seed,
             split=split
         )
