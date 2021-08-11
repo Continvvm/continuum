@@ -19,7 +19,11 @@ def herd_random(x: np.ndarray, y: np.ndarray, t: np.ndarray, z: Any, nb_per_clas
     for class_id in np.unique(y):
         class_indexes = np.where(y == class_id)[0]
         indexes.append(
-            np.random.choice(class_indexes, size=nb_per_class)
+            np.random.choice(
+                class_indexes,
+                size=min(nb_per_class, len(class_indexes)),
+                replace=False
+            )
         )
 
     indexes =  np.concatenate(indexes)
@@ -93,13 +97,13 @@ def herd_closest_to_barycenter(
         D = class_features.T
         D = D / (np.linalg.norm(D, axis=0) + 1e-8)
         mu = np.mean(D, axis=1)
-        herding_matrix = np.zeros((features.shape[0],))
+        herding_matrix = np.zeros((class_features.shape[0],))
 
         w_t = mu
         iter_herding, iter_herding_eff = 0, 0
 
         while not (
-            np.sum(herding_matrix != 0) == min(nb_per_class, features.shape[0])
+            np.sum(herding_matrix != 0) == min(nb_per_class, class_features.shape[0])
         ) and iter_herding_eff < 1000:
             tmp_t = np.dot(w_t, D)
             ind_max = np.argmax(tmp_t)
