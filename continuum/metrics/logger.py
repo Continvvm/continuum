@@ -93,10 +93,16 @@ class Logger(_BaseLogger):
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
         all_preds, all_targets, all_tasks = self._get_best_epochs(subset="test")
-        return [
-            _get_R_ij(-1, j, all_preds, all_targets, all_tasks)
-            for j in range(self.nb_tasks)
-        ]
+        last_preds, last_targets, last_tasks = all_preds[-1], all_targets[-1], all_tasks[-1]
+        correct_pred = last_preds == last_targets
+
+        acc_per_task = []
+        for task_id in np.unique(last_tasks):
+            indexes = last_tasks == task_id
+            acc_per_task.append(correct_pred[indexes].mean())
+
+        return acc_per_task
+
 
     @property
     @require_subset("train")

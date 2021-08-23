@@ -132,8 +132,10 @@ class TaskSet(TorchDataset):
 
         return _tensorize_list(samples), _tensorize_list(targets), _tensorize_list(tasks)
 
-    def get_raw_samples(self, indexes):
+    def get_raw_samples(self, indexes=None):
         """Get samples without preprocessing, for split train/val for example."""
+        if indexes is None:
+            return self._x, self._y, self._t
         return self._x[indexes], self._y[indexes], self._t[indexes]
 
     def get_sample(self, index: int) -> np.ndarray:

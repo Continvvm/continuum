@@ -7,20 +7,20 @@ and co-authored by Veniat (Sorbonne), Denoyer and Ranzato (Facebook Research).
 
 Each of the proposed dataset is combination of multiple small datasets among:
 
-- MNIST
-- SVHN
-- CIFAR10
-- Rainbow MNIST
-- Fashion MNIST
-- DTD
+* MNIST
+* SVHN
+* CIFAR10
+* Rainbow MNIST
+* Fashion MNIST
+* DTD
 
 CTRL proposes different combinations which they name:
 
-- CTRL minus
-- CTRL plus
-- CTRL in
-- CTRL out
-- CTRL plastic
+* CTRL minus
+* CTRL plus
+* CTRL in
+* CTRL out
+* CTRL plastic
 
 The only way to use those datasets is with the `ContinualScenario` scenario, which is the most
 flexible scenario Continuum offers.
@@ -40,8 +40,8 @@ We can create a simple class incremental setting.
     from continuum import ContinualScenario
 
     scenario_train = ContinualScenario(CTRLminus(path, split="train", download=True))
-    scenario_train = ContinualScenario(CTRLminus(path, split="val", download=True))
-    scenario_train = ContinualScenario(CTRLminus(path, split="test", download=True))
+    scenario_val = ContinualScenario(CTRLminus(path, split="val", download=True))
+    scenario_test = ContinualScenario(CTRLminus(path, split="test", download=True))
 
     for task_id, (train_set, val_set, test_set) in enumerate(zip(scenario_train, scenario_val, scenario_test)):
       train_loader = DataLoader(train_set)

@@ -9,7 +9,7 @@ with open("requirements.txt", "r") as f:
 
 setuptools.setup(
     name="continuum",
-    version="1.0.24",
+    version="1.0.27",
     author="Arthur Douillard, Timothée Lesort",
     author_email="ar.douillard@gmail.com",
     description="A clean and simple library for Continual Learning in PyTorch.",

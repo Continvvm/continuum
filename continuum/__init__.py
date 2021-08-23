@@ -12,3 +12,6 @@ from continuum.scenarios import *
 from continuum.tasks import *
 from continuum.metrics import *
 from continuum.viz import plot_samples
+
+
+__version__ = "1.0.27"
