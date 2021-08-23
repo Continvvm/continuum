@@ -189,6 +189,18 @@ def test_indexing():
     slice(0, 4, 2)
 ])
 def test_advanced_indexing(indexes_slice):
+    """
+    This code creates dummy images of 2x2 all likewise:
+    [
+        1 0
+        0 0
+    ]
+
+    Then we apply discrete rotations to produce the four possible variations
+    (1 on the top-right, bottom-right, bottom-left in addition of the original
+    top-left). We then sample multiple tasks together and check that the associated
+    task label of the sample matches the rotations it was applied to.
+    """
     x = np.zeros((20, 2, 2, 3), dtype=np.uint8)
     x[:, 0, 0] = 1  # add a 1 on the top-left
 

@@ -70,12 +70,14 @@ class TransformationIncremental(InstanceIncremental):
     def __getitem__(self, task_index):
         """Returns a task by its unique index.
 
-        :param task_index: The unique index of a task, between 0 and len(loader) - 1.
+        :param task_index: The unique index of a task, between 0 and len(loader) - 1. Or it could
+                           be a list or a numpy array or even a slice.
         :return: A train PyTorch's Datasets.
         """
         x, y, _ = self.dataset
 
         if isinstance(task_index, slice):
+            # Convert a slice to a list and respect the Python's advanced indexing conventions
             start = task_index.start if task_index.start is not None else 0
             stop = task_index.stop if task_index.stop is not None else len(self) + 1
             step = task_index.step if task_index.step is not None else 1
