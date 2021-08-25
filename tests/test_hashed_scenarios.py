@@ -15,7 +15,7 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
                           "PhashSimple",
                           "Phash",
                           "AverageHash",
-                          "ColorHash"]) #, "CropResistantHash"]) # trop long CropResistantHash
+                          "ColorHash"]) #, "CropResistantHash"]) # too long CropResistantHash
 @pytest.mark.parametrize("dataset,shape",
                          [(CIFAR10, [32, 32, 3]),
                          (CIFAR100, [32, 32, 3]),
