@@ -27,11 +27,9 @@ class HashedScenario(ContinualScenario):
             cl_dataset: _ContinuumDataset,
             hash_name,
             nb_tasks=None,
-            data_shape=None,
             transformations: Union[List[Callable], List[List[Callable]]] = None,
     ) -> None:
         self.hash_name = hash_name
-        self.data_shape = data_shape
         self.data_type = cl_dataset.data_type
         x, y, t = self.generate_task_ids(cl_dataset, self.hash_name, nb_tasks)
         cl_dataset = InMemoryDataset(x, y, t, data_type=self.data_type)
@@ -39,12 +37,6 @@ class HashedScenario(ContinualScenario):
 
     def process_for_hash(self, x):
         if self.data_type == "image_array":
-            # x = np.array(x)
-            # x = x.reshape(self.data_shape)
-            # x = x - x.min()
-            # x = x / x.max()
-            # x = np.uint8(x * 255)
-            # im = Image.fromarray(x)
             im = Image.fromarray(x.astype("uint8"))
         elif self.data_type == "image_path":
             im = Image.open(x).convert("RGB")
