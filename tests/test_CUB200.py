@@ -21,5 +21,5 @@ def test_scenario_CUB200_ClassIncremental():
     for task_id, task_set in enumerate(scenario):
         print(f"Task {task_id} : {task_set.nb_classes} classes")
         task_set.plot(path="Archives/Samples/CUB200/CI",
-                      title="CUB200_InstanceIncremental_{}.jpg".format(task_id),
+                      title="CUB200_ClassIncremental_{}.jpg".format(task_id),
                       nb_samples=100)
