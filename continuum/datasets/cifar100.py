@@ -1,33 +1,45 @@
+from typing import Tuple
 
 from torchvision import datasets as torchdata
 from torchvision import transforms
+import numpy as np
+
 from continuum.datasets import PyTorchDataset
 
-import numpy as np
+
+# update labels
+cifar100_coarse_labels = np.array([4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
+                          3, 14, 9, 18, 7, 11, 3, 9, 7, 11,
+                          6, 11, 5, 10, 7, 6, 13, 15, 3, 15,
+                          0, 11, 1, 10, 12, 14, 16, 9, 11, 5,
+                          5, 19, 8, 8, 15, 13, 14, 17, 18, 10,
+                          16, 4, 17, 4, 2, 0, 17, 4, 18, 17,
+                          10, 3, 2, 12, 12, 16, 12, 1, 9, 19,
+                          2, 10, 0, 1, 16, 12, 9, 13, 15, 13,
+                          16, 19, 2, 4, 6, 19, 5, 5, 8, 19,
+                          18, 1, 2, 15, 6, 0, 17, 8, 14, 13])
 
 class CIFAR100(PyTorchDataset):
 
-    def __init__(self, classification: str = "object", *args, **kwargs):
+    def __init__(self, classification: str = "object", scenario: str = None, *args, **kwargs):
         super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, **kwargs)
         assert classification in ["object", "category"]
+        assert scenario in [None, "classes", "category", "objects"]
+
+        if scenario is None:
+            self.t = None
+        elif scenario == "objects":
+            self.t = self.targets
+        elif scenario == "category":
+            self.t = cifar100_coarse_labels[self.targets]
+
 
         if self.classification == "category":
             # Classes labels from 0-19 (instead of 0 to 99)
             # cf : "superclasses" or "coarse labels" https://www.cs.toronto.edu/~kriz/cifar.html
 
             # code from https://github.com/ryanchankh/cifar100coarse/blob/master/cifar100coarse.py
-            # update labels
-            coarse_labels = np.array([4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
-                                      3, 14, 9, 18, 7, 11, 3, 9, 7, 11,
-                                      6, 11, 5, 10, 7, 6, 13, 15, 3, 15,
-                                      0, 11, 1, 10, 12, 14, 16, 9, 11, 5,
-                                      5, 19, 8, 8, 15, 13, 14, 17, 18, 10,
-                                      16, 4, 17, 4, 2, 0, 17, 4, 18, 17,
-                                      10, 3, 2, 12, 12, 16, 12, 1, 9, 19,
-                                      2, 10, 0, 1, 16, 12, 9, 13, 15, 13,
-                                      16, 19, 2, 4, 6, 19, 5, 5, 8, 19,
-                                      18, 1, 2, 15, 6, 0, 17, 8, 14, 13])
-            self.targets = coarse_labels[self.targets]
+            self.targets = cifar100_coarse_labels[self.targets]
 
             # update classes
             self.classes = [['beaver', 'dolphin', 'otter', 'seal', 'whale'],
@@ -51,7 +63,9 @@ class CIFAR100(PyTorchDataset):
                             ['bicycle', 'bus', 'motorcycle', 'pickup_truck', 'train'],
                             ['lawn_mower', 'rocket', 'streetcar', 'tank', 'tractor']]
 
-
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        x,y, _ = super().get_data()
+        return x, y, self.t
 
     @property
     def transformations(self):
