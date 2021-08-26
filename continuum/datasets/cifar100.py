@@ -21,17 +21,20 @@ cifar100_coarse_labels = np.array([4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
 
 class CIFAR100(PyTorchDataset):
 
-    def __init__(self, classification: str = "object", scenario: str = None, *args, **kwargs):
+    def __init__(self, *args, classification: str = "object", scenario: str = None, **kwargs):
         super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, **kwargs)
         assert classification in ["object", "category"]
-        assert scenario in [None, "classes", "category", "objects"]
+        assert scenario in [None, "objects", "category"]
 
-        if scenario is None:
+        self.classification = classification
+        self.scenario = scenario
+
+        if self.scenario is None:
             self.t = None
-        elif scenario == "objects":
-            self.t = self.targets
-        elif scenario == "category":
-            self.t = cifar100_coarse_labels[self.targets]
+        elif self.scenario == "objects":
+            self.t = self.dataset.targets
+        elif self.scenario == "category":
+            self.t = cifar100_coarse_labels[self.dataset.targets]
 
 
         if self.classification == "category":
@@ -39,10 +42,10 @@ class CIFAR100(PyTorchDataset):
             # cf : "superclasses" or "coarse labels" https://www.cs.toronto.edu/~kriz/cifar.html
 
             # code from https://github.com/ryanchankh/cifar100coarse/blob/master/cifar100coarse.py
-            self.targets = cifar100_coarse_labels[self.targets]
+            self.dataset.targets = cifar100_coarse_labels[self.dataset.targets]
 
             # update classes
-            self.classes = [['beaver', 'dolphin', 'otter', 'seal', 'whale'],
+            self.dataset.classes = [['beaver', 'dolphin', 'otter', 'seal', 'whale'],
                             ['aquarium_fish', 'flatfish', 'ray', 'shark', 'trout'],
                             ['orchid', 'poppy', 'rose', 'sunflower', 'tulip'],
                             ['bottle', 'bowl', 'can', 'cup', 'plate'],

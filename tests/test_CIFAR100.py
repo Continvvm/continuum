@@ -4,22 +4,53 @@ import pytest
 from torchvision.transforms import Resize, ToTensor
 
 from continuum.datasets import CIFAR100
-from continuum.scenarios import ClassIncremental
+from continuum.scenarios import ClassIncremental, ContinualScenario
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 '''
-Test the visualization with instance_class scenario
+Basic test of CIFAR100 without parameters
 '''
 @pytest.mark.slow
-def test_scenario_CUB200_ClassIncremental():
+def test_scenario_CIFAR100_ClassIncremental():
     dataset = CIFAR100(DATA_PATH, train=True, transform=None)
-    scenario = ClassIncremental(dataset, increment=100, transformations=[Resize((224, 224)), ToTensor()])
+    scenario = ClassIncremental(dataset, increment=50)
 
-    print(f"Nb classes : {scenario.nb_classes} ")
-    print(f"Nb tasks : {scenario.nb_tasks} ")
-    for task_id, task_set in enumerate(scenario):
-        print(f"Task {task_id} : {task_set.nb_classes} classes")
-        task_set.plot(path="Archives/Samples/CUB200/CI",
-                      title="CUB200_InstanceIncremental_{}.jpg".format(task_id),
-                      nb_samples=100)
+    assert scenario.nb_classes == 100
+    assert scenario.nb_tasks == 2
+
+'''
+Basic test of CIFAR100 without parameters
+'''
+@pytest.mark.slow
+def test_scenario_CIFAR100_CoarseLabels():
+    dataset = CIFAR100(DATA_PATH, train=True, transform=None, classification="category")
+    scenario = ClassIncremental(dataset, increment=10)
+
+    assert scenario.nb_classes == 20
+    assert scenario.nb_tasks == 2
+
+'''
+Basic test of CIFAR100 without parameters
+'''
+@pytest.mark.slow
+def test_scenario_CIFAR100_Scenarios():
+    dataset = CIFAR100(DATA_PATH, train=True, transform=None, classification="category", scenario="category")
+    scenario = ContinualScenario(dataset)
+    assert scenario.nb_classes == 20
+    assert scenario.nb_tasks == 20
+
+    dataset = CIFAR100(DATA_PATH, train=True, transform=None, classification="category", scenario="objects")
+    scenario = ContinualScenario(dataset)
+    assert scenario.nb_classes == 20
+    assert scenario.nb_tasks == 100
+
+    dataset = CIFAR100(DATA_PATH, train=True, transform=None, classification="object", scenario="objects")
+    scenario = ContinualScenario(dataset)
+    assert scenario.nb_classes == 100
+    assert scenario.nb_tasks == 100
+
+    dataset = CIFAR100(DATA_PATH, train=True, transform=None, classification="object", scenario="category")
+    scenario = ContinualScenario(dataset)
+    assert scenario.nb_classes == 100
+    assert scenario.nb_tasks == 20
