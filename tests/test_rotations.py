@@ -1,9 +1,15 @@
+import os
+import copy
+
 import numpy as np
 import pytest
-from continuum.scenarios import Rotations
-from tests.test_classorder import InMemoryDatasetTest
-from continuum.datasets import MNIST, CIFAR100
 
+from continuum.scenarios import Rotations
+from continuum.datasets import MNIST, CIFAR100, InMemoryDataset
+from tests.test_classorder import InMemoryDatasetTest
+
+
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 @pytest.fixture
 def numpy_data():
@@ -50,19 +56,17 @@ def test_shared_labels(numpy_data, shared_label_space):
     train, test = numpy_data
     dummy = InMemoryDatasetTest(*train)
     list_degrees = [0, 15, 45]
+    nb_classes = 6
 
     scenario = Rotations(cl_dataset=dummy, nb_tasks=3, list_degrees=list_degrees, shared_label_space=shared_label_space)
 
-    previous_classes = None
     for task_id, taskset in enumerate(scenario):
         classes = taskset.get_classes()
-        if task_id > 0:
-            if shared_label_space:
-                assert (classes == previous_classes).all()
-            else:
-                assert (classes == previous_classes + len(classes)).all()
 
-        previous_classes = classes
+        if shared_label_space:
+            assert (classes == np.arange(nb_classes)).all()
+        else:
+            assert (classes == np.arange(nb_classes) + task_id * nb_classes).all(), task_id
 
 
 def test_fail_init(numpy_data):
@@ -70,7 +74,7 @@ def test_fail_init(numpy_data):
     dummy = InMemoryDatasetTest(*train)
 
     Trsf_0 = 2
-    Trsf_1 = (15, 20, 25)  # non sens
+    Trsf_1 = (15, 20, 25)  # non sense
     Trsf_2 = 45
 
     list_degrees = [Trsf_0, Trsf_1, Trsf_2]
@@ -84,18 +88,22 @@ def test_fail_init(numpy_data):
 @pytest.mark.parametrize("shared_label_space", [True, False])
 @pytest.mark.parametrize("dataset", [MNIST, CIFAR100])
 def test_with_dataset(dataset, shared_label_space):
-    dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
+    dataset = dataset(data_path=DATA_PATH, download=True, train=True)
     list_degrees = [0, 45, 90]
     scenario = Rotations(cl_dataset=dataset,
                           nb_tasks=3,
                           list_degrees=list_degrees,
                           shared_label_space=shared_label_space)
+    assert len(scenario) == 3
 
+    previous_classes = None
     for task_id, taskset in enumerate(scenario):
-
         classes = taskset.get_classes()
 
-        if shared_label_space:
-            assert len(classes) == classes.max() + 1
-        else:
-            assert len(classes) == classes.max() + 1 - (task_id * len(classes))
+        if task_id > 0:
+            if shared_label_space:
+                assert (classes == previous_classes).all()
+            else:
+                assert (classes == previous_classes + len(classes)).all(), classes
+
+        previous_classes = classes

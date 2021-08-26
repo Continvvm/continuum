@@ -324,6 +324,12 @@ The scenarios is then to learn a same task in various rotations spaces.
     )
 
 
+Note that for all TransformationIncremental scenarios (included Rotations and Permutations) you can
+use advanced indexing (e.g. `scenario[2:6]`, or `scenario[:7]`). In that case, when sampling multiple
+tasks together, the same *original* images will be seen multiple times, but each time with the transformation
+associated to the task.
+
+
 New Class and Instance Incremental
 ----------------------------------
 

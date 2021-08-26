@@ -156,3 +156,117 @@ def test_init_fail2(numpy_data):
     # No transformation is set
     with pytest.raises(TypeError):
         scenario = TransformationIncremental(cl_dataset=dummy)
+
+
+def test_indexing():
+    x = np.zeros((20, 2, 2, 3), dtype=np.uint8)
+    x[:, 0, 0] = 1  # add a 1 on the top-left
+
+    y = np.ones((20,), dtype=np.int32)
+
+    dataset = InMemoryDataset(x, y)
+
+    trsfs = [
+        [_discrete_rotation(0)],
+        [_discrete_rotation(1)],
+        [_discrete_rotation(2)],
+        [_discrete_rotation(3)],
+    ]
+    scenario = TransformationIncremental(
+        cl_dataset=dataset,
+        incremental_transformations=trsfs
+    )
+
+    for task_id in range(len(scenario)):
+        task_set = scenario[task_id]
+
+        x, _, t = task_set[0]
+        _check_rotation(x, task_id)
+
+
+@pytest.mark.parametrize("indexes_slice", [
+    slice(0, 1), slice(0, 3),
+    slice(0, 4, 2)
+])
+def test_advanced_indexing(indexes_slice):
+    """
+    This code creates dummy images of 2x2 all likewise:
+    [
+        1 0
+        0 0
+    ]
+
+    Then we apply discrete rotations to produce the four possible variations
+    (1 on the top-right, bottom-right, bottom-left in addition of the original
+    top-left). We then sample multiple tasks together and check that the associated
+    task label of the sample matches the rotations it was applied to.
+    """
+    x = np.zeros((20, 2, 2, 3), dtype=np.uint8)
+    x[:, 0, 0] = 1  # add a 1 on the top-left
+
+    y = np.ones((20,), dtype=np.int32)
+
+    dataset = InMemoryDataset(x, y)
+
+    trsfs = [
+        [_discrete_rotation(0)],
+        [_discrete_rotation(1)],
+        [_discrete_rotation(2)],
+        [_discrete_rotation(3)],
+    ]
+    scenario = TransformationIncremental(
+        cl_dataset=dataset,
+        incremental_transformations=trsfs
+    )
+    start = indexes_slice.start if indexes_slice.start is not None else 0
+    stop = indexes_slice.stop if indexes_slice.stop is not None else len(scenario) + 1
+    step = indexes_slice.step if indexes_slice.step is not None else 1
+    task_index = set(list(range(start, stop, step)))
+
+    task_set = scenario[indexes_slice]
+    seen_tasks = set()
+
+    for i in range(len(task_set)):
+        x, _, t = task_set[i]
+        _check_rotation(x, t)
+        seen_tasks.add(t)
+    assert seen_tasks == task_index
+
+
+def _discrete_rotation(rot):
+    def _fun(x):
+        if rot == 0:
+            one = (0, 0)
+        elif rot == 1:
+            one = (0, 1)
+        elif rot == 2:
+            one = (1, 1)
+        elif rot == 3:
+            one = (1, 0)
+
+        x = np.array(x)
+        x.fill(0)
+        x[one[0], one[1], :] = 1
+        return Image.fromarray(x.astype(np.uint8))
+    return _fun
+
+
+def _check_rotation(x, rot):
+    if rot == 0:
+        one = (0, 0)
+    elif rot == 1:
+        one = (0, 1)
+    elif rot == 2:
+        one = (1, 1)
+    elif rot == 3:
+        one = (1, 0)
+    else:
+        assert False, rot
+
+    for i in range(2):
+        for j in range(2):
+            if (i, j) == one:
+                v = 1
+            else:
+                v = 0
+            assert int(255 * x[0, i, j]) == v, (x[0, i, j], rot, (i, j), v)

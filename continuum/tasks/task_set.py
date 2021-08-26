@@ -1,5 +1,5 @@
 from copy import copy
-from typing import Tuple, Union, Optional
+from typing import Tuple, Union, Optional, List
 
 import numpy as np
 import torch
@@ -26,8 +26,8 @@ class TaskSet(TorchDataset):
             x: np.ndarray,
             y: np.ndarray,
             t: np.ndarray,
-            trsf: transforms.Compose,
-            target_trsf: Optional[transforms.Compose] = None,
+            trsf: Union[transforms.Compose, List[transforms.Compose]],
+            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             data_type: str = "image_array",
             bounding_boxes: Optional[np.ndarray] = None
     ):
@@ -183,13 +183,23 @@ class TaskSet(TorchDataset):
             pass
 
         if self.target_trsf is not None:
-            y = self.target_trsf(y)
+            y = self.get_task_target_trsf(t)(y)
 
         return x, y, t
 
+    def get_task_trsf(self, t: int):
+        if isinstance(self.trsf, list):
+            return self.trsf[t]
+        return self.trsf
+
+    def get_task_target_trsf(self, t: int):
+        if isinstance(self.target_trsf, list):
+            return self.target_trsf[t]
+        return self.target_trsf
+
     def _prepare(self, x, y, t):
         if self.trsf is not None:
-            x = self.trsf(x)
+            x = self.get_task_trsf(t)(x)
         if not isinstance(x, torch.Tensor):
             x = self._to_tensor(x)
 
@@ -198,7 +208,7 @@ class TaskSet(TorchDataset):
     def _prepare_segmentation(self, x, y, t):
         y = Image.open(y)
         if self.trsf is not None:
-            x, y = self.trsf(x, y)
+            x, y = self.get_task_trsf(t)(x, y)
 
         if not isinstance(x, torch.Tensor):
             x = self._to_tensor(x)
