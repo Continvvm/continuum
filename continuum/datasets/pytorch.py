@@ -17,19 +17,6 @@ class CIFAR10(PyTorchDataset):
         ]
 
 
-class CIFAR100(PyTorchDataset):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, **kwargs)
-
-    @property
-    def transformations(self):
-        return [
-            transforms.ToTensor(),
-            transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
-        ]
-
-
 class MNIST(PyTorchDataset):
 
     def __init__(self, *args, **kwargs):
