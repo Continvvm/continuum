@@ -150,6 +150,36 @@ tasks, each with new classes. See there some example arguments:
     )
 
 
+A very important setting of Class Incremental scenarios is the class ordering. learning
+'dog', then 'cat' may results in vastly different results than learning 'cat' then 'dog'.
+It's very simple to change the class ordering:
+
+.. code-block:: python
+
+    from continuum import ClassIncremental
+
+    continual_dataset = MNIST(data_path="my/data/path", download=True, train=True)
+
+    # Default class ordering
+    scenario_1 = ClassIncremental(
+        continual_dataset,
+        increment=2,
+        class_order=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    )
+
+    # Another class ordering
+    scenario_2 = ClassIncremental(
+        continual_dataset,
+        increment=2,
+        class_order=[1, 8, 3, 6, 5, 4, 10, 2, 9, 7]
+    )
+
+
+Note that as for every scenario in continuum, you have to create one scenario for the
+training set, and one scenario for the testing set. Thus remember to use the same class
+ordering for both!
+
+
 Instance Incremental
 --------------------
 
