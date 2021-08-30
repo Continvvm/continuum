@@ -33,6 +33,8 @@ class HashedScenario(ContinualScenario):
             filename_hash_indexes: Optional[str] = None,
     ) -> None:
         self.hash_name = hash_name
+
+        assert self.hash_name in ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash", "CropResistantHash"]
         self.data_type = cl_dataset.data_type
         self.filename_hash_indexes = filename_hash_indexes
         x, y, t = self.generate_task_ids(cl_dataset, nb_tasks)
