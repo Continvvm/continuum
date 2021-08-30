@@ -2,6 +2,7 @@ import warnings
 from copy import copy
 from typing import Callable, List, Union, Optional
 import os
+from multiprocessing import Pool, cpu_count
 
 import numpy as np
 from PIL import Image
@@ -34,7 +35,7 @@ class HashedScenario(ContinualScenario):
         self.hash_name = hash_name
         self.data_type = cl_dataset.data_type
         self.filename_hash_indexes = filename_hash_indexes
-        x, y, t = self.generate_task_ids(cl_dataset, self.hash_name, nb_tasks)
+        x, y, t = self.generate_task_ids(cl_dataset, nb_tasks)
         cl_dataset = InMemoryDataset(x, y, t, data_type=self.data_type)
         super().__init__(cl_dataset=cl_dataset, transformations=transformations)
 
@@ -48,25 +49,25 @@ class HashedScenario(ContinualScenario):
 
         return im
 
-    def hash_func(self, x, hash_name):
+    def hash_func(self, x):
 
         x = self.process_for_hash(x)
 
-        if hash_name == "AverageHash":
+        if self.hash_name == "AverageHash":
             hash_value = imagehash.average_hash(x, hash_size=8, mean=np.mean)
-        elif hash_name == "Phash":
+        elif self.hash_name == "Phash":
             hash_value = imagehash.phash(x, hash_size=8, highfreq_factor=4)
-        elif hash_name == "PhashSimple":
+        elif self.hash_name == "PhashSimple":
             hash_value = imagehash.phash_simple(x, hash_size=8, highfreq_factor=4)
-        elif hash_name == "DhashH":
+        elif self.hash_name == "DhashH":
             hash_value = imagehash.dhash(x)
-        elif hash_name == "DhashV":
+        elif self.hash_name == "DhashV":
             hash_value = imagehash.dhash_vertical(x)
-        elif hash_name == "Whash":
+        elif self.hash_name == "Whash":
             hash_value = imagehash.whash(x, hash_size=8, image_scale=None, mode='haar', remove_max_haar_ll=True)
-        elif hash_name == "ColorHash":
+        elif self.hash_name == "ColorHash":
             hash_value = imagehash.colorhash(x, binbits=3)
-        elif hash_name == "CropResistantHash":
+        elif self.hash_name == "CropResistantHash":
             hash_value = imagehash.crop_resistant_hash(x,
                                                        hash_func=None,
                                                        limit_segments=None,
@@ -75,9 +76,9 @@ class HashedScenario(ContinualScenario):
                                                        segmentation_image_size=300
                                                        )
         else:
-            raise NotImplementedError(f"Hash Name -- {hash_name} -- Unknown")
+            raise NotImplementedError(f"Hash Name -- {self.hash_name} -- Unknown")
 
-        return hash_value
+        return str(hash_value)
 
     def sort_hash(self, list_hash):
         sort_indexes = sorted(range(len(list_hash)), key=lambda k: list_hash[k])
@@ -94,7 +95,13 @@ class HashedScenario(ContinualScenario):
 
         return task_ids
 
-    def generate_task_ids(self, cl_dataset, hash_name, nb_tasks):
+    def get_list_hash_ids(self, x):
+        # multithread hash evaluation without changing list order
+        with Pool(min(8, cpu_count())) as p:
+            list_hash = p.map(self.hash_func, list(x))
+        return list_hash
+
+    def generate_task_ids(self, cl_dataset, nb_tasks):
         x, y, t = cl_dataset.get_data()
 
         if self.filename_hash_indexes is not None and os.path.exists(self.filename_hash_indexes):
@@ -102,10 +109,7 @@ class HashedScenario(ContinualScenario):
             sort_indexes = np.load(self.filename_hash_indexes)
         else:
 
-            list_hash = []
-            for i in range(len(y)):
-                list_hash.append(str(self.hash_func(x[i], hash_name)))
-
+            list_hash = self.get_list_hash_ids(x)
             sort_indexes = self.sort_hash(list_hash)
 
             # save eventually sort_indexes for later use and gain of time
@@ -118,10 +122,6 @@ class HashedScenario(ContinualScenario):
         assert len(task_ids) == len(y)
 
         return x, y, task_ids
-
-    def save_list_ids(self):
-        # TODO: it might avoid to recompute the hash everytime
-        pass
 
     # nothing to do in the setup function
     def _setup(self, nb_tasks: int) -> int:

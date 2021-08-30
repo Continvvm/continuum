@@ -17,11 +17,11 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
                           "Phash",
                           "AverageHash",
                           "ColorHash"])  # , "CropResistantHash"]) # too long CropResistantHash
-@pytest.mark.parametrize("dataset",
-                         [CIFAR10,
-                          CIFAR100,
-                          TinyImageNet200])
-def test_visualization_HashedScenario(hash_name, dataset):
+@pytest.mark.parametrize(("dataset", "shape"),
+                         [(CIFAR10, [32, 32, 3]),
+                          (CIFAR100, [32, 32, 3]),
+                          (TinyImageNet200, [64, 64, 3])])
+def test_visualization_HashedScenario(hash_name, dataset, shape):
     num_tasks = 5
     dataset = dataset(data_path=DATA_PATH, download=False, train=True)
     scenario = HashedScenario(cl_dataset=dataset,
@@ -58,7 +58,7 @@ def numpy_data():
                           "PhashSimple",
                           "Phash",
                           "AverageHash",
-                          "ColorHash", "CropResistantHash"]) # too long CropResistantHash
+                          "ColorHash", "CropResistantHash"])
 def test_HashedScenario_save_indexes(hash_name):
     num_tasks = 2
     x, y = numpy_data()
