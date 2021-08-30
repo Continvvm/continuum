@@ -1,6 +1,7 @@
 import warnings
 from copy import copy
-from typing import Callable, List, Union
+from typing import Callable, List, Union, Optional
+import os
 
 import numpy as np
 from PIL import Image
@@ -28,9 +29,11 @@ class HashedScenario(ContinualScenario):
             hash_name,
             nb_tasks=None,
             transformations: Union[List[Callable], List[List[Callable]]] = None,
+            filename_hash_indexes: Optional[str] = None,
     ) -> None:
         self.hash_name = hash_name
         self.data_type = cl_dataset.data_type
+        self.filename_hash_indexes = filename_hash_indexes
         x, y, t = self.generate_task_ids(cl_dataset, self.hash_name, nb_tasks)
         cl_dataset = InMemoryDataset(x, y, t, data_type=self.data_type)
         super().__init__(cl_dataset=cl_dataset, transformations=transformations)
@@ -94,17 +97,26 @@ class HashedScenario(ContinualScenario):
     def generate_task_ids(self, cl_dataset, hash_name, nb_tasks):
         x, y, t = cl_dataset.get_data()
 
-        list_hash = []
-        for i in range(len(y)):
-            list_hash.append(str(self.hash_func(x[i], hash_name)))
+        if self.filename_hash_indexes is not None and os.path.exists(self.filename_hash_indexes):
+            print(f"Loading previously saved sorted indexes ({self.filename_hash_indexes}).")
+            sort_indexes = np.load(self.filename_hash_indexes)
+        else:
 
-        sort_indexes = self.sort_hash(list_hash)
+            list_hash = []
+            for i in range(len(y)):
+                list_hash.append(str(self.hash_func(x[i], hash_name)))
+
+            sort_indexes = self.sort_hash(list_hash)
+
+            # save eventually sort_indexes for later use and gain of time
+            if self.filename_hash_indexes is not None:
+                np.save(self.filename_hash_indexes, sort_indexes)
 
         x = x[sort_indexes]
         y = y[sort_indexes]
         task_ids = self.get_task_ids(len(sort_indexes), nb_tasks)
-
         assert len(task_ids) == len(y)
+
         return x, y, task_ids
 
     def save_list_ids(self):
