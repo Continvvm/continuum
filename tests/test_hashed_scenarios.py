@@ -58,7 +58,7 @@ def numpy_data():
                           "PhashSimple",
                           "Phash",
                           "AverageHash",
-                          "ColorHash", "CropResistantHash"])
+                          "ColorHash"]) # , "CropResistantHash"
 def test_HashedScenario_save_indexes(hash_name):
     num_tasks = 2
     x, y = numpy_data()
@@ -67,7 +67,11 @@ def test_HashedScenario_save_indexes(hash_name):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    filename_indexes = f"{folder}/{hash_name}.npy"
+    filename_indexes = f"{folder}{hash_name}.npy"
+
+    if os.path.exists(filename_indexes):
+        os.remove(filename_indexes)
+    assert not os.path.exists(filename_indexes)
 
     # test save the indexes array
     scenario = HashedScenario(cl_dataset=dataset,
@@ -79,6 +83,42 @@ def test_HashedScenario_save_indexes(hash_name):
     scenario = HashedScenario(cl_dataset=dataset,
                               hash_name=hash_name,
                               nb_tasks=num_tasks,
+                              filename_hash_indexes=filename_indexes)
+
+    # delete test indexes
+    os.remove(filename_indexes)
+
+@pytest.mark.parametrize("hash_name",
+                         ["Whash",
+                          "DhashV",
+                          "DhashH",
+                          "PhashSimple",
+                          "Phash",
+                          "AverageHash",
+                          "ColorHash"]) # , "CropResistantHash"
+def test_HashedScenario_automatic_task_number(hash_name):
+    x, y = numpy_data()
+    dataset = InMemoryDataset(x, y, None, data_type="image_array")
+    folder = os.path.join(DATA_PATH, "tests/Samples/HashedScenario/")
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    filename_indexes = f"{folder}{hash_name}.npy"
+
+    if os.path.exists(filename_indexes):
+        os.remove(filename_indexes)
+    assert not os.path.exists(filename_indexes)
+
+    # test save the indexes array
+    scenario = HashedScenario(cl_dataset=dataset,
+                              hash_name=hash_name,
+                              nb_tasks=None,
+                              filename_hash_indexes=filename_indexes)
+
+    # test load the indexes array
+    scenario = HashedScenario(cl_dataset=dataset,
+                              hash_name=hash_name,
+                              nb_tasks=None,
                               filename_hash_indexes=filename_indexes)
 
     # delete test indexes

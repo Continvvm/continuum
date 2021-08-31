@@ -7,6 +7,7 @@ from multiprocessing import Pool, cpu_count
 import numpy as np
 from PIL import Image
 import imagehash
+from sklearn.cluster import KMeans, MeanShift
 
 from continuum.datasets import _ContinuumDataset
 from continuum.datasets import InMemoryDataset
@@ -31,12 +32,20 @@ class HashedScenario(ContinualScenario):
             nb_tasks=None,
             transformations: Union[List[Callable], List[List[Callable]]] = None,
             filename_hash_indexes: Optional[str] = None,
+            data_split="balanced"
     ) -> None:
         self.hash_name = hash_name
+        self.data_split = data_split
 
         assert self.hash_name in ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash", "CropResistantHash"]
+        assert self.data_split in ["balanced", "auto"]
         self.data_type = cl_dataset.data_type
         self.filename_hash_indexes = filename_hash_indexes
+        self.split_task = "kmeans"
+        if self.hash_name == "CropResistantHash":
+            # kmeans does not work with hask format of CropResistantHash
+            self.split_task = "balanced"
+
         x, y, t = self.generate_task_ids(cl_dataset, nb_tasks)
         cl_dataset = InMemoryDataset(x, y, t, data_type=self.data_type)
         super().__init__(cl_dataset=cl_dataset, transformations=transformations)
@@ -86,14 +95,34 @@ class HashedScenario(ContinualScenario):
         sort_indexes = sorted(range(len(list_hash)), key=lambda k: list_hash[k])
         return sort_indexes
 
-    def get_task_ids(self, nb_examples, nb_tasks):
-        task_ids = np.ones(nb_examples) * (nb_tasks - 1)
+    def get_task_ids(self, x, nb_tasks):
 
-        example_per_tasks = nb_examples // nb_tasks
-        perfect_balance_task_ids = np.arange(nb_tasks).repeat(example_per_tasks)
-        task_ids[:len(perfect_balance_task_ids)] = perfect_balance_task_ids
+        if self.split_task == "balanced":
+            nb_examples = len(x)
+            task_ids = np.ones(nb_examples) * (nb_tasks - 1)
 
-        # examples from len(perfect_balance_task_ids) to len(task_ids) are affected to last tasks
+            example_per_tasks = nb_examples // nb_tasks
+            perfect_balance_task_ids = np.arange(nb_tasks).repeat(example_per_tasks)
+            task_ids[:len(perfect_balance_task_ids)] = perfect_balance_task_ids
+
+            # examples from len(perfect_balance_task_ids) to len(task_ids) are affected to last tasks
+        elif nb_tasks is not None:
+            # we use KMeans from scikit learn to make hash coherent tasks with a fixed number of task
+            int_hash = np.array([int(hex_str, 16) for hex_str in x])
+            # make in artificially 2d array for Kmeans
+            int_hash = np.array([int_hash, int_hash]).reshape(-1, 2)
+            # we use kmeans from scikit learn to create coherent clusters
+            kmeans  = KMeans(n_clusters=nb_tasks).fit(int_hash)
+            task_ids = kmeans.predict(int_hash)
+        else:
+            # we use MeanShift from scikit learn to automatically set the number of task and make hash coherent tasks
+            int_hash = np.array([int(hex_str, 16) for hex_str in x])
+            # make in artificially 2d array
+            int_hash = np.array([int_hash, int_hash]).reshape(-1, 2)
+            clustering = MeanShift(bandwidth=None, bin_seeding=True).fit(int_hash)
+            self._nb_tasks = len(np.unique(clustering.labels_))
+            assert self._nb_tasks > 1
+            task_ids = clustering.predict(int_hash)
 
         return task_ids
 
@@ -108,7 +137,9 @@ class HashedScenario(ContinualScenario):
 
         if self.filename_hash_indexes is not None and os.path.exists(self.filename_hash_indexes):
             print(f"Loading previously saved sorted indexes ({self.filename_hash_indexes}).")
-            sort_indexes = np.load(self.filename_hash_indexes)
+            tuple_indexes_hash = np.load(self.filename_hash_indexes)
+            sort_indexes, list_hash = tuple_indexes_hash[0].astype(int), tuple_indexes_hash[1]
+            assert len(sort_indexes) == len(list_hash), print(f"sort_indexes {len(sort_indexes)} - list_hash {len(list_hash)}")
         else:
 
             list_hash = self.get_list_hash_ids(x)
@@ -116,12 +147,13 @@ class HashedScenario(ContinualScenario):
 
             # save eventually sort_indexes for later use and gain of time
             if self.filename_hash_indexes is not None:
-                np.save(self.filename_hash_indexes, sort_indexes)
+                np.save(self.filename_hash_indexes, [sort_indexes, list_hash])
 
         x = x[sort_indexes]
         y = y[sort_indexes]
-        task_ids = self.get_task_ids(len(sort_indexes), nb_tasks)
-        assert len(task_ids) == len(y)
+        ordered_hash = np.array(list_hash)[sort_indexes]
+        task_ids = self.get_task_ids(ordered_hash, nb_tasks)
+        assert len(task_ids) == len(y), print(f"task_ids {len(task_ids)} - y {len(y)}")
 
         return x, y, task_ids
 
