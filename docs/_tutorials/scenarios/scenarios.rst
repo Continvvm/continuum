@@ -356,12 +356,19 @@ It can be saved and reloaded to avoid to compute the hash every time.
                                      nb_tasks=2,
                                      hash_name="AverageHash",
                                      transformations=None,
-                                     filename_hash_indexes="hash_indexes_CIFAR10.npy")
+                                     filename_hash_indexes="hash_indexes_CIFAR10.npy",
+                                     split_task = "balanced")
 
 
 In this example we use "AverageHash" from `imagehash <https://github.com/JohannesBuchner/imagehash>`__ library but many other image hash can be used such as:
 "AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash" and "CropResistantHash".
 More information about those hash function in imagehash `documentation <https://github.com/JohannesBuchner/imagehash>`__.
+
+The `split_task` parameter can either be "balanced" or "auto", if the amount of data is balanced among tasks or
+if it is set automatically to create more hash-coherent tasks.
+
+If `split_task="auto"` and `nb_tasks=None` the number of tasks will be automatically estimated
+with the `MeanShift` function from scikit-learn.
 
 Incremental Semantic Segmentation
 ---------------------------------
