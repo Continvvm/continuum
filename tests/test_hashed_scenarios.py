@@ -17,24 +17,36 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
                           "Phash",
                           "AverageHash",
                           "ColorHash"])  # , "CropResistantHash"]) # too long CropResistantHash
-@pytest.mark.parametrize(("dataset", "shape"),
-                         [(CIFAR10, [32, 32, 3]),
-                          (CIFAR100, [32, 32, 3]),
-                          (TinyImageNet200, [64, 64, 3])])
-def test_visualization_HashedScenario(hash_name, dataset, shape):
-    num_tasks = 5
+@pytest.mark.parametrize(("dataset", "shape", "data_split"),
+                         [(CIFAR10, [32, 32, 3], "balanced"),
+                          (CIFAR100, [32, 32, 3], "balanced"),
+                          (TinyImageNet200, [64, 64, 3], "balanced"),
+                         (CIFAR10, [32, 32, 3], "auto"),
+                          (CIFAR100, [32, 32, 3], "auto"),
+                          (TinyImageNet200, [64, 64, 3], "auto")])
+def test_visualization_HashedScenario(hash_name, dataset, shape, data_split):
+    if data_split == "balanced":
+        num_tasks = 5
+    else:
+        num_tasks = None
+
     dataset = dataset(data_path=DATA_PATH, download=False, train=True)
     scenario = HashedScenario(cl_dataset=dataset,
                               hash_name=hash_name,
-                              nb_tasks=num_tasks)
+                              nb_tasks=num_tasks,
+                              data_split=data_split)
 
     folder = os.path.join(DATA_PATH, "tests/Samples/HashedScenario/")
     if not os.path.exists(folder):
         os.makedirs(folder)
 
+    # test default parameters
     for task_id, taskset in enumerate(scenario):
         taskset.plot(path=folder,
-                     title="HashedScenario_{}_{}_{}.jpg".format(type(dataset).__name__, hash_name, task_id),
+                     title="{}_HashedScenario_{}_{}_{}.jpg".format(data_split,
+                                                                   type(dataset).__name__,
+                                                                   hash_name,
+                                                                   task_id),
                      nb_samples=100,
                      shape=shape)
 
