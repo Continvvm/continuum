@@ -20,24 +20,41 @@ cifar100_coarse_labels = np.array([4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
                           18, 1, 2, 15, 6, 0, 17, 8, 14, 13])
 
 class CIFAR100(PyTorchDataset):
+    """Continuum use of the CIFAR100 dataset.
+    We adapt this dataset to create scenario from the combination of both of category labels and class labels.
 
-    def __init__(self, *args, classification: str = "object", scenario: str = None, **kwargs):
+    References:
+        * "Learning Multiple Layers of Features from Tiny Images"
+          Alex Krizhevsky
+
+    :param data_path: The folder path containing the data.
+    :param download: An option useless in this case.
+    :param labels_type: labels type define if we use class labels or category labels for each data point.
+    :param task_labels: labels type define what type of labels we use if we want to create a task id vector.
+    """
+
+    def __init__(self, *args, labels_type: str = "class", task_labels: str = None, **kwargs):
         super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, **kwargs)
-        assert classification in ["object", "category"]
-        assert scenario in [None, "objects", "category"]
+        assert labels_type in ["class", "category"]
+        assert task_labels in [None, "class", "category"]
 
-        self.classification = classification
-        self.scenario = scenario
+        self.labels_type = labels_type
+        self.task_labels_type = task_labels
 
-        if self.scenario is None:
+        if self.task_labels_type is None:
+            # the dataset does not provide a task id vector
             self.t = None
-        elif self.scenario == "objects":
+        elif self.task_labels_type == "class":
+            # the dataset provides a task id vector based on classes
             self.t = self.dataset.targets
-        elif self.scenario == "category":
+        elif self.task_labels_type == "category":
+            # the dataset provides a task id vector based on categories
             self.t = cifar100_coarse_labels[self.dataset.targets]
 
 
-        if self.classification == "category":
+        if self.labels_type == "category":
+            # here we replace class labels by category labels to annotate data.
+
             # Classes labels from 0-19 (instead of 0 to 99)
             # cf : "superclasses" or "coarse labels" https://www.cs.toronto.edu/~kriz/cifar.html
 
