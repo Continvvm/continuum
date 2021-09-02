@@ -22,12 +22,13 @@ class _BaseGenerator(abc.ABC):
         self.nb_generator = torch.Generator()
 
     @abc.abstractmethod
-    def sample(self, seed: int) -> int:
+    def sample(self, seed: int = None, nb_tasks: int = None) -> int:
+        """"method to sample a scenario from the generator."""
         raise NotImplementedError
 
 
 class TaskOrderGenerator(_BaseGenerator):
-    """Task Order Generator, generate sub-scenario from a base scenario simply by changing task order
+    """Task Order Generator, generate sub-scenario from a base scenario simply by changing task order.
 
         :param scenario: the base scenario to use to generate sub-scenarios
         """
@@ -66,8 +67,8 @@ class TaskOrderGenerator(_BaseGenerator):
 
 class ClassOrderGenerator(_BaseGenerator):
     """Class Order Generator, generate sub-scenario from a base scenario simply by changing class order.
-    The difference with TaskOrderGenerator is that the classes inside a same task change. This class is only compatible
-    with ClassIncremental scenarios.
+    The difference with TaskOrderGenerator is that the classes inside a same task change.
+    This class is only compatible with ClassIncremental scenarios.
 
         :param scenario: the base scenario to use to generate sub-scenarios
         """
@@ -89,8 +90,14 @@ class ClassOrderGenerator(_BaseGenerator):
         class_order = torch.randperm(len(self.list_classes), generator=self.nb_generator)
         return class_order
 
+    def sample(self, seed: int = None, nb_tasks: int = None) -> _BaseScenario:
 
-    def sample(self, seed: int = None) -> ClassIncremental:
+        if nb_tasks is None:
+            nb_tasks = self.base_scenario.nb_tasks
+
+        if nb_tasks != self.base_scenario.nb_tasks:
+            AssertionError("You can not change the number of tasks in the generator")
+
         # seed the generator
         if seed is None:
             seed = np.random.randint(10000)
