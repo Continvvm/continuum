@@ -3,7 +3,8 @@ import abc
 import torch
 import numpy as np
 
-from continuum.scenarios import _BaseScenario, create_subscenario, ClassIncremental
+from continuum.datasets import _ContinuumDataset
+from continuum.scenarios import _BaseScenario, create_subscenario, ClassIncremental, HashedScenario
 
 
 class _BaseGenerator(abc.ABC):
@@ -121,3 +122,81 @@ class ClassOrderGenerator(_BaseGenerator):
                                     class_order=new_list_class)
 
         return scenario
+
+
+class HashGenerator(_BaseGenerator):
+    """Class Order Generator, generate sub-scenario from a base scenario simply by changing class order.
+    The difference with TaskOrderGenerator is that the classes inside a same task change.
+    This class is only compatible with ClassIncremental scenarios.
+
+        :param dataset: continuum dataset from which scenarios will be created
+        """
+
+    def __init__(
+            self,
+            cl_dataset: _ContinuumDataset,
+            list_hash=None,
+            nb_tasks=None,
+            transformations=None,
+            filename_hash_indexes=None,
+            split_task="auto"
+    ) -> None:
+        self.cl_dataset = cl_dataset
+        self.nb_tasks = nb_tasks
+        self.transformations = transformations
+        self.filename_hash_indexes = filename_hash_indexes
+        self.split_task = split_task
+        self._hash_name = None
+
+        self.all_hashs = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
+                          "CropResistantHash"]
+
+        # create default scenario to test parameters
+        self.base_scenario = HashedScenario(cl_dataset=self.cl_dataset,
+                                            hash_name="AverageHash",
+                                            nb_tasks=nb_tasks,
+                                            transformations=transformations,
+                                            filename_hash_indexes=filename_hash_indexes,
+                                            split_task=self.split_task)
+        if list_hash is None:
+            self.list_hash = self.all_hashs
+        else:
+            # all items of list_hash should be in self.all_hashs
+            if not all(item in self.all_hashs for item in list_hash):
+                AssertionError("Unknown hash name")
+            else:
+                self.list_hash = list_hash
+        super().__init__(self.base_scenario)
+
+    def get_rand_hash_name(self, seed):
+        self.nb_generator.manual_seed(seed)
+        # generate a random task order
+        hash_id = torch.randperm(len(self.list_hash), generator=self.nb_generator)[0]
+        return self.list_hash[hash_id]
+
+    def sample(self, seed: int = None, nb_tasks: int = None) -> _BaseScenario:
+
+        if nb_tasks is None and self.nb_tasks is not None:
+            nb_tasks = self.nb_tasks
+
+        # seed the generator
+        if seed is None:
+            seed = np.random.randint(10000)
+
+        # generate a random class order
+        self._hash_name = self.get_rand_hash_name(seed)
+
+        # We create a scenario from base_scenario
+        scenario = HashedScenario(cl_dataset=self.cl_dataset,
+                                  hash_name=self._hash_name,
+                                  nb_tasks=nb_tasks,
+                                  transformations=self.transformations,
+                                  filename_hash_indexes=self.filename_hash_indexes,
+                                  split_task=self.split_task)
+
+        return scenario
+
+    @property
+    def hash_name(self):
+        ''''Hash name of the previous sampled scenario'''
+        return self._hash_name
