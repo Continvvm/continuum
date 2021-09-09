@@ -35,25 +35,27 @@ class HashedScenario(ContinualScenario):
             nb_tasks=None,
             transformations: Union[List[Callable], List[List[Callable]]] = None,
             filename_hash_indexes: Optional[str] = None,
-            data_split="balanced"
+            split_task="balanced"
     ) -> None:
         self.hash_name = hash_name
-        self.data_split = data_split
+        self.split_task = split_task
+        self._nb_tasks = nb_tasks
 
         if self.hash_name not in ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
                                   "CropResistantHash"]:
-            AssertionError(f"{self.hash_name} is not a hash_name available")
-        if self.data_split not in ["balanced", "auto"]:
-            AssertionError(f"{self.data_split} is not a data_split parameter available")
+            AssertionError(f"{self.hash_name} is not a hash_name available.")
+        if self.split_task not in ["balanced", "auto"]:
+            AssertionError(f"{self.split_task} is not a data_split parameter available.")
+        if split_task == "balanced" and nb_tasks is None:
+            AssertionError(f"self.data_split is {self.split_task} the nb_tasks should be set.")
 
         self.data_type = cl_dataset.data_type
         self.filename_hash_indexes = filename_hash_indexes
-        self.split_task = "kmeans"
         if self.hash_name == "CropResistantHash":
-            # kmeans does not work with hask format of CropResistantHash
+            # auto (kmeans) does not work with hask format of CropResistantHash
             self.split_task = "balanced"
 
-        x, y, t = self.generate_task_ids(cl_dataset, nb_tasks)
+        x, y, t = self.generate_task_ids(cl_dataset)
         cl_dataset = InMemoryDataset(x, y, t, data_type=self.data_type)
         super().__init__(cl_dataset=cl_dataset, transformations=transformations)
 
@@ -103,24 +105,24 @@ class HashedScenario(ContinualScenario):
 
         return str(hash_value)
 
-    def get_task_ids(self, x, nb_tasks):
+    def get_task_ids(self, x):
 
         if self.split_task == "balanced":
+            assert self._nb_tasks is not None
             nb_examples = len(x)
-            task_ids = np.ones(nb_examples) * (nb_tasks - 1)
-
-            example_per_tasks = nb_examples // nb_tasks
-            perfect_balance_task_ids = np.arange(nb_tasks).repeat(example_per_tasks)
+            task_ids = np.ones(nb_examples) * (self._nb_tasks - 1)
+            example_per_tasks = nb_examples // self._nb_tasks
+            perfect_balance_task_ids = np.arange(self._nb_tasks).repeat(example_per_tasks)
             task_ids[:len(perfect_balance_task_ids)] = perfect_balance_task_ids
 
             # examples from len(perfect_balance_task_ids) to len(task_ids) are put into last tasks
-        elif nb_tasks is not None:
+        elif self._nb_tasks is not None:
             # we use KMeans from scikit learn to make hash coherent tasks with a fixed number of task
             int_hash = np.array([int(hex_str, 16) for hex_str in x])
             # make in artificially 2d array for Kmeans
             int_hash = np.array([int_hash, int_hash]).reshape(-1, 2)
             # we use kmeans from scikit learn to create coherent clusters
-            kmeans = KMeans(n_clusters=nb_tasks).fit(int_hash)
+            kmeans = KMeans(n_clusters=self._nb_tasks).fit(int_hash)
             task_ids = kmeans.predict(int_hash)
         else:
             # we use MeanShift from scikit learn to automatically set the number of task
@@ -142,7 +144,7 @@ class HashedScenario(ContinualScenario):
             list_hash = p.map(self.hash_func, list(x))
         return list_hash
 
-    def generate_task_ids(self, cl_dataset, nb_tasks):
+    def generate_task_ids(self, cl_dataset):
         x, y, _ = cl_dataset.get_data()
 
         if self.filename_hash_indexes is not None and os.path.exists(self.filename_hash_indexes):
@@ -152,7 +154,6 @@ class HashedScenario(ContinualScenario):
             assert len(sort_indexes) == len(list_hash), print(
                 f"sort_indexes {len(sort_indexes)} - list_hash {len(list_hash)}")
         else:
-
             list_hash = self.get_list_hash_ids(x)
             sort_indexes = sort_hash(list_hash)
 
@@ -163,7 +164,7 @@ class HashedScenario(ContinualScenario):
         x = x[sort_indexes]
         y = y[sort_indexes]
         ordered_hash = np.array(list_hash)[sort_indexes]
-        task_ids = self.get_task_ids(ordered_hash, nb_tasks)
+        task_ids = self.get_task_ids(ordered_hash)
         if not len(task_ids) == len(y):
             print(f"task_ids {len(task_ids)} - y {len(y)} should be equal")
 

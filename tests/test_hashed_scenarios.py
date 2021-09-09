@@ -17,15 +17,15 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
                           "Phash",
                           "AverageHash",
                           "ColorHash"])  # , "CropResistantHash"]) # too long CropResistantHash
-@pytest.mark.parametrize(("dataset", "shape", "data_split"),
+@pytest.mark.parametrize(("dataset", "shape", "split_task"),
                          [(CIFAR10, [32, 32, 3], "balanced"),
                           (CIFAR100, [32, 32, 3], "balanced"),
                           (TinyImageNet200, [64, 64, 3], "balanced"),
                           (CIFAR10, [32, 32, 3], "auto"),
                           (CIFAR100, [32, 32, 3], "auto"),
                           (TinyImageNet200, [64, 64, 3], "auto")])
-def test_visualization_HashedScenario(hash_name, dataset, shape, data_split):
-    if data_split == "balanced":
+def test_visualization_HashedScenario(hash_name, dataset, shape, split_task):
+    if split_task == "balanced":
         num_tasks = 5
     else:
         num_tasks = None
@@ -34,7 +34,7 @@ def test_visualization_HashedScenario(hash_name, dataset, shape, data_split):
     scenario = HashedScenario(cl_dataset=dataset,
                               hash_name=hash_name,
                               nb_tasks=num_tasks,
-                              data_split=data_split)
+                              split_task=split_task)
 
     folder = os.path.join(DATA_PATH, "tests/Samples/HashedScenario/")
     if not os.path.exists(folder):
@@ -43,7 +43,7 @@ def test_visualization_HashedScenario(hash_name, dataset, shape, data_split):
     # test default parameters
     for task_id, taskset in enumerate(scenario):
         taskset.plot(path=folder,
-                     title="{}_HashedScenario_{}_{}_{}.jpg".format(data_split,
+                     title="{}_HashedScenario_{}_{}_{}.jpg".format(split_task,
                                                                    type(dataset).__name__,
                                                                    hash_name,
                                                                    task_id),
@@ -114,7 +114,8 @@ def test_HashedScenario_automatic_task_number(hash_name):
     # test when nb_tasks is set to None
     scenario = HashedScenario(cl_dataset=dataset,
                               hash_name=hash_name,
-                              nb_tasks=None)
+                              nb_tasks=None,
+                              split_task="auto")
 
     if scenario.nb_tasks is None or scenario.nb_tasks < 2:
         AssertionError("nb_tasks should have been set automatically to more than one")
