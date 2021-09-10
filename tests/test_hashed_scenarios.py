@@ -18,12 +18,12 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
                           "AverageHash",
                           "ColorHash"])  # , "CropResistantHash"]) # too long CropResistantHash
 @pytest.mark.parametrize(("dataset", "shape", "split_task"),
-                         [(CIFAR10, [32, 32, 3], "balanced"),
-                          (CIFAR100, [32, 32, 3], "balanced"),
-                          (TinyImageNet200, [64, 64, 3], "balanced"),
-                          (CIFAR10, [32, 32, 3], "auto"),
+                         [(CIFAR10, [32, 32, 3], "auto"),
                           (CIFAR100, [32, 32, 3], "auto"),
-                          (TinyImageNet200, [64, 64, 3], "auto")])
+                          (TinyImageNet200, [64, 64, 3], "auto"),
+                          (CIFAR10, [32, 32, 3], "balanced"),
+                          (CIFAR100, [32, 32, 3], "balanced"),
+                          (TinyImageNet200, [64, 64, 3], "balanced")])
 def test_visualization_HashedScenario(hash_name, dataset, shape, split_task):
     if split_task == "balanced":
         num_tasks = 5
