@@ -4,36 +4,31 @@ from typing import Callable, List, Union, Optional
 
 import imagehash
 import numpy as np
-from numpy import linalg as LA
 from PIL import Image
 from sklearn.metrics import pairwise_distances
 from sklearn.cluster import KMeans, MeanShift
 from sklearn.decomposition import PCA
+from scipy.spatial.distance import hamming
 
 from continuum.datasets import InMemoryDataset
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import ContinualScenario
 
 
+
 def sort_hash(list_hash):
-    sort_indexes = sorted(range(len(list_hash)), key=lambda k: str(list_hash[k]))
-    return sort_indexes
+    size = len(list_hash)
+    return sorted(range(size), key=lambda k: np.linalg.norm(list_hash[k]))
 
 
-def similarity_matrix(np_hash):
-    nb_hash = len(np_hash)
-    sim_matrix = np.zeros((nb_hash, nb_hash), dtype=np.int8)
-    for i in range(nb_hash):
-        sim_matrix[i, :] = np_hash - np_hash[i]
-        # for j in range(nb_hash):
-        #     if j < i:
-        #         # we only need to go through half the matrix + diag
-        #         continue
-        #     distance = np.abs(list_hash[i] - list_hash[j])
-        #     sim_matrix[i, j] = distance
-        #     sim_matrix[j, i] = distance
+def get_array_list(list_bin_str_hash):
+    list_array = []
+    for str_hash in list_bin_str_hash:
+        array = np.array([int(hex_str, 16) for hex_str in str_hash])
+        list_array.append(array)
 
-    return sim_matrix
+    return list_array
+
 
 class HashedScenario(ContinualScenario):
     """Continual Loader, generating datasets for the consecutive tasks.
@@ -121,8 +116,7 @@ class HashedScenario(ContinualScenario):
         else:
             raise NotImplementedError(f"Hash Name -- {self.hash_name} -- Unknown")
 
-        return hash_value
-
+        return str(hash_value)
 
     def get_task_ids(self, x):
 
@@ -137,37 +131,37 @@ class HashedScenario(ContinualScenario):
             # examples from len(perfect_balance_task_ids) to len(task_ids) are put into last tasks
         elif self._nb_tasks is not None:
             # we use KMeans from scikit learn to make hash coherent tasks with a fixed number of task
-            # int_hash = np.array([int(hex_str, 16) for hex_str in x])
-            # make in artificially 2d array for Kmeans
-            # int_hash = np.array([int_hash, int_hash]).reshape(-1, 2)
-
-            #sim_matrix = pairwise_distances(X=x, metric="hamming")
-            sim_matrix = similarity_matrix(x)
 
             # reduce data size for clustering
             pca = PCA(n_components=2)
-            reduc_data = pca.fit_transform(sim_matrix)
+            reduc_data = pca.fit_transform(x)
 
             # we use kmeans from scikit learn to create coherent clusters
             task_ids = KMeans(n_clusters=self._nb_tasks).fit_predict(reduc_data)
-            # task_ids = kmeans.predict(int_hash)
         else:
             # we use MeanShift from scikit learn to automatically set the number of task
             # and make hash coherent tasks
-            # int_hash = np.array([int(hex_str, 16) for hex_str in x])
-            # make in artificially 2d array
-            # int_hash = np.array([int_hash, int_hash]).reshape(-1, 2)
-            # sim_matrix = pairwise_distances(X=x, metric="hamming")
-            sim_matrix = similarity_matrix(x)
 
             # reduce data size for clustering
             pca = PCA(n_components=2)
-            reduc_data = pca.fit_transform(sim_matrix)
-            task_ids = MeanShift(bandwidth=2, bin_seeding=True).fit_predict(reduc_data)
+            reduc_data = pca.fit_transform(x)
+
+            bandwidth = 5
+            task_ids = None
+            while (bandwidth > 1):
+                task_ids = MeanShift(bandwidth=bandwidth, bin_seeding=True).fit_predict(reduc_data)
+                if len(np.unique(task_ids)) > 3:
+                    # we would like more that 3 tasks if possible
+                    break
+                else:
+                    # reduce the bandwidth if there is not enough tasks
+                    bandwidth = bandwidth * 0.75
+
             self._nb_tasks = len(np.unique(task_ids))
             if not self._nb_tasks > 1:
                 AssertionError("The number of task is expected to be more than one.")
-            # task_ids = clustering.predict(int_hash)
+
+        assert len(np.unique(task_ids)) > 1, print(np.unique(task_ids))
 
         return task_ids
 
@@ -183,20 +177,24 @@ class HashedScenario(ContinualScenario):
         if self.filename_hash_indexes is not None and os.path.exists(self.filename_hash_indexes):
             print(f"Loading previously saved sorted indexes ({self.filename_hash_indexes}).")
             tuple_indexes_hash = np.load(self.filename_hash_indexes, allow_pickle=True)
-            sort_indexes, list_hash = tuple_indexes_hash[0].astype(int), tuple_indexes_hash[1]
-            assert len(sort_indexes) == len(list_hash), print(
-                f"sort_indexes {len(sort_indexes)} - list_hash {len(list_hash)}")
+            sort_indexes, vectorized_list_hash = tuple_indexes_hash[0].astype(int), tuple_indexes_hash[1]
+            assert len(sort_indexes) == len(vectorized_list_hash), print(
+                f"sort_indexes {len(sort_indexes)} - list_hash {len(vectorized_list_hash)}")
         else:
             list_hash = self.get_list_hash_ids(x)
-            sort_indexes = sort_hash(list_hash)
+
+            vectorized_list_hash = get_array_list(list_hash)
+
+            # arbitrary sorting based on vectorized hash norm
+            sort_indexes = sort_hash(vectorized_list_hash)
 
             # save eventually sort_indexes for later use and gain of time
             if self.filename_hash_indexes is not None:
-                np.save(self.filename_hash_indexes, [sort_indexes, list_hash], allow_pickle=True)
+                np.save(self.filename_hash_indexes, [sort_indexes, vectorized_list_hash], allow_pickle=True)
 
         x = x[sort_indexes]
         y = y[sort_indexes]
-        ordered_hash = np.array(list_hash)[sort_indexes]
+        ordered_hash = np.array(vectorized_list_hash)[sort_indexes]
         task_ids = self.get_task_ids(ordered_hash)
         if not len(task_ids) == len(y):
             print(f"task_ids {len(task_ids)} - y {len(y)} should be equal")

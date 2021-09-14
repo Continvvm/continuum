@@ -36,6 +36,8 @@ def test_visualization_HashedScenario(hash_name, dataset, shape, split_task):
                               nb_tasks=num_tasks,
                               split_task=split_task)
 
+    assert scenario.nb_tasks > 1
+
     folder = os.path.join(DATA_PATH, "tests/Samples/HashedScenario/")
     if not os.path.exists(folder):
         os.makedirs(folder)
