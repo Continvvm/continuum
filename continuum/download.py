@@ -37,6 +37,31 @@ def untar(path):
         tar_file.extractall(directory_path)
 
 
+def download_file_from_google_drive(id, destination):
+    """Taken from https://stackoverflow.com/a/39225272"""
+    URL = "https://docs.google.com/uc?export=download"
+
+    session = requests.Session()
+
+    response = session.get(URL, params = { 'id' : id }, stream = True)
+    token = None
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            token = value
+            break
+
+    if token:
+        params = { 'id' : id, 'confirm' : token }
+        response = session.get(URL, params = params, stream = True)
+
+    CHUNK_SIZE = 32768
+
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk: # filter out keep-alive new chunks
+                f.write(chunk)
+
+
 class ProgressBar:
     """Basic Progress Bar.
 
