@@ -132,18 +132,20 @@ def test_hash_generator_auto_full():
     assert sample_scenario.nb_tasks >= 2
 
 
-@pytest.mark.parametrize("nb_tasks, list_hash", [
+@pytest.mark.parametrize("nb_tasks, list_hash_name", [
     (2, ["AverageHash", "Whash", "ColorHash", "CropResistantHash"]),
     (4, ["DhashH", "DhashV", "Whash", "ColorHash"]),
     (3, ["AverageHash", "DhashH"]),
     (5, ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
          "CropResistantHash"]),
 ])
-def test_hash_generator_balanced(nb_tasks, list_hash):
+def test_hash_generator_balanced(nb_tasks, list_hash_name):
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
+
+    print(list_hash_name)
     scenario_generator = HashGenerator(cl_dataset=dummy,
-                                       list_hash=list_hash,
+                                       list_hash=list_hash_name,
                                        nb_tasks=nb_tasks,
                                        transformations=None,
                                        filename_hash_indexes=None,
@@ -151,7 +153,7 @@ def test_hash_generator_balanced(nb_tasks, list_hash):
 
     sample_scenario = scenario_generator.sample()
     assert sample_scenario.split_task == "balanced"
-    assert sample_scenario.hash_name in list_hash
+    assert sample_scenario.hash_name in list_hash_name
     # test nb of samples per task
     assert (len(sample_scenario[0]) == len(sample_scenario[1]))\
            or (len(sample_scenario[0]) + 1 == len(sample_scenario[1]))

@@ -148,7 +148,7 @@ class HashedScenario(ContinualScenario):
 
             bandwidth = 5
             task_ids = None
-            while (bandwidth > 1):
+            while (bandwidth > 0.5):
                 task_ids = MeanShift(bandwidth=bandwidth, bin_seeding=True).fit_predict(reduc_data)
                 if len(np.unique(task_ids)) > 3:
                     # we would like more that 3 tasks if possible
