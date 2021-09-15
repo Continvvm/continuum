@@ -22,23 +22,12 @@ class VLCS(ImageFolderDataset):
     """
     images_gdrive_id = "1skwblH1_okBwxWxmRsp9_qi15hyPpxg8"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True, test_split: float = 0.2):
+    def __init__(self, data_path, train: bool = True, download: bool = True,
+                 test_split: float = 0.2, random_seed: int = 1):
         self._attributes = None
         self.test_split = test_split
+        self.random_seed = random_seed
         super().__init__(data_path, train, download)
-
-    @property
-    def attributes(self):
-        if self._attributes is None:
-            att = np.loadtxt(
-                os.path.join(
-                    self.data_path, "Animals_with_Attributes2",
-                    "predicate-matrix-continuous.txt"
-                )
-            )
-            self._attributes = att / np.linalg.norm(att, axis=-1, keepdims=True)
-
-        return self._attributes
 
     @property
     def data_type(self):
@@ -48,13 +37,13 @@ class VLCS(ImageFolderDataset):
         if not os.path.exists(os.path.join(self.data_path, "VLCS")):
             tar_path = os.path.join(self.data_path, "VLCS.tar.gz")
 
-            if not os.path.exists(zip_path):
+            if not os.path.exists(tar_path):
                 print("Downloading zip images archive...", end=' ')
                 download_file_from_google_drive(self.images_gdrive_id, tar_path)
                 print('Done!')
 
             print('Extracting archive...', end=' ')
-            untar(zip_path)
+            untar(tar_path)
             print('Done!')
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -68,7 +57,7 @@ class VLCS(ImageFolderDataset):
             x_train, x_test, y_test, y_train = train_test_split(
                 x, y,
                 test_size=self.test_split,
-                random_state=1
+                random_state=self.random_seed
             )
 
             if self.train:
