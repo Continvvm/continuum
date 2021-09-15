@@ -18,5 +18,6 @@ from continuum.datasets.awa2 import AwA2
 from continuum.datasets.pascalvoc import PascalVOC2012
 from continuum.datasets.stream51 import Stream51
 from continuum.datasets.dtd import DTD
+from continuum.datasets.vlcs import VLCS
 from continuum.datasets.rainbow_mnist import RainbowMNIST
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
