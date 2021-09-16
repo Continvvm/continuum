@@ -33,8 +33,8 @@ class CIFAR100(PyTorchDataset):
     :param task_labels: labels type define what type of labels we use if we want to create a task id vector.
     """
 
-    def __init__(self, *args, labels_type: str = "class", task_labels: str = None, **kwargs):
-        super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, **kwargs)
+    def __init__(self, *args, labels_type: str = "class", task_labels: str = None, transform=None, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, transform=transform, **kwargs)
         if not labels_type in ["class", "category"]:
             AssertionError("unknown labels_type parameter, choose among ['class', 'category']")
         if not  task_labels in [None, "class", "category"]:
@@ -42,6 +42,13 @@ class CIFAR100(PyTorchDataset):
 
         self.labels_type = labels_type
         self.task_labels_type = task_labels
+
+        if transform is None:
+            self.transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))])
+        else:
+            self.transform = transform
 
         if self.task_labels_type is None:
             # the dataset does not provide a task id vector
@@ -90,7 +97,4 @@ class CIFAR100(PyTorchDataset):
 
     @property
     def transformations(self):
-        return [
-            transforms.ToTensor(),
-            transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
-        ]
+        return [self.transform]
