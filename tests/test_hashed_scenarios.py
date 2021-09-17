@@ -38,7 +38,7 @@ def test_visualization_HashedScenario(hash_name, dataset, shape, split_task):
 
     assert scenario.nb_tasks > 1
 
-    folder = os.path.join(DATA_PATH, "tests/Samples/HashedScenario/")
+    folder = "tests/samples/hashed_scenario/"
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -73,12 +73,12 @@ def numpy_data():
                           "Phash",
                           "AverageHash",
                           "ColorHash"])  # , "CropResistantHash"
-def test_HashedScenario_save_indexes(hash_name):
+def test_HashedScenario_save_indexes(tmpdir, hash_name):
     num_tasks = 2
     x, y = numpy_data()
     dataset = InMemoryDataset(x, y, None, data_type="image_array")
 
-    filename_indexes = f"{hash_name}.npy"
+    filename_indexes = os.path.join(tmpdir, f"{hash_name}.npy")
     if os.path.exists(filename_indexes):
         os.remove(filename_indexes)
 
