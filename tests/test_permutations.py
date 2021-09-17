@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 import torch
@@ -6,6 +8,9 @@ from torchvision.transforms import transforms
 from continuum.scenarios import Permutations
 from tests.test_classorder import InMemoryDatasetTest
 from continuum.datasets import MNIST, CIFAR100
+
+
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 
 @pytest.fixture
@@ -71,7 +76,7 @@ def test_init(numpy_data, seed):
 @pytest.mark.parametrize("shared_label_space", [True, False])
 @pytest.mark.parametrize("dataset", [MNIST, CIFAR100])
 def test_with_dataset(dataset, shared_label_space):
-    dataset = dataset(data_path="./tests/Datasets", download=True, train=True)
+    dataset = dataset(data_path=DATA_PATH, download=True, train=True)
     scenario = Permutations(cl_dataset=dataset, nb_tasks=5, seed=0, shared_label_space=shared_label_space)
 
     for task_id, taskset in enumerate(scenario):

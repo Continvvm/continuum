@@ -25,7 +25,7 @@ def test_visualization_ClassIncremental(tmpdir, dataset, name, shape):
     scenario = ClassIncremental(cl_dataset=dataset(data_path=tmpdir, download=True, train=True),
                                 increment=increment)
 
-    folder = os.path.join(tmpdir, "tests/Samples/ClassIncremental/")
+    folder = "tests/samples/class_incremental/"
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -45,7 +45,7 @@ def test_visualization_rotations(tmpdir):
                          nb_tasks=3,
                          list_degrees=[0, 45, 92])
 
-    folder = os.path.join(tmpdir, "samples", "rotation")
+    folder = "tests/samples/rotations/"
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -65,7 +65,7 @@ def test_visualization_permutations(tmpdir):
                             nb_tasks=3,
                             seed=0)
 
-    folder = os.path.join(tmpdir, "samples", "permutation")
+    folder = "tests/samples/permutations/"
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -85,7 +85,7 @@ def test_visualization_MNISTFellowship(tmpdir):
     scenario = ClassIncremental(cl_dataset=cl_dataset,
                                 increment=10)
 
-    folder = os.path.join(tmpdir, "samples", "fellowship")
+    folder = "tests/samples/fellowship/"
     if not os.path.exists(folder):
         os.makedirs(folder)
 

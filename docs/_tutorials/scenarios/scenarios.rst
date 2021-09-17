@@ -366,9 +366,9 @@ Hashed Scenarios
 **Aim:** Evaluate the capability of an algorithms to learn new features independently from the labels.
 
 **Some Details:**
-This kind of scenario is proposed here to break the local iid assumption in classical dataset and evaluate algorithm
-capabilities in such context. The hash functions target some features and order data depending
-on them making data stream not iid inside a task. The resulting scenario (depending on the dataset)
+This kind of scenario is proposed here to create tasks with related features in classical dataset and evaluate algorithm
+capabilities in such context. This methodology force features to be different from one task to another
+making the feature extractor training potentially harder. The resulting scenario (depending on the dataset)
 is most probably a NIC scenario.
 
 

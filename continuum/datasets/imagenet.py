@@ -14,6 +14,12 @@ class ImageNet1000(ImageFolderDataset):
     Simple wrapper around ImageFolderDataset to provide a link to the download
     page.
     """
+    @property
+    def transformations(self):
+        """Default transformations if nothing is provided to the scenario."""
+        return [transforms.ToTensor(),
+                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]
+
 
     def _download(self):
         if not os.path.exists(self.data_path):

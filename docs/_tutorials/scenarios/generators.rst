@@ -65,8 +65,9 @@ This generator is suited for `ClassIncremental` scenarios.
 Hash Generator
 ----------------
 
-This generator shuffle the class order but keeps the same number of classes per tasks.
-This generator is suited for `ClassIncremental` scenarios.
+This generator creates scenario from a list of hash. When sampled, it select randomly a hash function
+and create a scenario from it. The scenario can be create with a fixed number of classes or
+it can decide automatically the number of tasks depending on the hashes distribution.
 
 .. code-block:: python
 
@@ -77,8 +78,8 @@ This generator is suited for `ClassIncremental` scenarios.
     dataset = CIFAR10('my/data/path', train=True)
 
     # list of all hash name that can be used ("CropResistantHash" is very slow)
-    list_hash = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
-                          "CropResistantHash"]
+    list_hash = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash"
+                  ]
     # see documentation about HashScenario for more info about parameters
     scenario_generator = HashGenerator(cl_dataset=dataset,
                                         list_hash=list_hash,
