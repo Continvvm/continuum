@@ -1,4 +1,6 @@
 import os
+import json
+import multiprocessing as mp
 from typing import Tuple
 
 import pandas as pd
@@ -16,8 +18,8 @@ class TerraIncognita(ImageFolderDataset):
     Filtered according to DomainBed rule, whose code was largely used here:
     https://github.com/facebookresearch/DomainBed/blob/main/domainbed/scripts/download.py#L167
 
-    Contain 4 different domains (art painting, cartoon, photo, and sketch).
-    Each made of 7 classes (dog, elephant, giraffe, guitar, horse, house, and person).
+    Contain 4 different domains.
+    Each made of 10 animal classes.
 
     * Recognition in Terra Incognita
       Beery et al.
@@ -59,29 +61,82 @@ class TerraIncognita(ImageFolderDataset):
             print('Done!')
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """See https://github.com/facebookresearch/DomainBed/blob/main/domainbed/scripts/download.py#L167"""
-        domains = ["art_painting", "cartoon", "photo", "sketch"]
+        path_x = os.path.join(self.data_path, "continuum_terrainc_x.npy")
+        path_y = os.path.join(self.data_path, "continuum_terrainc_y.npy")
+        path_t = os.path.join(self.data_path, "continuum_terrainc_t.npy")
 
-        full_x, full_y, full_t = [], [], []
+        if not all(os.path.exist(p) for p in [path_x, path_y, path_t]):
+            print("Long (~1min) preprocessing starting! It will be cached for next time.")
+            x, y, t = self._preprocess_data()
+            np.save(x, path_x)
+            np.save(y, path_y)
+            np.save(t, path_t)
+        else:
+            x = np.load(path_x)
+            y = np.load(path_y)
+            t = np.load(path_t)
 
-        for domain_id, domain_name in enumerate(domains):
-            dataset = torchdata.ImageFolder(os.path.join(self.data_path, "kfold", domain_name))
-            x, y, _ = self._format(dataset.imgs)
-            x_train, x_test, y_test, y_train = train_test_split(
-                x, y,
-                test_size=self.test_split,
-                random_state=1
-            )
+        return x, y, t
 
-            if self.train:
-                full_x.append(x_train),
-                full_y.append(y_train)
-            else:
-                full_x.append(x_test)
-                full_y.append(y_test)
-            full_t.append(np.ones_like(full_y[-1]) * domain_id)
+    def _preprocess_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Quite long (~1min) preprocessing as done per DomainBed github.
 
-        x = np.concatenate(full_x)
-        y = np.concatenate(full_y)
-        t = np.concatenate(full_t)
+        The results of the preprocessing is saved in the same folder so it can
+        be avoid on second time.
+
+        See:
+        - https://github.com/facebookresearch/DomainBed/blob/main/domainbed/scripts/download.py#L167
+        """
+        include_locations = ["38", "46", "100", "43"]
+        include_categories = [
+            "bird", "bobcat", "cat", "coyote", "dog", "empty", "opossum", "rabbit",
+            "raccoon", "squirrel"
+        ]
+
+        images_folder = os.path.join(self.data_path, "eccv_18_all_images_sm/")
+        annotations_file = os.path.join(self.data_path, "caltech_images_20210113.json")
+
+        x, y, t = [], [], []
+        with open(annotations_file, "r") as f:
+            data = json.load(f)
+
+        category_dict = {}
+        for item in data['categories']:
+            category_dict[item['id']] = item['name']
+
+        def _func(image):
+            image_location = image['location']
+
+            if image_location not in include_locations:
+                return None
+
+            image_id = image['id']
+            image_fname = image['file_name']
+
+            x, y, t = [], [], []
+            for annotation in data['annotations']:
+                if annotation['image_id'] == image_id:
+                    category = category_dict[annotation['category_id']]
+
+                    if category not in include_categories:
+                        return None
+
+                    x.append(os.path.join(images_folder, image_id + ".jpg"))
+                    y.append(include_categories.index(category))
+                    t.append(include_locations.index(image_location))
+
+            return x, y, t
+
+        x, y, t = [], [], []
+        with mp.Pool(min(8, mp.cpu_count())) as pool:
+            for tup in pool.imap(_func, data['images']):
+                if tup is None:
+                    continue
+                x.extend(tup[0])
+                y.extend(tup[1])
+                t.extend(tup[2])
+
+        assert len(x) == len(y) == len(t)
+
+        x, y, t = np.concatenate(x), np.concatenate(y), np.concatenate(t)
         return x, y, t
