@@ -6,7 +6,7 @@ from torchvision import transforms
 
 from continuum.datasets import PyTorchDataset
 
-# update labels
+
 cifar100_coarse_labels = np.array([4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
                                    3, 14, 9, 18, 7, 11, 3, 9, 7, 11,
                                    6, 11, 5, 10, 7, 6, 13, 15, 3, 15,
@@ -90,5 +90,6 @@ class CIFAR100(PyTorchDataset):
 
     @property
     def transformations(self):
+        """Default transformations if nothing is provided to the scenario."""
         return [transforms.ToTensor(),
                 transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))]

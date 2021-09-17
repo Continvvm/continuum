@@ -51,6 +51,7 @@ class _ContinuumDataset(abc.ABC):
 
     @property
     def transformations(self):
+        """Default transformations if nothing is provided to the scenario."""
         if self.data_type == "segmentation":
             return [ToTensorSegmentation()]
         return [transforms.ToTensor()]
@@ -89,7 +90,15 @@ class PyTorchDataset(_ContinuumDataset):
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(
             self, data_path: str = "", dataset_type=None, train: bool = True, download: bool = True, **kwargs):
+
+        if "transform" in kwargs:
+            raise ValueError(
+                "Don't provide `transform` to the dataset. "
+                "You should give those to the scenario."
+            )
+
         super().__init__(data_path=data_path, train=train, download=download)
+
         self.dataset_type = dataset_type
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train, **kwargs)
 
