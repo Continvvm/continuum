@@ -24,6 +24,7 @@ The clip dataset with InstanceIncremental scenario is equivalent to the "instanc
 
 The video dataset with InstanceIncremental scenario is not present in the original Stream-51 paper.
 It proposes to learn from sequence of videos without cutting them into clips.
+
 .. code-block:: python
 
     from torchvision.transforms import Resize, ToTensor
@@ -39,6 +40,7 @@ It proposes to learn from sequence of videos without cutting them into clips.
         task_set.plot(path="Archives/Samples/Stream51/video",
                          title="Stream51_InstanceIncremental_{}.jpg".format(task_id),
                          nb_samples=100)
+
 
 The clip dataset with ClassIncremental scenario is equivalent to the "instance_class" scenario of the original Stream-51 paper.
 
