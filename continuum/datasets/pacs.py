@@ -16,7 +16,7 @@ class PACS(ImageFolderDataset):
     Contain 4 different domains (art painting, cartoon, photo, and sketch).
     Each made of 7 classes (dog, elephant, giraffe, guitar, horse, house, and person).
 
-    *  Deeper, Broader and Artier Domain Generalization
+    * Deeper, Broader and Artier Domain Generalization
       Li et al.
       ICCV 2017
     """
