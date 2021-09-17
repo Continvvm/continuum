@@ -50,9 +50,12 @@ class ClassIncremental(_BaseScenario):
         x, y, _ = self.cl_dataset.get_data()
         unique_classes = np.unique(y)
 
-        self.class_order = self.class_order or self.cl_dataset.class_order or list(
-            range(len(unique_classes))
-        )
+        if self.class_order is None:
+            if self.cl_dataset.class_order is not None:
+                self.class_order = self.cl_dataset.class_order
+            else:
+                self.class_order = unique_classes
+        self.class_order = list(self.class_order)
 
         if len(np.unique(self.class_order)) != len(self.class_order):
             raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")

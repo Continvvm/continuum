@@ -55,11 +55,13 @@ def test_with_dataset_composed_increment(tmpdir, dataset, increment):
         assert len(classes) == (classes.max() - classes.min() + 1)
 
 
+NB_CLASSES=10
+
 @pytest.fixture
 def fake_data():
     x_train = np.random.randint(0, 255, size=(20, 32, 32, 3))
     y_train = []
-    for i in range(10):
+    for i in range(NB_CLASSES):
         y_train.append(np.ones(2) * i)
     y_train = np.concatenate(y_train)
 
@@ -82,3 +84,12 @@ def test_taskid(fake_data, class_order):
         for x, y, t in loader:
             assert t[0].item() == task_id
             assert (t == task_id).all()
+
+def test_nb_classes(fake_data):
+    scenario = ClassIncremental(
+        cl_dataset=fake_data,
+        increment=2
+    )
+
+    assert scenario.nb_classes == NB_CLASSES
+    assert (scenario.classes == np.arange(NB_CLASSES)).all()

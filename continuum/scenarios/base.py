@@ -30,19 +30,20 @@ class _BaseScenario(abc.ABC):
 
         self.cl_dataset = cl_dataset
         self._nb_tasks = nb_tasks
+        self.transformations = transformations
 
         if transformations is None:
-            transformations = self.cl_dataset.transformations
+            self.transformations = self.cl_dataset.transformations
         if self.cl_dataset.data_type == "segmentation":
             composer = SegmentationCompose
         else:
             composer = transforms.Compose
-        if transformations is not None and isinstance(transformations[0], list):
+        if self.transformations is not None and isinstance(self.transformations[0], list):
             # We have list of list of callable, where each sublist is dedicated to
             # a task.
-            self.trsf = [composer(trsf) for trsf in transformations]
+            self.trsf = [composer(trsf) for trsf in self.transformations]
         else:
-            self.trsf = composer(transformations)
+            self.trsf = composer(self.transformations)
 
     @abc.abstractmethod
     def _setup(self, nb_tasks: int) -> int:
@@ -60,6 +61,11 @@ class _BaseScenario(abc.ABC):
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
         return len(np.unique(self.dataset[1]))  # type: ignore
+
+    @property
+    def classes(self) -> int:
+        """list of classes in the whole continual setting."""
+        return np.unique(self.dataset[1])  # type: ignore
 
     @property
     def nb_tasks(self) -> int:
