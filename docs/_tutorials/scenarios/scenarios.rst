@@ -358,11 +358,59 @@ The `t` vector which define the task of each data point should be defined by the
     NIC_Scenario = InstanceIncremental(NIC_Dataset)
 
 
+Hashed Scenarios
+----------------------------------
+
+**In short:** Data ordering is determined by an hash function.
+
+**Aim:** Evaluate the capability of an algorithms to learn new features independently from the labels.
+
+**Some Details:**
+This kind of scenario is proposed here to break the local iid assumption in classical dataset and evaluate algorithm
+capabilities in such context. The hash functions target some features and order data depending
+on them making data stream not iid inside a task. The resulting scenario (depending on the dataset)
+is most probably a NIC scenario.
+
+
+The New class and instance incremental setting can be created with the `HashedScenario` class.
+The `t` vector is generate by the scenario class.
+It can be saved and reloaded to avoid to compute the hash every time.
+
+.. code-block:: python
+
+    # given x data point, y class labels, t tasks labels
+    # t define the tasks label for each data point.
+    # Hence, the t vector define the number of tasks for the scenario and the order
+    # task will be ordered in the croissant order
+
+    from continuum import HashedScenario
+    from continuum.datasets import CIFAR10
+
+    dataset = CIFAR10(data_path="my/data/path", train=True)
+
+    Hashed_Scenario = HashedScenario(dataset,
+                                     nb_tasks=2,
+                                     hash_name="AverageHash",
+                                     transformations=None,
+                                     filename_hash_indexes="hash_indexes_CIFAR10.npy",
+                                     split_task = "balanced")
+
+
+In this example we use "AverageHash" from `imagehash <https://github.com/JohannesBuchner/imagehash>`__ library but many other image hash can be used such as:
+"AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash" and "CropResistantHash".
+More information about those hash function in imagehash `documentation <https://github.com/JohannesBuchner/imagehash>`__.
+
+The `split_task` parameter can either be "balanced" or "auto", if the amount of data is balanced among tasks or
+if it is set automatically to create more hash-coherent tasks.
+
+If `split_task="auto"` and `nb_tasks=None` the number of tasks will be automatically estimated
+with the `MeanShift` function from scikit-learn.
+
 Incremental Semantic Segmentation
 ---------------------------------
 
-Brought by [Michieli et al. ICCV-W 2017](https://openaccess.thecvf.com/content_ICCVW_2019/papers/TASK-CV/Michieli_Incremental_Learning_Techniques_for_Semantic_Segmentation_ICCVW_2019_paper.pdf)
-and [Cermelli et al. CVPR 2020](https://arxiv.org/abs/2002.00718), continual learning
+Brought by `Michieli et al. ICCV-W 2017 <https://openaccess.thecvf.com/content_ICCVW_2019/papers/TASK-CV/Michieli_Incremental_Learning_Techniques_for_Semantic_Segmentation_ICCVW_2019_paper.pdf>`__
+and `Cermelli et al. CVPR 2020 <https://arxiv.org/abs/2002.00718>`__, continual learning
 for segmentation is very different from previous scenarios.
 
 Semantic segmentation aims at classifying all pixels in an image, therefore

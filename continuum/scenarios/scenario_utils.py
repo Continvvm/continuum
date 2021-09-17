@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import ContinualScenario
 
@@ -8,6 +9,9 @@ def create_subscenario(base_scenario, task_indexes):
     In this function we want to create a subscenario from the different tasks, either by subsampling tasks or reodering
     or both.
     """
+
+    if torch.is_tensor(task_indexes):
+        task_indexes = task_indexes.numpy()
 
     new_x, new_y, new_t = None, None, None
     if base_scenario.cl_dataset.bounding_boxes is not None:
