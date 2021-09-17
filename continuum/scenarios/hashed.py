@@ -42,9 +42,14 @@ class HashedScenario(ContinualScenario):
     Scenario: the scenario is entirely defined by the task label vector in the cl_dataset
 
     :param cl_dataset: A continual dataset.
+    :param hash_name: Name of the hash function that will be used to create scenario
+    :param nb_tasks: Number of tasks if we do not want to be set automatically
     :param transformations: A list of transformations applied to all tasks. If
                             it's a list of list, then the transformation will be
                             different per task.
+    :param filename_hash_indexes: file to save scenarios indexes and reload them after to win some time and computation
+    :param split_task: Define if the task split will be automatic by clusterization ("auto") of hashes
+    or manually balanced ("balanced"). NB: if split_task == "balanced" nb_tasks can not be None.
     """
 
     def __init__(
