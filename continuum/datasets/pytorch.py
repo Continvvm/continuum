@@ -6,19 +6,13 @@ from continuum.datasets import PyTorchDataset
 
 class CIFAR10(PyTorchDataset):
 
-    def __init__(self, *args, transform=None, **kwargs):
-        super().__init__(*args, dataset_type=torchdata.cifar.CIFAR10, transform=transform, **kwargs)
-
-        if transform is None:
-            self.transform = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
-        else:
-            self.transform = transform
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, dataset_type=torchdata.cifar.CIFAR10, **kwargs)
 
     @property
     def transformations(self):
-        return [self.transform]
+        return [transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))]
 
 
 class MNIST(PyTorchDataset):
