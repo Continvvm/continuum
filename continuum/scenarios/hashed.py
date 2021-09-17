@@ -17,7 +17,14 @@ from continuum.scenarios import ContinualScenario
 
 def sort_hash(list_hash):
     size = len(list_hash)
-    return sorted(range(size), key=lambda k: np.linalg.norm(list_hash[k]))
+
+    # multithread hash evaluation without changing list order
+    with Pool(min(8, cpu_count())) as p:
+        list_hash_norm = p.map(np.linalg.norm, list_hash)
+
+    assert len(list_hash_norm)==size
+
+    return sorted(range(size), key=lambda k: list_hash_norm[k])
 
 
 def get_array_list(list_bin_str_hash):
@@ -53,8 +60,8 @@ class HashedScenario(ContinualScenario):
         self.split_task = split_task
         self._nb_tasks = nb_tasks
 
-        if self.hash_name not in ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
-                                  "CropResistantHash"]:
+        if self.hash_name not in ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash"
+                                  ]: # , "CropResistantHash"
             AssertionError(f"{self.hash_name} is not a hash_name available.")
         if self.split_task not in ["balanced", "auto"]:
             AssertionError(f"{self.split_task} is not a data_split parameter available.")
@@ -63,9 +70,11 @@ class HashedScenario(ContinualScenario):
 
         self.data_type = cl_dataset.data_type
         self.filename_hash_indexes = filename_hash_indexes
-        if self.hash_name == "CropResistantHash":
-            # auto (kmeans) does not work with hask format of CropResistantHash
-            self.split_task = "balanced"
+
+        # "CropResistantHash" does not work yet
+        # if self.hash_name == "CropResistantHash":
+        #     # auto (kmeans) does not work with hask format of CropResistantHash
+        #     self.split_task = "balanced"
 
         x, y, t = self.generate_task_ids(cl_dataset)
         cl_dataset = InMemoryDataset(x, y, t, data_type=self.data_type)
@@ -104,7 +113,7 @@ class HashedScenario(ContinualScenario):
                                          remove_max_haar_ll=True)
         elif self.hash_name == "ColorHash":
             hash_value = imagehash.colorhash(x, binbits=3)
-        elif self.hash_name == "CropResistantHash":
+        elif self.hash_name == "CropResistantHash": # does not work yet
             hash_value = imagehash.crop_resistant_hash(x,
                                                        hash_func=None,
                                                        limit_segments=None,
@@ -177,6 +186,8 @@ class HashedScenario(ContinualScenario):
         # multithread hash evaluation without changing list order
         with Pool(min(8, cpu_count())) as p:
             list_hash = p.map(self.hash_func, list(x))
+
+        print(list_hash)
         return list_hash
 
     def generate_task_ids(self, cl_dataset):
@@ -212,7 +223,6 @@ class HashedScenario(ContinualScenario):
             # save eventually sort_indexes for later use and gain of time
             if self.filename_hash_indexes is not None:
                 np.save(self.filename_hash_indexes, [task_ids, sort_indexes, vectorized_list_hash], allow_pickle=True)
-
 
         if not len(task_ids) == len(y):
             AssertionError(f"task_ids {len(task_ids)} - y {len(y)} should be equal")
