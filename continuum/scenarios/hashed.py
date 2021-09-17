@@ -81,6 +81,7 @@ class HashedScenario(ContinualScenario):
         super().__init__(cl_dataset=cl_dataset, transformations=transformations)
 
     def process_for_hash(self, x):
+        """"preprocess data for hashing functions"""
         if self.data_type == "image_array":
             im = Image.fromarray(x.astype("uint8"))
         elif self.data_type == "image_path":
@@ -92,6 +93,7 @@ class HashedScenario(ContinualScenario):
         return im
 
     def hash_func(self, x):
+        ''''Hash one image and return hash'''
 
         x = self.process_for_hash(x)
 
