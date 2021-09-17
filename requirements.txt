@@ -11,4 +11,5 @@ pytest>=5.0.1
 prospector[with_mypy]>=1.2.0
 h5py>=3.1.0
 requests>=2.24.0
+scikit-learn
 ImageHash>=4.2.1

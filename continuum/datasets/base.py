@@ -1,4 +1,5 @@
 import abc
+import os
 from typing import List, Tuple, Union
 import warnings
 
@@ -12,7 +13,7 @@ from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
 class _ContinuumDataset(abc.ABC):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
-        self.data_path = data_path
+        self.data_path = os.path.expanduser(data_path)
         self.download = download
         self.train = train
 
