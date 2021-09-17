@@ -15,10 +15,16 @@ from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import ContinualScenario
 
 
-
 def sort_hash(list_hash):
     size = len(list_hash)
-    return sorted(range(size), key=lambda k: np.linalg.norm(list_hash[k]))
+
+    # multithread hash evaluation without changing list order
+    with Pool(min(8, cpu_count())) as p:
+        list_hash_norm = p.map(np.linalg.norm, list_hash)
+
+    assert len(list_hash_norm)==size
+
+    return sorted(range(size), key=lambda k: list_hash_norm[k])
 
 
 def get_array_list(list_bin_str_hash):
@@ -54,8 +60,8 @@ class HashedScenario(ContinualScenario):
         self.split_task = split_task
         self._nb_tasks = nb_tasks
 
-        if self.hash_name not in ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
-                                  "CropResistantHash"]:
+        if self.hash_name not in ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash"
+                                  ]: # , "CropResistantHash"
             AssertionError(f"{self.hash_name} is not a hash_name available.")
         if self.split_task not in ["balanced", "auto"]:
             AssertionError(f"{self.split_task} is not a data_split parameter available.")
@@ -64,15 +70,18 @@ class HashedScenario(ContinualScenario):
 
         self.data_type = cl_dataset.data_type
         self.filename_hash_indexes = filename_hash_indexes
-        if self.hash_name == "CropResistantHash":
-            # auto (kmeans) does not work with hask format of CropResistantHash
-            self.split_task = "balanced"
+
+        # "CropResistantHash" does not work yet
+        # if self.hash_name == "CropResistantHash":
+        #     # auto (kmeans) does not work with hask format of CropResistantHash
+        #     self.split_task = "balanced"
 
         x, y, t = self.generate_task_ids(cl_dataset)
         cl_dataset = InMemoryDataset(x, y, t, data_type=self.data_type)
         super().__init__(cl_dataset=cl_dataset, transformations=transformations)
 
     def process_for_hash(self, x):
+        """"preprocess data for hashing functions"""
         if self.data_type == "image_array":
             im = Image.fromarray(x.astype("uint8"))
         elif self.data_type == "image_path":
@@ -84,6 +93,7 @@ class HashedScenario(ContinualScenario):
         return im
 
     def hash_func(self, x):
+        ''''Hash one image and return hash'''
 
         x = self.process_for_hash(x)
 
@@ -105,7 +115,7 @@ class HashedScenario(ContinualScenario):
                                          remove_max_haar_ll=True)
         elif self.hash_name == "ColorHash":
             hash_value = imagehash.colorhash(x, binbits=3)
-        elif self.hash_name == "CropResistantHash":
+        elif self.hash_name == "CropResistantHash": # does not work yet
             hash_value = imagehash.crop_resistant_hash(x,
                                                        hash_func=None,
                                                        limit_segments=None,
@@ -119,8 +129,10 @@ class HashedScenario(ContinualScenario):
         return str(hash_value)
 
     def get_task_ids(self, x):
+        '''Return the task id vectors corresponding to the parameters settings '''
 
         if self.split_task == "balanced":
+            # In this case: create task ids with a fix set of tasks with a balanced amount of data
             assert self._nb_tasks is not None
             nb_examples = len(x)
             task_ids = np.ones(nb_examples) * (self._nb_tasks - 1)
@@ -130,6 +142,8 @@ class HashedScenario(ContinualScenario):
 
             # examples from len(perfect_balance_task_ids) to len(task_ids) are put into last tasks
         elif self._nb_tasks is not None:
+            # In this case: create task ids with a fix set of tasks with a amount of data automatically set
+
             # we use KMeans from scikit learn to make hash coherent tasks with a fixed number of task
 
             # reduce data size for clustering
@@ -139,6 +153,9 @@ class HashedScenario(ContinualScenario):
             # we use kmeans from scikit learn to create coherent clusters
             task_ids = KMeans(n_clusters=self._nb_tasks).fit_predict(reduc_data)
         else:
+            # In this case: create task ids with an automatically set  number of tasks
+            # with a amount of data automatically set.
+
             # we use MeanShift from scikit learn to automatically set the number of task
             # and make hash coherent tasks
 
@@ -166,20 +183,32 @@ class HashedScenario(ContinualScenario):
         return task_ids
 
     def get_list_hash_ids(self, x):
+        '''Compute hash for all data points in x and return a list of all hash in the same order '''
+
         # multithread hash evaluation without changing list order
         with Pool(min(8, cpu_count())) as p:
             list_hash = p.map(self.hash_func, list(x))
+
+        print(list_hash)
         return list_hash
 
     def generate_task_ids(self, cl_dataset):
+        ''''This function handle the generation of task id, either by reloading self.filename_hash_indexes
+        or by regenerating a task ids vector with self.get_task_ids(...)'''
         x, y, _ = cl_dataset.get_data()
 
         if self.filename_hash_indexes is not None and os.path.exists(self.filename_hash_indexes):
             print(f"Loading previously saved sorted indexes ({self.filename_hash_indexes}).")
             tuple_indexes_hash = np.load(self.filename_hash_indexes, allow_pickle=True)
-            sort_indexes, vectorized_list_hash = tuple_indexes_hash[0].astype(int), tuple_indexes_hash[1]
+            task_ids = tuple_indexes_hash[0].astype(int)
+            sort_indexes = tuple_indexes_hash[1].astype(int)
+            vectorized_list_hash = tuple_indexes_hash[2]
+
             assert len(sort_indexes) == len(vectorized_list_hash), print(
                 f"sort_indexes {len(sort_indexes)} - list_hash {len(vectorized_list_hash)}")
+
+            x = x[sort_indexes]
+            y = y[sort_indexes]
         else:
             list_hash = self.get_list_hash_ids(x)
 
@@ -188,16 +217,17 @@ class HashedScenario(ContinualScenario):
             # arbitrary sorting based on vectorized hash norm
             sort_indexes = sort_hash(vectorized_list_hash)
 
+            x = x[sort_indexes]
+            y = y[sort_indexes]
+            ordered_hash = np.array(vectorized_list_hash)[sort_indexes]
+            task_ids = self.get_task_ids(ordered_hash)
+
             # save eventually sort_indexes for later use and gain of time
             if self.filename_hash_indexes is not None:
-                np.save(self.filename_hash_indexes, [sort_indexes, vectorized_list_hash], allow_pickle=True)
+                np.save(self.filename_hash_indexes, [task_ids, sort_indexes, vectorized_list_hash], allow_pickle=True)
 
-        x = x[sort_indexes]
-        y = y[sort_indexes]
-        ordered_hash = np.array(vectorized_list_hash)[sort_indexes]
-        task_ids = self.get_task_ids(ordered_hash)
         if not len(task_ids) == len(y):
-            print(f"task_ids {len(task_ids)} - y {len(y)} should be equal")
+            AssertionError(f"task_ids {len(task_ids)} - y {len(y)} should be equal")
 
         return x, y, task_ids
 

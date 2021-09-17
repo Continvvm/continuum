@@ -100,8 +100,8 @@ def test_hash_generator_auto():
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
     NB_TASKS = 2
-    list_hash = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
-                 "CropResistantHash"]
+    list_hash = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash"
+                 ] # , "CropResistantHash"
     scenario_generator = HashGenerator(cl_dataset=dummy,
                                        list_hash=list_hash,
                                        nb_tasks=2,
@@ -117,8 +117,8 @@ def test_hash_generator_auto():
 def test_hash_generator_auto_full():
     train, test = gen_data()
     dummy = InMemoryDataset(*train)
-    list_hash = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
-                 "CropResistantHash"]
+    list_hash = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash"
+                 ] # , "CropResistantHash"
     scenario_generator = HashGenerator(cl_dataset=dummy,
                                        list_hash=list_hash,
                                        nb_tasks=None,
@@ -133,11 +133,11 @@ def test_hash_generator_auto_full():
 
 
 @pytest.mark.parametrize("nb_tasks, list_hash_name", [
-    (2, ["AverageHash", "Whash", "ColorHash", "CropResistantHash"]),
+    (2, ["AverageHash", "Whash", "ColorHash", "DhashV"]), #"CropResistantHash"
     (4, ["DhashH", "DhashV", "Whash", "ColorHash"]),
     (3, ["AverageHash", "DhashH"]),
     (5, ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
-         "CropResistantHash"]),
+         ]) #"CropResistantHash"
 ])
 def test_hash_generator_balanced(nb_tasks, list_hash_name):
     train, test = gen_data()

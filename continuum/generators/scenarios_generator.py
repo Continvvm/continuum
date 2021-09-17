@@ -125,12 +125,18 @@ class ClassOrderGenerator(_BaseGenerator):
 
 
 class HashGenerator(_BaseGenerator):
-    """Class Order Generator, generate sub-scenario from a base scenario simply by changing class order.
-    The difference with TaskOrderGenerator is that the classes inside a same task change.
-    This class is only compatible with ClassIncremental scenarios.
+    """Hash Generator, generate scenario from a set of parameters similar to scenario parameters and a list of hash name
+    Hash generator will create a HashedScenario from a hash name randomly sampled in the list.
 
-        :param dataset: continuum dataset from which scenarios will be created
-        """
+    :param cl_dataset: A continual dataset.
+    :param list_hash: list of hash name
+    :param nb_tasks: nb_tasks of each scenario, if None it will be automatically set
+    :param transformations: A list of transformations applied to all tasks. If
+                            it's a list of list, then the transformation will be
+                            different per task.
+    :param filename_hash_indexes: base name of a file to save scenarios indexes and reload them after
+    :param split_task: Define if the task split will be automatic by clusterization of hashes or manually balanced
+    """
 
     def __init__(
             self,
@@ -148,15 +154,15 @@ class HashGenerator(_BaseGenerator):
         self.split_task = split_task
         self._hash_name = None
 
-        self.all_hashs = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash",
-                          "CropResistantHash"]
+        self.all_hashs = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash"
+                          ] # , "CropResistantHash"
 
         # create default scenario to test parameters
         self.base_scenario = HashedScenario(cl_dataset=self.cl_dataset,
                                             hash_name="AverageHash",
                                             nb_tasks=nb_tasks,
                                             transformations=transformations,
-                                            filename_hash_indexes=filename_hash_indexes,
+                                            filename_hash_indexes=f"{filename_hash_indexes}_AverageHash",
                                             split_task=self.split_task)
         if list_hash is None:
             self.list_hash = self.all_hashs
@@ -175,6 +181,7 @@ class HashGenerator(_BaseGenerator):
         return self.list_hash[hash_id]
 
     def sample(self, seed: int = None, nb_tasks: int = None) -> _BaseScenario:
+        ''''create one scenario with a ramdomly sampled hash_name from self.list_hash'''
 
         if nb_tasks is None and self.nb_tasks is not None:
             nb_tasks = self.nb_tasks
@@ -191,7 +198,7 @@ class HashGenerator(_BaseGenerator):
                                   hash_name=self._hash_name,
                                   nb_tasks=nb_tasks,
                                   transformations=self.transformations,
-                                  filename_hash_indexes=self.filename_hash_indexes,
+                                  filename_hash_indexes=f"{self.filename_hash_indexes}_{self._hash_name}",
                                   split_task=self.split_task)
 
         return scenario
