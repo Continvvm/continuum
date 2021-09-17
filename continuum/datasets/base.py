@@ -55,8 +55,18 @@ class _ContinuumDataset(abc.ABC):
         return [transforms.ToTensor()]
 
     @property
-    def bounding_boxes(self):
+    def bounding_boxes(self) -> List:
         """Returns a bounding box (x1, y1, x2, y2) per sample if they need to be cropped."""
+        return None
+
+    @property
+    def attributes(self) -> np.ndarray:
+        """Returns normalized attributes for all class if available.
+
+        Those attributes can often be found in dataset used for Zeroshot such as
+        CUB200, or AwA. The matrix shape is (nb_classes, nb_attributes), and it
+        has been L2 normalized along side its attributes dimension.
+        """
         return None
 
 
