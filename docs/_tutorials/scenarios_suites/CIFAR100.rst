@@ -1,4 +1,4 @@
-CORe50
+CIFAR100
 -----------------
 
 CIFAR100 is a famous dataset proposed in
