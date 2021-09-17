@@ -147,7 +147,7 @@ class SegmentationClassIncremental(ClassIncremental):
             # Previous classes are not hidden, no future classes are present
             labels = self._get_task_labels(list(range(max(task_index) + 1)))
         else:
-            raise ValueError(f"Unknown mode={mode}.")
+            raise ValueError(f"Unknown mode={self.mode}.")
 
         inverted_order = {label: self.class_order.index(label) + 1 for label in labels}
         inverted_order[255] = 255

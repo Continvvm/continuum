@@ -1,4 +1,5 @@
 import abc
+import os
 from typing import List, Tuple, Union
 import warnings
 
@@ -12,7 +13,7 @@ from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
 class _ContinuumDataset(abc.ABC):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
-        self.data_path = data_path
+        self.data_path = os.path.expanduser(data_path)
         self.download = download
         self.train = train
 
@@ -50,13 +51,24 @@ class _ContinuumDataset(abc.ABC):
 
     @property
     def transformations(self):
+        """Default transformations if nothing is provided to the scenario."""
         if self.data_type == "segmentation":
             return [ToTensorSegmentation()]
         return [transforms.ToTensor()]
 
     @property
-    def bounding_boxes(self):
+    def bounding_boxes(self) -> List:
         """Returns a bounding box (x1, y1, x2, y2) per sample if they need to be cropped."""
+        return None
+
+    @property
+    def attributes(self) -> np.ndarray:
+        """Returns normalized attributes for all class if available.
+
+        Those attributes can often be found in dataset used for Zeroshot such as
+        CUB200, or AwA. The matrix shape is (nb_classes, nb_attributes), and it
+        has been L2 normalized along side its attributes dimension.
+        """
         return None
 
 
@@ -78,7 +90,15 @@ class PyTorchDataset(_ContinuumDataset):
     # TODO: some datasets have a different structure, like SVHN for ex. Handle it.
     def __init__(
             self, data_path: str = "", dataset_type=None, train: bool = True, download: bool = True, **kwargs):
+
+        if "transform" in kwargs:
+            raise ValueError(
+                "Don't provide `transform` to the dataset. "
+                "You should give those to the scenario."
+            )
+
         super().__init__(data_path=data_path, train=train, download=download)
+
         self.dataset_type = dataset_type
         self.dataset = self.dataset_type(self.data_path, download=self.download, train=self.train, **kwargs)
 
