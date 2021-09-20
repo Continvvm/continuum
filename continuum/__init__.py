@@ -15,4 +15,4 @@ from continuum.viz import plot_samples
 from continuum import generators
 
 
-__version__ = "1.0.28"
+__version__ = "1.1.0"
