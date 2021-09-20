@@ -193,8 +193,6 @@ class HashedScenario(ContinualScenario):
         # multithread hash evaluation without changing list order
         with Pool(min(8, cpu_count())) as p:
             list_hash = p.map(self.hash_func, list(x))
-
-        print(list_hash)
         return list_hash
 
     def generate_task_ids(self, cl_dataset):
