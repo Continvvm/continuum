@@ -13,7 +13,7 @@ class CUB200(_ContinuumDataset):
     base_folder = "CUB_200_2011/images"
 
     def __init__(self, data_path, train: bool = True, download: bool = True):
-        data_path = os.data_path.expanduser(data_path)
+        data_path = os.path.expanduser(data_path)
         self._attributes = None
         super().__init__(data_path, train, download)
 
@@ -32,7 +32,7 @@ class CUB200(_ContinuumDataset):
 
     @property
     def data_type(self):
-        return "image_data_path"
+        return "image_path"
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "CUB_200_2011")):
@@ -52,16 +52,16 @@ class CUB200(_ContinuumDataset):
 
     def _load_metadata(self):
         images = pd.read_csv(
-            os.data_path.join(self.data_path, "CUB_200_2011", "images.txt"),
+            os.path.join(self.data_path, "CUB_200_2011", "images.txt"),
             sep=" ",
             names=["img_id", "filedata_path"])
 
         image_class_labels = pd.read_csv(
-            os.data_path.join(self.data_path, "CUB_200_2011", "image_class_labels.txt"),
+            os.path.join(self.data_path, "CUB_200_2011", "image_class_labels.txt"),
             sep=" ",
             names=["img_id", "target"])
         train_test_split = pd.read_csv(
-            os.data_path.join(self.data_path, "CUB_200_2011", "train_test_split.txt"),
+            os.path.join(self.data_path, "CUB_200_2011", "train_test_split.txt"),
             sep=" ",
             names=["img_id", "is_training_img"])
 
@@ -73,7 +73,7 @@ class CUB200(_ContinuumDataset):
         else:
             self.data = self.data[self.data.is_training_img == 0]
 
-        x = os.data_path.join(self.data_path, "CUB_200_2011", "images") + "/" + np.array(data["filedata_path"])
+        x = os.path.join(self.data_path, "CUB_200_2011", "images") + "/" + np.array(data["filedata_path"])
         y = np.array(data["target"]) - 1  # Targets start at 1 by default, so shift to 0
 
         self.dataset = [x, y, None]
@@ -85,8 +85,8 @@ class CUB200(_ContinuumDataset):
             return False
 
         for index, row in self.data.iterrows():
-            filedata_path = os.data_path.join(self.data_path, self.base_folder, row.filedata_path)
-            if not os.data_path.isfile(filedata_path):
+            filedata_path = os.path.join(self.data_path, self.base_folder, row.filedata_path)
+            if not os.path.isfile(filedata_path):
                 print(filedata_path)
                 return False
         return True

@@ -17,8 +17,14 @@ class _ContinuumDataset(abc.ABC):
         self.download = download
         self.train = train
 
+        if not os.path.exists(self.data_path):
+            os.makedirs(self.data_path)
+
         if self.download:
             self._download()
+
+        if self.data_type not in ("image_array", "image_path", "text", "tensor", "segmentation"):
+            raise NotImplementedError(f"Dataset's data_type ({self.data_type}) is not supported.")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         pass

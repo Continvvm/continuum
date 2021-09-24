@@ -3,6 +3,8 @@ import zipfile
 import tarfile
 from six.moves import urllib
 
+import requests
+
 
 # Fix error when downloading dataset from torchvision
 # https://github.com/pytorch/vision/issues/1938#issuecomment-790730080
