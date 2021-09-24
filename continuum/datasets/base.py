@@ -17,7 +17,7 @@ class _ContinuumDataset(abc.ABC):
         self.download = download
         self.train = train
 
-        if not os.path.exists(self.data_path):
+        if self.data_path is not None and self.data_path != "" and not os.path.exists(self.data_path):
             os.makedirs(self.data_path)
 
         if self.download:
@@ -139,6 +139,7 @@ class InMemoryDataset(_ContinuumDataset):
             train: bool = True,
             download: bool = True,
     ):
+        self._data_type = data_type
         super().__init__(train=train, download=download)
 
         if len(x) != len(y):
@@ -147,9 +148,6 @@ class InMemoryDataset(_ContinuumDataset):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.data = (x, y, t)
-        if data_type not in ("image_array", "image_path", "text", "tensor", "segmentation"):
-            raise ValueError(f"Unrecognized data_type={data_type} for InMemoryDataset!")
-        self._data_type = data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data
@@ -173,12 +171,12 @@ class ImageFolderDataset(_ContinuumDataset):
 
     def __init__(self, data_path: str, train: bool = True, download: bool = True, data_type: str = "image_path"):
         self.data_path = data_path
+        self._data_type = data_type
         super().__init__(data_path=data_path, train=train, download=download)
 
         allowed_data_types = ("image_path", "segmentation")
         if data_type not in allowed_data_types:
             raise ValueError(f"Invalid data_type={data_type}, allowed={allowed_data_types}.")
-        self._data_type = data_type
 
     @property
     def data_type(self) -> str:
