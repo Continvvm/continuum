@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
-from continuum.download import download, untar
+from continuum.download import download, unzip
 
 
 class AwA2(ImageFolderDataset):
@@ -40,7 +40,7 @@ class AwA2(ImageFolderDataset):
 
     @property
     def data_type(self):
-        return "image_data_path"
+        return "image_path"
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "Animals_with_Attributes2")):
@@ -48,11 +48,11 @@ class AwA2(ImageFolderDataset):
 
             if not os.path.exists(zip_path):
                 print("Downloading zip images archive...", end=' ')
-                download(self.images_url, zip_path)
+                download(self.images_url, self.data_path)
                 print('Done!')
 
             print('Extracting archive...', end=' ')
-            untar(zip_path)
+            unzip(zip_path)
             print('Done!')
 
         if not os.path.exists(os.path.join(self.data_path, "xlsa17")):
@@ -60,11 +60,11 @@ class AwA2(ImageFolderDataset):
 
             if not os.path.exists(zip_path):
                 print("Downloading zip split archive...", end=' ')
-                download(self.split_v2_url, zip_path)
+                download(self.split_v2_url, self.data_path)
                 print('Done!')
 
             print('Extracting archive...', end=' ')
-            untar(zip_path)
+            unzip(zip_path)
             print('Done!')
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
