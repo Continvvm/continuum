@@ -20,9 +20,11 @@ class AwA2(ImageFolderDataset):
     images_url = "https://cvml.ist.ac.at/AwA2/AwA2-data.zip"
     split_v2_url = "http://datasets.d2.mpi-inf.mpg.de/xian/xlsa17.zip"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True, test_split: float = 0.2):
+    def __init__(self, data_path, train: bool = True, download: bool = True, test_split: float = 0.2,
+                 random_seed=1):
         self._attributes = None
         self.test_split = test_split
+        self.random_seed = random_seed
         super().__init__(data_path, train, download)
 
     @property
@@ -71,10 +73,10 @@ class AwA2(ImageFolderDataset):
         dataset = torchdata.ImageFolder(os.path.join(self.data_path, "Animals_with_Attributes2", "JPEGImages"))
         x, y, _ = self._format(dataset.imgs)
 
-        x_train, x_test, y_test, y_train = train_test_split(
+        x_train, x_test, y_train, y_test = train_test_split(
             x, y,
             test_size=self.test_split,
-            random_state=1
+            random_state=self.random_seed
         )
 
         if self.train:
