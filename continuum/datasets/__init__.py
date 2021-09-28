@@ -22,6 +22,8 @@ from continuum.datasets.stream51 import Stream51
 from continuum.datasets.dtd import DTD
 from continuum.datasets.vlcs import VLCS
 from continuum.datasets.pacs import PACS
+from continuum.datasets.domain_net import DomainNet
 from continuum.datasets.office_home import OfficeHome
 from continuum.datasets.terra_incognita import TerraIncognita
+from continuum.datasets.domain_net import DomainNet
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
