@@ -31,7 +31,7 @@ class VLCS(ImageFolderDataset):
 
     @property
     def data_type(self):
-        return "image_data_path"
+        return "image_path"
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "VLCS")):
@@ -54,7 +54,7 @@ class VLCS(ImageFolderDataset):
         for domain_id, domain_name in enumerate(domains):
             dataset = torchdata.ImageFolder(os.path.join(self.data_path, "VLCS", domain_name))
             x, y, _ = self._format(dataset.imgs)
-            x_train, x_test, y_test, y_train = train_test_split(
+            x_train, x_test, y_train, y_test = train_test_split(
                 x, y,
                 test_size=self.test_split,
                 random_state=self.random_seed

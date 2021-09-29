@@ -5,11 +5,47 @@ from typing import Tuple
 
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
 from continuum.download import download, untar, unzip
+
+
+# Used for multiprocessing in the preprocessing step.
+# Python's multiprocessing needs functions to be pickable and thus I cannot make
+# closures because they aren't at the global scope.
+_INCLUDE_LOCATIONS = None
+_INCLUDE_CATEGORIES = None
+_CATEGORY_DICT = None
+_DATA = None
+_IMAGE_FOLDER = None
+
+
+
+def _func(image):
+    global _INCLUDE_LOCATIONS, _INCLUDE_CATEGORIES, _CATEGORY_DICT, _DATA, _IMAGE_FOLDER
+
+    image_location = image['location']
+
+    if image_location not in _INCLUDE_LOCATIONS:
+        return None
+
+    image_id = image['id']
+    image_fname = image['file_name']
+
+    x, y, t = [], [], []
+    for annotation in _DATA['annotations']:
+        if annotation['image_id'] == image_id:
+            category = _CATEGORY_DICT[annotation['category_id']]
+
+            if category not in _INCLUDE_CATEGORIES:
+                return None
+
+            x.append(os.path.join(_IMAGE_FOLDER, image_id + ".jpg"))
+            y.append(_INCLUDE_CATEGORIES.index(category))
+            t.append(_INCLUDE_LOCATIONS.index(image_location))
+
+    return x, y, t
+
 
 
 class TerraIncognita(ImageFolderDataset):
@@ -37,7 +73,7 @@ class TerraIncognita(ImageFolderDataset):
 
     @property
     def data_type(self):
-        return "image_data_path"
+        return "image_path"
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "eccv_18_all_images_sm")):
@@ -47,10 +83,10 @@ class TerraIncognita(ImageFolderDataset):
                 download(self.images_url, self.data_path)
                 print("Done!")
             print('Extracting archive...', end=' ')
-            untar(zip_path)
+            untar(tar_path)
             print('Done!')
 
-        if not os.path.exists(os.path.join(self.data_path, "caltech_camera_traps.json")):
+        if not os.path.exists(os.path.join(self.data_path, "caltech_images_20210113.json")):
             zip_path = os.path.join(self.data_path, "caltech_camera_traps.json.zip")
             if not os.path.exists(zip_path):
                 print("Downloading json archive...", end=" ")
@@ -65,12 +101,12 @@ class TerraIncognita(ImageFolderDataset):
         path_y = os.path.join(self.data_path, "continuum_terrainc_y.npy")
         path_t = os.path.join(self.data_path, "continuum_terrainc_t.npy")
 
-        if not all(os.path.exist(p) for p in [path_x, path_y, path_t]):
+        if not all(os.path.exists(p) for p in [path_x, path_y, path_t]):
             print("Long (~1min) preprocessing starting! It will be cached for next time.")
             x, y, t = self._preprocess_data()
-            np.save(x, path_x)
-            np.save(y, path_y)
-            np.save(t, path_t)
+            np.save(path_x, x)
+            np.save(path_y, y)
+            np.save(path_t, t)
         else:
             x = np.load(path_x)
             y = np.load(path_y)
@@ -104,32 +140,20 @@ class TerraIncognita(ImageFolderDataset):
         for item in data['categories']:
             category_dict[item['id']] = item['name']
 
-        def _func(image):
-            image_location = image['location']
 
-            if image_location not in include_locations:
-                return None
-
-            image_id = image['id']
-            image_fname = image['file_name']
-
-            x, y, t = [], [], []
-            for annotation in data['annotations']:
-                if annotation['image_id'] == image_id:
-                    category = category_dict[annotation['category_id']]
-
-                    if category not in include_categories:
-                        return None
-
-                    x.append(os.path.join(images_folder, image_id + ".jpg"))
-                    y.append(include_categories.index(category))
-                    t.append(include_locations.index(image_location))
-
-            return x, y, t
+        global _INCLUDE_LOCATIONS, _INCLUDE_CATEGORIES, _CATEGORY_DICT, _DATA, _IMAGE_FOLDER
+        _INCLUDE_LOCATIONS = include_locations
+        _INCLUDE_CATEGORIES = include_categories
+        _CATEGORY_DICT = category_dict
+        _DATA = data
+        _IMAGE_FOLDER = images_folder
 
         x, y, t = [], [], []
+
         with mp.Pool(min(8, mp.cpu_count())) as pool:
             for tup in pool.imap(_func, data['images']):
+        #for image in data['images']:
+        #    tup = _func(image)
                 if tup is None:
                     continue
                 x.extend(tup[0])
@@ -138,5 +162,5 @@ class TerraIncognita(ImageFolderDataset):
 
         assert len(x) == len(y) == len(t)
 
-        x, y, t = np.concatenate(x), np.concatenate(y), np.concatenate(t)
+        x, y, t = np.array(x), np.array(y), np.array(t)
         return x, y, t

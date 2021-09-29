@@ -11,14 +11,13 @@ from continuum.download import download, unzip
 
 
 class DomainNet(ImageFolderDataset):
-    """OfficeHome dataset group.
+    """DomainNet dataset group.
 
-    Contain 4 different domains (art, clipart, product, and real world).
-    Each made of 65 classes.
+    Contain 6 different domains, each made of 345 classes.
 
-    * Deep Hashing Network for Unsupervised Domain Adaptation
-      Venkateswara et al.
-      CVPR 2017
+    * Moment Matching for Multi-Source Domain Adaptation
+      Peng et al.
+      ICCV 2019
     """
     urls = [
         "http://csr.bu.edu/ftp/visda/2019/multi-source/groundtruth/clipart.zip",

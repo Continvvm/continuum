@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
-from continuum.download import download_file_from_google_drive, untar
+from continuum.download import unzip
 
 
 class OfficeHome(ImageFolderDataset):
@@ -29,7 +29,7 @@ class OfficeHome(ImageFolderDataset):
 
     @property
     def data_type(self):
-        return "image_data_path"
+        return "image_path"
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "OfficeHomeDataset_10072016")):
@@ -42,7 +42,7 @@ class OfficeHome(ImageFolderDataset):
                 )
 
             print('Extracting archive...', end=' ')
-            untar(zip_path)
+            unzip(zip_path)
             print('Done!')
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -53,7 +53,7 @@ class OfficeHome(ImageFolderDataset):
         for domain_id, domain_name in enumerate(domains):
             dataset = torchdata.ImageFolder(os.path.join(self.data_path, "OfficeHomeDataset_10072016", domain_name))
             x, y, _ = self._format(dataset.imgs)
-            x_train, x_test, y_test, y_train = train_test_split(
+            x_train, x_test, y_train, y_test = train_test_split(
                 x, y,
                 test_size=self.test_split,
                 random_state=1

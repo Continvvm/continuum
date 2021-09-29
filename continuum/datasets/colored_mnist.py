@@ -45,13 +45,13 @@ class ColoredMNIST(MNIST):
         labels = (y < 5).astype(np.float32)
 
         # Flip label with probability 0.25
-        labels = self.torch_xor_(labels,
-                                 self.torch_bernoulli_(0.25, len(labels)))
+        labels = self._xor(labels,
+                           self._bernoulli(0.25, len(labels)))
 
         # Assign a color based on the label; flip the color with probability e
-        colors = self.xor(
+        colors = self._xor(
             labels,
-            self.bernoulli_(self.flip_color, len(labels))
+            self._bernoulli(self.flip_color, len(labels))
         )
         images = np.stack([images, images], axis=1)
         # Apply the color to the image by zeroing out the other color channel
@@ -64,8 +64,8 @@ class ColoredMNIST(MNIST):
         images = images.transpose(0, 2, 3, 1)
         return images, labels.astype(np.int64), t
 
-    def bernoulli_(self, p, size):
+    def _bernoulli(self, p, size):
         return (np.random.rand(size) < p).astype(np.float32)
 
-    def xor(self, a, b):
+    def _xor(self, a, b):
         return np.abs(a - b)
