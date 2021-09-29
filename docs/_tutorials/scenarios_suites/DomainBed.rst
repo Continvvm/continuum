@@ -45,21 +45,121 @@ of the color, then it'll get super bad.
 RotatedMNIST (RMNIST)
 ----------------------
 
+MNIST with the same good old 10 digits. Although for each domains, the digits
+are rotated by a certain amount.
+
+.. code-block:: python
+
+    from continuum.datasets import MNIST
+    from continuum import Rotations
+
+    dataset = MNIST("/your/path", train=True, download=True)
+
+    scenario = Rotations(dataset, [15, 30, 45, 60])
+
 
 VLCS
 ----------------------
 
+A dataset of large images, with 5 classes (bird, car, chair, dog, and person)
+distributed equally across 4 domains (Caltech101, LabelMe, SUN09, and VOC2007).
+
+
+.. code-block:: python
+
+    from torchvision import transforms
+    from continuum.datasets import VLCS
+    from continuum import ContinualScenario
+
+    dataset = VLCS("/your/path", train=True, download=True)
+
+    scenario = ContinualScenario(
+        dataset,
+        transformations=[transforms.Resize((224, 224)), transforms.ToTensor()]
+    )
+
+
 PACS
 ----------------------
 
+A dataset of large images, with 7 classes distributed equally across 4 domains.
+Note that you need to download yourself this dataset
+`"here" <https://drive.google.com/file/d/0B6x7gtvErXgfbF9CSk53UkRxVzg/view>`__.
+
+
+.. code-block:: python
+
+    from torchvision import transforms
+    from continuum.datasets import PACS
+    from continuum import ContinualScenario
+
+    dataset = PACS("/your/path", train=True, download=False)
+
+    scenario = ContinualScenario(
+        dataset,
+        transformations=[transforms.Resize((224, 224)), transforms.ToTensor()]
+    )
+
+
 OfficeHome
 ----------------------
+
+A dataset of large images, with 65 classes distributed equally across 4 domains.
+Note that you need to download yourself this dataset
+`"here" <https://drive.google.com/uc?id=0B81rNlvomiwed0V1YUxQdC1uOTg>`__.
+
+
+.. code-block:: python
+
+    from torchvision import transforms
+    from continuum.datasets import OfficeHome
+    from continuum import ContinualScenario
+
+    dataset = OfficeHome("/your/path", train=True, download=False)
+
+    scenario = ContinualScenario(
+        dataset,
+        transformations=[transforms.Resize((224, 224)), transforms.ToTensor()]
+    )
+
+
 
 TerraIncognita
 ----------------------
 
 
+A dataset of large images, with 10 classes distributed equally across 4 domains.
+
+
+.. code-block:: python
+
+    from torchvision import transforms
+    from continuum.datasets import TerraIncognita
+    from continuum import ContinualScenario
+
+    dataset = TerraIncognita("/your/path", train=True, download=False)
+
+    scenario = ContinualScenario(
+        dataset,
+        transformations=[transforms.Resize((224, 224)), transforms.ToTensor()]
+    )
+
+
+
 DomainNet
 ----------------------
 
+A dataset of large images, with 345 classes distributed equally across 6 domains.
 
+.. code-block:: python
+
+    from torchvision import transforms
+    from continuum.datasets import DomainNet
+    from continuum import ContinualScenario
+
+    dataset = DomainNet("/your/path", train=True, download=False)
+
+    scenario = ContinualScenario(
+        dataset,
+        transformations=[transforms.Resize((224, 224)), transforms.ToTensor()]
+    )
