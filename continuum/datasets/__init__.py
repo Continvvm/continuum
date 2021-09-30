@@ -19,4 +19,5 @@ from continuum.datasets.pascalvoc import PascalVOC2012
 from continuum.datasets.stream51 import Stream51
 from continuum.datasets.dtd import DTD
 from continuum.datasets.rainbow_mnist import RainbowMNIST
+from continuum.datasets.stl10 import STL10
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
