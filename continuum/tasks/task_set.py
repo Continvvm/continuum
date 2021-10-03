@@ -1,3 +1,4 @@
+import enum
 from copy import copy
 from typing import Tuple, Union, Optional, List
 
@@ -8,6 +9,16 @@ from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
 from continuum.viz import plot_samples
+
+
+class TaskType(enum.Enum):
+    """Enumeration to list all possible data types supported."""
+    IMAGE_ARRAY = 1
+    IMAGE_PATH = 2
+    TEXT = 3
+    TENSOR = 4
+    SEGMENTATION = 5
+    OBJ_DETECTION = 6
 
 
 class TaskSet(TorchDataset):
@@ -28,7 +39,7 @@ class TaskSet(TorchDataset):
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
-            data_type: str = "image_array",
+            data_type: TaskType = TaskType.IMAGE_ARRAY,
             bounding_boxes: Optional[np.ndarray] = None
     ):
         self._x, self._y, self._t = x, y, t
@@ -61,8 +72,10 @@ class TaskSet(TorchDataset):
         for task_set in task_sets:
             if task_set.data_type != self.data_type:
                 raise Exception(
-                    f"Invalid data type {task_set.data_type} != {self.data_type}"
+                    f"Invalid data type {task_set.data_type} != {self.data_type}, "
+                    "all concatenated tasksets must be of the same type."
                 )
+
             self.add_samples(task_set._x, task_set._y, task_set._t)
 
     def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
@@ -114,7 +127,7 @@ class TaskSet(TorchDataset):
             # we need to use __getitem__ to have the transform used
             sample, y, t = self[index]
 
-            if self.data_type in ["image_path", "image_array"]:
+            if self.data_type in [TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.SEGMENTATION]:
                 # we check dimension of images
                 if w is None:
                     w, h = sample.shape[:2]
@@ -146,14 +159,14 @@ class TaskSet(TorchDataset):
         """
         x = self._x[index]
 
-        if self.data_type in ("image_path", "segmentation"):
+        if self.data_type in (TaskType.IMAGE_PATH, TaskType.SEGMENTATION):
             x = Image.open(x).convert("RGB")
-        elif self.data_type == "image_array":
+        elif self.data_type == TaskType.IMAGE_ARRAY:
             x = Image.fromarray(x.astype("uint8"))
-        elif self.data_type == "tensor":
+        elif self.data_type == TaskType.TENSOR:
             if not torch.is_tensor(x):
                 x = torch.tensor(x)
-        elif self.data_type == "text":
+        elif self.data_type == TaskType.TEXT:
             pass
 
         return x
@@ -173,11 +186,11 @@ class TaskSet(TorchDataset):
                 min(bbox[3], x.size[1]),  # y2
             ))
 
-        if self.data_type == "text":
+        if self.data_type == TaskType.TEXT:
             x, y, t = self._prepare_text(x, y, t)
-        elif self.data_type == "segmentation":
+        elif self.data_type == TaskType.SEGMENTATION:
             x, y, t = self._prepare_segmentation(x, y, t)
-        elif self.data_type == "image_array" or self.data_type == "image_path":
+        elif self.data_type == TaskType.IMAGE_ARRAY or self.data_type == TaskType.IMAGE_PATH:
             x, y, t = self._prepare(x, y, t)
         else:  # self.data_type == "tensor"
             pass
