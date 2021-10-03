@@ -54,3 +54,9 @@ def test_scenario_CIFAR100_Scenarios():
     scenario = ContinualScenario(dataset)
     assert scenario.nb_classes == 100
     assert scenario.nb_tasks == 20
+
+
+    dataset = CIFAR100(DATA_PATH, train=True, labels_type="category", task_labels="lifelong")
+    scenario = ContinualScenario(dataset)
+    assert scenario.nb_classes == 20
+    assert scenario.nb_tasks == 5
