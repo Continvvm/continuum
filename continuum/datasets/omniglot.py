@@ -4,6 +4,7 @@ import torchvision
 import numpy as np
 
 from continuum.datasets import _ContinuumDataset
+from continuum.tasks import TaskType
 
 
 class Omniglot(_ContinuumDataset):
@@ -33,8 +34,8 @@ class Omniglot(_ContinuumDataset):
         )
 
     @property
-    def data_type(self):
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def get_data(self):
         x, y, t = [], [], []
