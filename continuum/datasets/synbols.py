@@ -1,18 +1,16 @@
-# from tqdm import tqdm
-from torch.utils.data import Dataset
-import numpy as np
 import json
 import os
-from torchvision import transforms as tt
-from PIL import Image
-import torch
 import multiprocessing
 import sys
-from continuum.datasets.base import InMemoryDataset
 from functools import partial
-import copy
+
+import numpy as np
+from torch.utils.data import Dataset
 import requests
 import h5py
+
+from continuum.datasets.base import InMemoryDataset
+
 
 
 class Synbols(InMemoryDataset):
@@ -27,7 +25,7 @@ class Synbols(InMemoryDataset):
             train: bool = True,
             dataset_name: str = "default_n=100000_2020-Oct-19.h5py",
             download: bool = True):
-        """Wraps Synbols in a Continuum dataset for compatibility with Sequoia  
+        """Wraps Synbols in a Continuum dataset for compatibility with Sequoia
 
         Args:
             data_path (str): Path where the dataset will be saved
@@ -74,6 +72,7 @@ def process_task(task, fields):
             ret.append(data[field])
     return ret
 
+
 class SynbolsHDF5:
     """HDF5 Backend Class"""
 
@@ -82,13 +81,13 @@ class SynbolsHDF5:
 
         Args:
             path (str): path where the data is stored (see full_path above)
-            task (str): 'char', 'font', or the field of choice 
+            task (str): 'char', 'font', or the field of choice
             domain_incremental_task (str): task used for domain-incremental learning
             ratios (list, optional): The train/val/test split ratios. Defaults to [0.6, 0.2, 0.2].
             mask (ndarray, optional): Mask with the data partition. Defaults to None.
             trim_size (int, optional): Trim the dataset to a smaller size, for debugging speed. Defaults to None.
             raw_labels (bool, optional): Whether to include all the attributes of the synbols for each batch. Defaults to False.
-            reference_mask (ndarray, optional): If train and validation are done with two different datasets, the 
+            reference_mask (ndarray, optional): If train and validation are done with two different datasets, the
                                                 reference mask specifies the partition of the training data. Defaults to None.
 
         Raises:
@@ -126,6 +125,7 @@ class SynbolsHDF5:
 
     def parse_mask(self, mask, ratios):
         return mask.astype(bool)
+
 
 class SynbolsSplit(Dataset):
     def __init__(self, dataset, split, domain_incremental_task, domain_increments, transform=None):
@@ -180,7 +180,7 @@ class SynbolsSplit(Dataset):
         if self.raw_labels is not None:
             self.raw_labels = np.array(self.raw_labels)[indices]
 
-        # Create "domain_increments" bins from the attribute used for domain incremental learning 
+        # Create "domain_increments" bins from the attribute used for domain incremental learning
         if self.domain_increments is not None:
             if self.domain_incremental_task in Synbols.categorical_attributes:
                 self.domains = list(sorted(set(domain_y)))
@@ -196,11 +196,11 @@ class SynbolsSplit(Dataset):
                     self.task_id[(domain_y >= self.domains[i - 1]) & (domain_y < self.domains[i])] = i
             else:
                 raise ValueError("Domain attribute not found")
-            
+
             if len(set(self.task_id)) != self.domain_increments:
-                raise RuntimeError("""The number of tasks differs from the number of domain increments. 
-                                        This could happen if the number of domains in the dataset is less than 
-                                        the requested number of increments. For instance, requesting 2000 
+                raise RuntimeError("""The number of tasks differs from the number of domain increments.
+                                        This could happen if the number of domains in the dataset is less than
+                                        the requested number of increments. For instance, requesting 2000
                                         font increments for a dataset with 1500 fonts will result in failure""")
         else:
             self.task_id = None
@@ -221,13 +221,13 @@ def get_data_path_or_download(dataset, data_root):
     Args:
         dataset (str): dataset name. For instance 'camouflage_n=100000_2020-Oct-19.h5py'.
             See https://github.com/ElementAI/synbols-resources/tree/master/datasets/generated for the complete list. (please ignore .a[a-z] extensions)
-        data_root (str): path where the dataset will be or is stored. If empty string, it defaults to $TMPDIR 
+        data_root (str): path where the dataset will be or is stored. If empty string, it defaults to $TMPDIR
 
     Raises:
         ValueError: dataset name does not exist in local path nor in remote
 
     Returns:
-        str: dataset final path 
+        str: dataset final path
     """
     url = 'https://zenodo.org/record/4701316/files/%s?download=1' % dataset
     if data_root == "":
