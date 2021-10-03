@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from torch.utils.data import DataLoader
 
-from continuum.tasks import split_train_val
+from continuum.tasks import split_train_val, TaskType
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import ClassIncremental
 
@@ -116,7 +116,7 @@ def test_split_train_val(val_split):
 ])
 def test_tensor_type(increment, nb_tasks):
     train, test = gen_tensor_data()
-    dummy = InMemoryDataset(*train, data_type="tensor")
+    dummy = InMemoryDataset(*train, data_type=TaskType.TENSOR)
     scenario = ClassIncremental(dummy, increment=increment)
 
     taskset = scenario[0]
@@ -132,7 +132,7 @@ def test_tensor_type(increment, nb_tasks):
 ])
 def test_tensor_type_get_samples(increment, nb_tasks):
     train, test = gen_tensor_data()
-    dummy = InMemoryDataset(*train, data_type="tensor")
+    dummy = InMemoryDataset(*train, data_type=TaskType.TENSOR)
     scenario = ClassIncremental(dummy, increment=increment)
 
     taskset = scenario[0]
