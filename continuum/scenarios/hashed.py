@@ -13,6 +13,7 @@ from scipy.spatial.distance import hamming
 from continuum.datasets import InMemoryDataset
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import ContinualScenario
+from continuum.tasks import TaskType
 
 
 def sort_hash(list_hash):
@@ -87,9 +88,9 @@ class HashedScenario(ContinualScenario):
 
     def process_for_hash(self, x):
         """"preprocess data for hashing functions"""
-        if self.data_type == "image_array":
+        if self.data_type == TaskType.IMAGE_ARRAY:
             im = Image.fromarray(x.astype("uint8"))
-        elif self.data_type == "image_path":
+        elif self.data_type == TaskType.IMAGE_PATH:
             im = Image.open(x).convert("RGB")
         else:
             raise NotImplementedError(f"data_type -- {self.data_type}"

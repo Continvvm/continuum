@@ -3,6 +3,7 @@ import pytest
 
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import ClassIncremental, InstanceIncremental
+from continuum.tasks import TaskType
 
 
 @pytest.fixture
@@ -37,7 +38,7 @@ def test_nlp_class_incremental(numpy_data):
 
     x_train, y_train, t_train = train
 
-    dummy = InMemoryDataset(x_train, y_train, data_type="text")
+    dummy = InMemoryDataset(x_train, y_train, data_type=TaskType.TEXT)
 
     scenario = ClassIncremental(dummy, increment=2)
 
@@ -54,7 +55,7 @@ def test_nlp_instance_incremental(numpy_data):
     x_train, y_train, t_train = train
 
     dummy = InMemoryDataset(
-        x_train, y_train, t=t_train, data_type="text"
+        x_train, y_train, t=t_train, data_type=TaskType.TEXT
     )
 
     scenario = InstanceIncremental(dummy)
