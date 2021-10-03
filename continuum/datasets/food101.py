@@ -6,6 +6,7 @@ from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
 from continuum.download import download, untar
+from continuum.tasks import TaskType
 
 
 class Food101(ImageFolderDataset):
@@ -21,8 +22,8 @@ class Food101(ImageFolderDataset):
         super().__init__(data_path, train, download)
 
     @property
-    def data_type(self) -> str:
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "food-101")):
