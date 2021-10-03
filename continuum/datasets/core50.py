@@ -5,6 +5,7 @@ import numpy as np
 
 from continuum import download
 from continuum.datasets.base import _ContinuumDataset
+from continuum.tasks import TaskType
 
 
 class Core50(_ContinuumDataset):
@@ -51,8 +52,8 @@ class Core50(_ContinuumDataset):
             self.train_image_ids = set(self.train_image_ids)
 
     @property
-    def data_type(self):
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def _download(self):
         if os.path.exists(os.path.join(self.data_path, "core50_128x128")):
@@ -165,8 +166,8 @@ class Core50v2_79(_ContinuumDataset):
     nb_tasks = 79
 
     @property
-    def data_type(self):
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def __init__(self, data_path: str, train: bool = True, download: bool = True, run_id: int = 0):
         if run_id > 9 or run_id < 0:

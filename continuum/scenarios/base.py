@@ -5,7 +5,7 @@ import numpy as np
 from torchvision import transforms
 
 from continuum.datasets import _ContinuumDataset
-from continuum.tasks import TaskSet
+from continuum.tasks import TaskSet, TaskType
 from continuum.transforms.segmentation import Compose as SegmentationCompose
 
 
@@ -34,7 +34,7 @@ class _BaseScenario(abc.ABC):
 
         if transformations is None:
             self.transformations = self.cl_dataset.transformations
-        if self.cl_dataset.data_type == "segmentation":
+        if self.cl_dataset.data_type == TaskType.SEGMENTATION:
             composer = SegmentationCompose
         else:
             composer = transforms.Compose
