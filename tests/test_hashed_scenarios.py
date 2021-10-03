@@ -4,6 +4,8 @@ import os
 
 from continuum.datasets import CIFAR10, CIFAR100, TinyImageNet200, InMemoryDataset
 from continuum.scenarios import HashedScenario
+from continuum.tasks import TaskType
+
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
@@ -76,7 +78,7 @@ def numpy_data():
 def test_HashedScenario_save_indexes(tmpdir, hash_name):
     num_tasks = 2
     x, y = numpy_data()
-    dataset = InMemoryDataset(x, y, None, data_type="image_array")
+    dataset = InMemoryDataset(x, y, None, data_type=TaskType.IMAGE_ARRAY)
 
     filename_indexes = os.path.join(tmpdir, f"{hash_name}.npy")
     if os.path.exists(filename_indexes):
@@ -111,7 +113,7 @@ def test_HashedScenario_save_indexes(tmpdir, hash_name):
                           "ColorHash"])  # , "CropResistantHash"
 def test_HashedScenario_automatic_task_number(hash_name):
     x, y = numpy_data()
-    dataset = InMemoryDataset(x, y, None, data_type="image_array")
+    dataset = InMemoryDataset(x, y, None, data_type=TaskType.IMAGE_ARRAY)
 
     # test when nb_tasks is set to None
     scenario = HashedScenario(cl_dataset=dataset,

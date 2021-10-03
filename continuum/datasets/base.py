@@ -8,6 +8,7 @@ from torchvision import datasets as torchdata
 from torchvision import transforms
 
 from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
+from continuum.tasks import TaskType
 
 
 class _ContinuumDataset(abc.ABC):
@@ -23,8 +24,11 @@ class _ContinuumDataset(abc.ABC):
         if self.download:
             self._download()
 
-        if self.data_type not in ("image_array", "image_path", "text", "tensor", "segmentation"):
-            raise NotImplementedError(f"Dataset's data_type ({self.data_type}) is not supported.")
+        if not isinstance(self.data_type, TaskType):
+            raise NotImplementedError(
+                f"Dataset's data_type ({self.data_type}) is not supported."
+                " It must be a member of the enum TaskType."
+            )
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         pass
@@ -52,13 +56,13 @@ class _ContinuumDataset(abc.ABC):
         return class_ids
 
     @property
-    def data_type(self) -> str:
-        return "image_array"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_ARRAY
 
     @property
     def transformations(self):
         """Default transformations if nothing is provided to the scenario."""
-        if self.data_type == "segmentation":
+        if self.data_type == TaskType.SEGMENTATION:
             return [ToTensorSegmentation()]
         return [transforms.ToTensor()]
 
@@ -127,7 +131,7 @@ class InMemoryDataset(_ContinuumDataset):
             x: np.ndarray,
             y: np.ndarray,
             t: Union[None, np.ndarray] = None,
-            data_type: str = "image_array",
+            data_type: TaskType = TaskType.IMAGE_ARRAY,
             train: bool = True,
             download: bool = True,
     ):
@@ -145,11 +149,11 @@ class InMemoryDataset(_ContinuumDataset):
         return self.data
 
     @property
-    def data_type(self) -> str:
+    def data_type(self) -> TaskType:
         return self._data_type
 
     @data_type.setter
-    def data_type(self, data_type: str) -> None:
+    def data_type(self, data_type: TaskType) -> None:
         self._data_type = data_type
 
 
@@ -161,17 +165,23 @@ class ImageFolderDataset(_ContinuumDataset):
     :param download: Dummy parameter.
     """
 
-    def __init__(self, data_path: str, train: bool = True, download: bool = True, data_type: str = "image_path"):
+    def __init__(
+        self,
+        data_path: str,
+        train: bool = True,
+        download: bool = True,
+        data_type: TaskType = TaskType.IMAGE_PATH
+    ):
         self.data_path = data_path
         self._data_type = data_type
         super().__init__(data_path=data_path, train=train, download=download)
 
-        allowed_data_types = ("image_path", "segmentation")
+        allowed_data_types = (TaskType.IMAGE_PATH, TaskType.SEGMENTATION)
         if data_type not in allowed_data_types:
             raise ValueError(f"Invalid data_type={data_type}, allowed={allowed_data_types}.")
 
     @property
-    def data_type(self) -> str:
+    def data_type(self) -> TaskType:
         return self._data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
