@@ -2,11 +2,11 @@ import os
 import json
 from typing import Tuple, Optional
 
-from torchvision import datasets as torchdata
 import numpy as np
 
 from continuum.datasets import _ContinuumDataset
 from continuum.download import download, unzip
+from continuum.tasks import TaskType
 
 
 class Stream51(_ContinuumDataset):
@@ -99,8 +99,8 @@ class Stream51(_ContinuumDataset):
         return self._bounding_boxes
 
     @property
-    def data_type(self) -> str:
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def _parse_json(self):
         if self.train:

@@ -6,6 +6,7 @@ import numpy as np
 
 from continuum import download
 from continuum.datasets.base import _ContinuumDataset
+from continuum.tasks import TaskType
 
 
 class MultiNLI(_ContinuumDataset):
@@ -44,8 +45,8 @@ class MultiNLI(_ContinuumDataset):
             print("Dataset extracted.")
 
     @property
-    def data_type(self) -> str:
-        return "text"
+    def data_type(self) -> TaskType:
+        return TaskType.TEXT
 
     @property
     def transformations(self):
