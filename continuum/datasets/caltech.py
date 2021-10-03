@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from continuum.datasets import _ContinuumDataset
 from continuum.download import download_file_from_google_drive, untar
+from continuum.tasks import TaskType
 
 
 class Caltech101(_ContinuumDataset):
@@ -38,8 +39,8 @@ class Caltech101(_ContinuumDataset):
         self.remove_bg_google = remove_bg_google
 
     @property
-    def data_type(self):
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def _download(self):
         data_folder = os.path.join(self.data_path, self.folder)
