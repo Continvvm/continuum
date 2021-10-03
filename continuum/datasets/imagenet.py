@@ -2,6 +2,7 @@ import os
 from typing import Tuple, Union
 
 from torchvision import datasets as torchdata
+from torchvision import transforms
 import numpy as np
 
 from continuum.datasets import ImageFolderDataset
