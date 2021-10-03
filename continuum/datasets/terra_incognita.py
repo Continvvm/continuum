@@ -8,6 +8,7 @@ import numpy as np
 
 from continuum.datasets import ImageFolderDataset
 from continuum.download import download, untar, unzip
+from continuum.tasks import TaskType
 
 
 # Used for multiprocessing in the preprocessing step.
@@ -72,8 +73,8 @@ class TerraIncognita(ImageFolderDataset):
         super().__init__(data_path, train, download)
 
     @property
-    def data_type(self):
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "eccv_18_all_images_sm")):

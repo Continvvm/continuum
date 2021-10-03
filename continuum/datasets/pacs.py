@@ -8,6 +8,7 @@ from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
 from continuum.download import unzip
+from continuum.tasks import TaskType
 
 
 class PACS(ImageFolderDataset):
@@ -28,8 +29,8 @@ class PACS(ImageFolderDataset):
         super().__init__(data_path, train, download)
 
     @property
-    def data_type(self):
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "kfold")):
