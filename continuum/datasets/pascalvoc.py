@@ -4,11 +4,12 @@ from typing import Iterable, Set, Tuple, Union
 import numpy as np
 
 from continuum import download
-from continuum.datasets.base import _SemanticSegmentationDataset
+from continuum.datasets.base import _ContinuumDataset
 from continuum.transforms.segmentation import ToTensor
+from continuum.tasks import TaskType
 
 
-class PascalVOC2012(_SemanticSegmentationDataset):
+class PascalVOC2012(_ContinuumDataset):
     """PascalVOC2012 Semantic Segmentation Dataset.
 
     :param data_path: Path where the data is present or will be downloaded.
@@ -23,6 +24,10 @@ class PascalVOC2012(_SemanticSegmentationDataset):
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True, augmented: bool = True) -> None:
         super().__init__(data_path=data_path, train=train, download=download)
         self.augmented = augmented
+
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.SEGMENTATION
 
     def _download(self):
         # Downloading images

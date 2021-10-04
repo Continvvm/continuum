@@ -78,14 +78,6 @@ class _ContinuumDataset(abc.ABC):
         return None
 
 
-class _SemanticSegmentationDataset(_ContinuumDataset):
-    """Base class for segmentation-based dataset."""
-
-    @property
-    def data_type(self) -> str:
-        return "segmentation"
-
-
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.
     :param dataset_type: A Torchvision dataset, like MNIST or CIFAR100.
