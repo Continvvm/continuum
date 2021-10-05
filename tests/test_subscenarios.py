@@ -5,6 +5,7 @@ import string
 
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import ClassIncremental, ContinualScenario, create_subscenario
+from continuum.tasks import TaskType
 
 
 def gen_data():
@@ -61,7 +62,7 @@ def test_slicing_list(list_tasks):
 ])
 def test_slicing_list_path_array(list_tasks):
     x_train, y_train = gen_string()
-    dummy = InMemoryDataset(x_train, y_train, data_type="image_path")
+    dummy = InMemoryDataset(x_train, y_train, data_type=TaskType.IMAGE_PATH)
     scenario = ClassIncremental(dummy, increment=1)
     subscenario = create_subscenario(scenario, list_tasks)
     assert subscenario.nb_tasks == len(list_tasks), print(f"{len(subscenario)} - vs - {len(list_tasks)}")

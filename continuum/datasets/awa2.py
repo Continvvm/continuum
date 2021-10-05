@@ -8,6 +8,7 @@ from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
 from continuum.download import download, unzip
+from continuum.tasks import TaskType
 
 
 class AwA2(ImageFolderDataset):
@@ -41,8 +42,8 @@ class AwA2(ImageFolderDataset):
         return self._attributes
 
     @property
-    def data_type(self):
-        return "image_path"
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
     def _download(self):
         if not os.path.exists(os.path.join(self.data_path, "Animals_with_Attributes2")):
