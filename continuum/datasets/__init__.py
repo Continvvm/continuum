@@ -19,5 +19,6 @@ from continuum.datasets.pascalvoc import PascalVOC2012
 from continuum.datasets.stream51 import Stream51
 from continuum.datasets.dtd import DTD
 from continuum.datasets.rainbow_mnist import RainbowMNIST
+from continuum.datasets.food101 import Food101
 from continuum.datasets.omniglot import Omniglot
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
