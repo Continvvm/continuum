@@ -5,7 +5,7 @@ import numpy as np
 from torchvision import transforms
 
 from continuum.datasets import _ContinuumDataset
-from continuum.tasks import TaskSet
+from continuum.tasks import TaskSet, TaskType
 from continuum.transforms.segmentation import Compose as SegmentationCompose
 
 
@@ -34,7 +34,7 @@ class _BaseScenario(abc.ABC):
 
         if transformations is None:
             self.transformations = self.cl_dataset.transformations
-        if self.cl_dataset.data_type == "segmentation":
+        if self.cl_dataset.data_type == TaskType.SEGMENTATION:
             composer = SegmentationCompose
         else:
             composer = transforms.Compose
@@ -56,6 +56,11 @@ class _BaseScenario(abc.ABC):
         This property is dependent on the dataset, not the actual scenario.
         """
         return self.cl_dataset.train
+
+    @property
+    def nb_samples(self) -> int:
+        """Total number of samples in the whole continual setting."""
+        return len(self.dataset[0])  # type: ignore
 
     @property
     def nb_classes(self) -> int:
