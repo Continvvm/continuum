@@ -10,7 +10,7 @@ import torchvision
 
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import ClassIncremental
-from continuum.tasks import TaskSet
+from continuum.tasks import TaskSet, TaskType
 from continuum.download import ProgressBar
 
 
@@ -67,10 +67,11 @@ class SegmentationClassIncremental(ClassIncremental):
         self.test_background = test_background
         self._nb_classes = nb_classes
 
-        if cl_dataset.data_type != "segmentation":
+        if cl_dataset.data_type != TaskType.SEGMENTATION:
             raise ValueError(
                 f"Dataset {cl_dataset} doesn't have the right data type but "
-                f"{self.cl_dataset.data_type}."
+                f"{self.cl_dataset.data_type}. while it should have been "
+                f"a enum member {TaskType.SEGMENTATION}."
             )
 
         if self.mode not in ("overlap", "disjoint", "sequential"):

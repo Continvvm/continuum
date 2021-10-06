@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import SegmentationClassIncremental
+from continuum.tasks import TaskType
 
 
 def _clean(pattern):
@@ -41,7 +42,7 @@ def create_dataset(tmpdir, prefix, png=False, train=True):
 
     return InMemoryDataset(
         np.array(x_paths), np.array(y_paths),
-        data_type="segmentation",
+        data_type=TaskType.SEGMENTATION,
         train=train
     )
 
@@ -72,7 +73,7 @@ def create_dense_dataset(tmpdir, png=False, train=False):
 
     return InMemoryDataset(
         np.array(x_paths), np.array(y_paths),
-        data_type="segmentation",
+        data_type=TaskType.SEGMENTATION,
         train=train
     )
 
