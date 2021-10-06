@@ -58,6 +58,11 @@ class _BaseScenario(abc.ABC):
         return self.cl_dataset.train
 
     @property
+    def nb_samples(self) -> int:
+        """Total number of samples in the whole continual setting."""
+        return len(self.dataset[0])  # type: ignore
+
+    @property
     def nb_classes(self) -> int:
         """Total number of classes in the whole continual setting."""
         return len(np.unique(self.dataset[1]))  # type: ignore

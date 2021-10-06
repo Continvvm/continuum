@@ -20,4 +20,8 @@ from continuum.datasets.stream51 import Stream51
 from continuum.datasets.dtd import DTD
 from continuum.datasets.rainbow_mnist import RainbowMNIST
 from continuum.datasets.caltech import Caltech101, Caltech256
+from continuum.datasets.fgvc_aircraft import FGVCAircraft
+from continuum.datasets.stl10 import STL10
+from continuum.datasets.food101 import Food101
+from continuum.datasets.omniglot import Omniglot
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
