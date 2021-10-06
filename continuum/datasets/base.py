@@ -87,7 +87,7 @@ class _SemanticSegmentationDataset(_ContinuumDataset):
 
     @property
     def data_type(self) -> str:
-        return TaskType.
+        return TaskType.SEGMENTATION
 
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.
