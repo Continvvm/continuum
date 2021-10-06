@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import os
 
-from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200
+from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200, AwA2
 from continuum.scenarios import Rotations
 from continuum.scenarios import Permutations
 from continuum.scenarios import ClassIncremental
@@ -15,6 +15,7 @@ from continuum.datasets import MNISTFellowship
                                                   (FashionMNIST, "FashionMNIST", [28, 28, 1]),
                                                   (CIFAR10, "CIFAR10", [32, 32, 3]),
                                                   (CIFAR100, "CIFAR100", [32, 32, 3]),
+                                                  (AwA2, "AwA2", [32, 32, 3]),
                                                   (TinyImageNet200, "TinyImageNet200", [64, 64, 3])])
 def test_visualization_ClassIncremental(tmpdir, dataset, name, shape):
     increment = 2
