@@ -78,6 +78,8 @@ def test_taskid(fake_data, class_order):
         increment=2
     )
 
+    assert scenario.nb_samples == 20
+
     for task_id, taskset in enumerate(scenario):
         loader = DataLoader(taskset, batch_size=32)
 
@@ -90,6 +92,7 @@ def test_nb_classes(fake_data):
         cl_dataset=fake_data,
         increment=2
     )
+    assert scenario.nb_samples == 20
 
     assert scenario.nb_classes == NB_CLASSES
     assert (scenario.classes == np.arange(NB_CLASSES)).all()

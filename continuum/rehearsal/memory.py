@@ -1,4 +1,5 @@
 from typing import Union, Callable, Tuple, Any
+import warnings
 
 import numpy as np
 
@@ -61,6 +62,31 @@ class RehearsalMemory:
         self.seen_classes = set()
 
         self._x = self._y = self._t = None
+
+    def save(self, path: str = "memory.npz"):
+        """Save memory on disk in a single file."""
+        np.savez(
+            path,
+            x=self._x, y=self._y, t=self._t
+        )
+
+    def load(self, path: str = "memory.npz"):
+        """Load memory on disk from a single file.
+
+        Warning! It'll erase existing memory!
+        """
+        if self._x is not None:
+            warnings.warn(
+                "Rehearsal memory wasn't empty when loading new memory from disk!"
+                "Existing memory is erased to the profit of the loaded memory."
+            )
+
+        data = np.load(path)
+        self._x = data["x"]
+        self._y = data["y"]
+        self._t = data["t"]
+
+        self.seen_classes = set([y for y in np.unique(self._y)])
 
     @property
     def nb_classes(self) -> int:
