@@ -68,3 +68,16 @@ that can be whatever you want. For 'barycenter' and 'cluster' it's features.
 
 2. Returns the sampled `x`, `y`, `t`. Note that you could even create new `x`, `y`, `t`
    and returns those if you want.
+
+
+Saving and loading
+-------------------
+
+Computing rehearsal samples can be slow, and thus if you want to re-start from a
+checkpoint, you would also want to avoid re-computing the herding. Thus, the memory
+provide a save and load methods:
+
+.. code-block:: python
+
+    memory.save("/my/path/memory.npz")
+    memory.load("/my/path/memory.npz")
