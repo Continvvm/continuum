@@ -19,6 +19,38 @@ cifar100_coarse_labels = np.array([4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
                                    18, 1, 2, 15, 6, 0, 17, 8, 14, 13])
 
 
+def get_lifelong_cifar100(y):
+    """"
+    Create a task label such as having one of coarse label in each task but one 20 different classes in each task.
+    """
+
+    # they should be 20 corase labels with 5 classes each
+    coarse_labels = np.unique(cifar100_coarse_labels)
+    assert len(coarse_labels) == 20
+
+    # we should have a 5*20 matrix with indexes of classes of each coarse_labels
+    np_indexes_coarse_labels = np.zeros((5, 20))
+    for i in range(20):
+        indexes_coarse_labels = np.where(cifar100_coarse_labels == i)[0]
+        assert len(indexes_coarse_labels) == 5, print(f"len(indexes_coarse_labels): {len(indexes_coarse_labels)}")
+        np_indexes_coarse_labels[:, i] = np.array(indexes_coarse_labels)
+
+    np_indexes_coarse_labels = np_indexes_coarse_labels.astype(int)
+
+    # we can have 5 tasks with 1 classes per coarse labels to make a lifelong scenario
+
+    # so we create the task label vector
+    t = np.zeros(len(y))
+    for i in range(5):
+        indexes = np_indexes_coarse_labels[i,:]
+        assert len(np.unique(cifar100_coarse_labels[indexes])) == 20, print(cifar100_coarse_labels[indexes])
+        assert len(indexes) == 20, print(f"len(indexes) {len(indexes)}")
+        for index in indexes:
+            data_index_class = np.where(y==index)[0]
+            t[data_index_class] = i
+
+    return t.astype(int)
+
 class CIFAR100(PyTorchDataset):
     """Continuum use of the CIFAR100 dataset.
     We adapt this dataset to create scenario from the combination of both of category labels and class labels.
@@ -38,10 +70,14 @@ class CIFAR100(PyTorchDataset):
         if not labels_type in ["class", "category"]:
             AssertionError("unknown labels_type parameter, choose among ['class', 'category']")
         if not  task_labels in [None, "class", "category"]:
-            AssertionError("unknown task_labels parameter, choose among [None, 'class', 'category']")
+            AssertionError("unknown task_labels parameter, choose among [None, 'class', 'category', 'lifelong']")
 
         self.labels_type = labels_type
         self.task_labels_type = task_labels
+
+        # lifelong scenario can not be with 'class' label_type
+        if task_labels == 'lifelong':
+            labels_type = 'category'
 
         if self.task_labels_type is None:
             # the dataset does not provide a task id vector
@@ -52,6 +88,8 @@ class CIFAR100(PyTorchDataset):
         elif self.task_labels_type == "category":
             # the dataset provides a task id vector based on categories
             self.t = cifar100_coarse_labels[self.dataset.targets]
+        elif self.task_labels_type == "lifelong":
+            self.t = get_lifelong_cifar100(self.dataset.targets)
 
         if self.labels_type == "category":
             # here we replace class labels by category labels to annotate data.
