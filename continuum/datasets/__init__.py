@@ -34,3 +34,4 @@ from continuum.datasets.stl10 import STL10
 from continuum.datasets.food101 import Food101
 from continuum.datasets.omniglot import Omniglot
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
+from continuum.datasets.flowers102 import Flower102
