@@ -27,6 +27,7 @@ from continuum.datasets.office_home import OfficeHome
 from continuum.datasets.terra_incognita import TerraIncognita
 from continuum.datasets.domain_net import DomainNet
 from continuum.datasets.rainbow_mnist import RainbowMNIST
+from continuum.datasets.car196 import Car196
 from continuum.datasets.caltech import Caltech101, Caltech256
 from continuum.datasets.fgvc_aircraft import FGVCAircraft
 from continuum.datasets.stl10 import STL10
