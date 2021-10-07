@@ -181,7 +181,7 @@ class H5Dataset(InMemoryDataset):
             x: np.ndarray,
             y: np.ndarray,
             t: Union[None, np.ndarray] = None,
-            data_path: str = "",
+            data_path: str = "h5_dataset.h5",
             data_type: TaskType = TaskType.IMAGE_ARRAY,
             train: bool = True,
             download: bool = True,
