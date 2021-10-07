@@ -19,7 +19,7 @@ class ClassIncremental(_BaseScenario):
                     or a list specifying for every task the amount of new classes
                      (e.g. increment=[5,1,1,1,1]).
     :param initial_increment: A different task size applied only for the first task.
-                              Desactivated if `increment` is a list.
+                              Deactivated if `increment` is a list.
     :param transformations: A list of transformations applied to all tasks. If
                             it's a list of list, then the transformation will be
                             different per task.

@@ -1,7 +1,7 @@
 # pylint: disable=C0401
 # flake8: noqa
 from continuum.datasets.base import (
-    ImageFolderDataset, InMemoryDataset, PyTorchDataset, _ContinuumDataset
+    ImageFolderDataset, InMemoryDataset, PyTorchDataset, _ContinuumDataset, H5Dataset
 )
 from continuum.datasets.cifar100 import CIFAR100
 from continuum.datasets.core50 import (Core50, Core50v2_79, Core50v2_196, Core50v2_391)
