@@ -19,9 +19,8 @@ class OnlineFellowship(_BaseScenario):
     def __init__(
             self,
             cl_datasets: List[_ContinuumDataset],
-            nb_tasks: int = 0,
             transformations: Union[List[Callable], List[List[Callable]]] = None,
-            class_order: Union[List[int], None] = None
+            update_labels=True
     ) -> None:
         self._nb_tasks = len(cl_datasets)
         self.cl_datasets = cl_datasets
@@ -59,3 +58,6 @@ class OnlineFellowship(_BaseScenario):
             data_type=self.cl_dataset.data_type,
             bounding_boxes=self.cl_dataset.bounding_boxes
         )
+
+    def _setup(self, nb_task):
+        return nb_task

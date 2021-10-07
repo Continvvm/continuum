@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from torch.utils.data import DataLoader
 
-from continuum import ClassIncremental, InstanceIncremental
+from continuum.scenarios import ClassIncremental, InstanceIncremental, OnlineFellowship
 from continuum.datasets import (
     CIFAR10, CIFAR100, KMNIST, MNIST, CIFARFellowship, FashionMNIST, Fellowship, MNISTFellowship,
     InMemoryDataset, Fellowship
@@ -53,6 +53,20 @@ def test_inMemory_updateLabels_Fellowship(increment, dataset7c, dataset10c, data
         assert continuum.nb_tasks == 37
         assert continuum.nb_classes == 37
 
+
+def test_Online_Fellowship(dataset7c, dataset10c, dataset20c):
+    scenario = OnlineFellowship([dataset7c, dataset10c, dataset20c])
+    for i, task_set in enumerate(scenario):
+        if i == 0:
+            assert task_set.nb_classes == 7
+        if i == 1:
+            assert task_set.nb_classes == 10
+        if i == 2:
+            assert task_set.nb_classes == 20
+
+    assert scenario[0].nb_classes == 7
+    assert scenario[1].nb_classes == 10
+    assert scenario[2].nb_classes == 20
 
 
 @pytest.mark.parametrize("increment", [1, [7, 10, 20]])
