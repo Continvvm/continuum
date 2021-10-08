@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
+from continuum.datasets import InMemoryDataset
+from continuum.tasks import TaskSet, concat, split_train_val
 from torch.utils.data import DataLoader
-
-from continuum.tasks import TaskSet, split_train_val, concat
 
 
 @pytest.mark.parametrize("nb_others", [1, 2])
@@ -93,3 +93,20 @@ def test_get_raw_samples(nb_samples):
     assert (x[:nb_samples] == data).all()
     assert (y[:nb_samples] == y_).all()
     assert (t[:nb_samples] == t_).all()
+
+
+def test_continuum_to_pytorch_dataset():
+    x_train = np.random.randint(0, 255, size=(20, 32, 32, 3))
+    y_train = []
+    for i in range(10):
+        y_train.append(np.ones(2) * i)
+    y_train = np.concatenate(y_train)
+
+    continuum_dataset = InMemoryDataset(x_train, y_train)
+    task_set = continuum_dataset.to_taskset()
+
+    loader = DataLoader(task_set, batch_size=32)
+
+    c = 0
+    for x, y, _ in loader:
+        pass
