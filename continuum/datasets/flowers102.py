@@ -8,7 +8,7 @@ from continuum.datasets import _ContinuumDataset
 from continuum.download import download, untar
 from continuum.tasks import TaskType
 
-class Flower102(_ContinuumDataset):
+class OxfordFlower102(_ContinuumDataset):
     """Oxford Flowers 102
 
       The Oxford Flowers 102 dataset consists of 102 flower categories commonly occurring
@@ -42,12 +42,12 @@ class Flower102(_ContinuumDataset):
             untar(archive_images_path)
             print('Done!')
 
-        # Downloading split file
+        # Downloading label file
         if not os.path.exists(os.path.join(self.data_path, "imagelabels.mat")):
             label_url = os.path.join(self.base_url, "imagelabels.mat")
             download(label_url, self.data_path)
 
-        # Downloading labels
+        # Downloading split file
         if not os.path.exists(os.path.join(self.data_path, "setid.mat")):
             split_url = os.path.join(self.base_url, "setid.mat")
             download(split_url, self.data_path)
