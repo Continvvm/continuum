@@ -1,5 +1,6 @@
+import os
+
 import pytest
-import torch
 import numpy as np
 
 from continuum.datasets import InMemoryDataset
@@ -81,3 +82,34 @@ def test_memory_name(name, method):
     )
     assert memory.herding_method == method
 
+
+
+def test_save_memory(tmpdir, scenario, memory_size=50, method="random", fixed=True):
+    memory = rehearsal.RehearsalMemory(
+        memory_size, method, fixed, 10
+    )
+    assert len(memory) == 0
+
+    c = 0
+    for task_id, taskset in enumerate(scenario):
+        x, y, t = taskset.get_raw_samples()
+
+        c += 2
+        memory.add(x, y, t, x)
+
+        seen_classes = memory.seen_classes
+
+        memory.save(os.path.join(tmpdir, f"memory_{task_id}.npz"))
+
+        new_memory = rehearsal.RehearsalMemory(
+            memory_size, method, fixed, 10
+        )
+        new_memory.load(os.path.join(tmpdir, f"memory_{task_id}.npz"))
+
+        assert memory.seen_classes == new_memory.seen_classes
+        assert len(memory) == len(new_memory)
+        assert (memory._x == new_memory._x).all()
+        assert (memory._y == new_memory._y).all()
+        assert (memory._t == new_memory._t).all()
+
+        memory.load(os.path.join(tmpdir, f"memory_{task_id}.npz"))

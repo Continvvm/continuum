@@ -5,6 +5,7 @@ from torchvision import datasets as torchdata
 
 from continuum.datasets import ImageFolderDataset
 from continuum import download
+from continuum.tasks import TaskType
 
 
 class DTD(ImageFolderDataset):
@@ -18,7 +19,7 @@ class DTD(ImageFolderDataset):
     url = "https://www.robots.ox.ac.uk/~vgg/data/dtd/download/dtd-r1.0.1.tar.gz"
 
     def __init__(self, data_path: str, train: bool = True, download: bool = True, split: int = 1):
-        super().__init__(data_path=data_path, train=train, download=download, data_type="image_path")
+        super().__init__(data_path=data_path, train=train, download=download, data_type=TaskType.IMAGE_PATH)
 
         if not (1 <= int(split) <= 10):
             raise ValueError(f"Available splits are [1, ..., 10], not {split}")

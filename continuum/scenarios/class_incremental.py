@@ -36,7 +36,6 @@ class ClassIncremental(_BaseScenario):
         transformations: Union[List[Callable], List[List[Callable]]] = None,
         class_order: Union[List[int], None]=None
     ) -> None:
-
         super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)
 
         self.increment = increment
@@ -46,7 +45,6 @@ class ClassIncremental(_BaseScenario):
         self._nb_tasks = self._setup(nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-
         x, y, _ = self.cl_dataset.get_data()
         unique_classes = np.unique(y)
 
@@ -60,10 +58,13 @@ class ClassIncremental(_BaseScenario):
         if len(np.unique(self.class_order)) != len(self.class_order):
             raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
 
-        new_y = np.vectorize(self.class_order.index)(y)
+        # Map the classes ids to their new values according to class order.
+        # Aka if the user wants that the first 2 classes are 2, 7; then all
+        # samples with classes 2 & 7 are resp. labeled as 0 & 1.
+        self.class_order = np.array(self.class_order)
+        new_y = self.class_order.argsort()[y.astype(np.int64)]
 
         # Increments setup
-        self.class_order = np.array(self.class_order)
         if nb_tasks <= 0:
             # The number of tasks is left unspecified, thus it will be determined
             # by the specified increments.
