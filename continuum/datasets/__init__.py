@@ -22,4 +22,5 @@ from continuum.datasets.rainbow_mnist import RainbowMNIST
 from continuum.datasets.food101 import Food101
 from continuum.datasets.omniglot import Omniglot
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
-from continuum.datasets.flowers102 import Flower102
+from continuum.datasets.flowers102 import OxfordFlower102
+from continuum.datasets.oxford_pet import OxfordPet
