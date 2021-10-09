@@ -1,15 +1,14 @@
-import os
 import glob
+import os
 
-import pytest
 import numpy as np
-from PIL import Image
+import pytest
 import torch
-from torch.utils.data import DataLoader
-
 from continuum.datasets import InMemoryDataset
 from continuum.scenarios import SegmentationClassIncremental
 from continuum.tasks import TaskType
+from PIL import Image
+from torch.utils.data import DataLoader
 
 
 def _clean(pattern):
@@ -401,3 +400,13 @@ def test_labels(dataset, mode, increment):
                     assert c not in seen_classes, (c, task_id, min_cls, max_cls)
 
         min_cls += increments[task_id]
+
+
+def test_continuum_to_pytorch_dataset(dataset):
+    task_set = dataset.to_taskset()
+
+    loader = DataLoader(task_set, batch_size=32)
+
+    c = 0
+    for x, y, _ in loader:
+        pass
