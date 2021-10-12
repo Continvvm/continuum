@@ -230,3 +230,30 @@ MNIST with different rotations or pixel permutations. Continuum also handles it!
 However it's a scenario's speficic, not dataset, thus look over the
 `Scenario doc <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html#transformed-incremental>`__.
 
+Supervised setting without Continual
+-------------------------------------
+
+Continuum is awesome but you don't want to do continual learning? Simply want to
+train a model on a single try on the whole dataset? No problem.
+
+All Continuum datasets can be directly converted to tasksets, which implement the
+Pytorch Dataset and thus can be directly given to a DataLoader.
+
+Here are an example with MNIST, but all datasets work the same:
+
+
+.. code-block:: python
+
+    from torch.utils.data import DataLoader
+    from continuum.datasets import MNIST
+
+    dataset = MNIST("/my/data/folder", train=True, download=True)
+    taskset = dataset.to_taskset(
+        trsf=None  # Put your transformations here if you want some
+        target_trsf=None  # Put your target transformations here if you want some
+    )
+
+    loader = DataLoader(taskset, batch_size=32, shuffle=True)
+
+    for x, y, t in loader:
+        pass  # Your model here

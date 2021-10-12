@@ -1,14 +1,13 @@
 import enum
 from copy import copy
-from typing import Tuple, Union, Optional, List
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
+from continuum.viz import plot_samples
 from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
-
-from continuum.viz import plot_samples
 
 
 class TaskType(enum.Enum):
@@ -46,7 +45,7 @@ class TaskSet(TorchDataset):
 
         # if task index are not provided t is always -1
         if self._t is None:
-            self._t = -1 * np.ones_like(y)
+            self._t = -1 * np.ones_like(y, dtype=np.int64)
 
         self.trsf = trsf
         self.target_trsf = target_trsf
