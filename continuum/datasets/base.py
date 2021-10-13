@@ -48,9 +48,9 @@ class _ContinuumDataset(abc.ABC):
         return class_ids
 
     def to_taskset(
-        self,
-        trsf: Optional[List[Callable]] = None,
-        target_trsf: Optional[List[Callable]] = None
+            self,
+            trsf: Optional[List[Callable]] = None,
+            target_trsf: Optional[List[Callable]] = None
     ) -> TaskSet:
         """Returns a TaskSet that can be directly given to a torch's DataLoader.
 
@@ -104,12 +104,6 @@ class _ContinuumDataset(abc.ABC):
         """
         return None
 
-class _SemanticSegmentationDataset(_ContinuumDataset):
-    """Base class for segmentation-based dataset."""
-
-    @property
-    def data_type(self) -> str:
-        return TaskType.SEGMENTATION
 
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.
@@ -219,8 +213,6 @@ class H5Dataset(InMemoryDataset):
             if len(t) != len(x):
                 raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
-
-
         self.create_file(x, y, t, data_path)
 
     def create_file(self, x, y, t, data_path):
@@ -275,8 +267,6 @@ class H5Dataset(InMemoryDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data_path, self.get_classes(), self.get_task_indexes()
-
-
 
 
 class ImageFolderDataset(_ContinuumDataset):
