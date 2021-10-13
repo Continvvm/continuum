@@ -68,3 +68,13 @@ class H5TaskSet(PathTaskSet):
 
         x, y, t = self._prepare_data(x, y, t)
         return x, y, t
+
+    def concat(self, *task_sets):
+        super().concat(task_sets)
+        with h5py.File(self.h5_filename, 'r') as hf:
+            self._size_dataset = hf['y'].shape[0]
+
+    def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
+        # TODO
+
+        raise NotImplementedError("add samples is not yet available for h5 task_sets")
