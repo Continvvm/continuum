@@ -8,7 +8,8 @@ from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 from continuum.viz import plot_samples
-from continuum.tasks.base import BaseTaskSet, _tensorize_list
+
+from continuum.tasks.base import BaseTaskSet, _tensorize_list, TaskType
 
 class ArrayTaskSet(BaseTaskSet):
     """A task dataset returned by the CLLoader.
@@ -30,6 +31,7 @@ class ArrayTaskSet(BaseTaskSet):
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
     ):
         super().__init__(x, y, t, trsf, target_trsf)
+        self.data_type = TaskType.IMAGE_ARRAY
 
     def plot(
             self,

@@ -42,7 +42,6 @@ class BaseTaskSet(TorchDataset):
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
-            data_type: TaskType = TaskType.IMAGE_ARRAY,
             bounding_boxes: Optional[np.ndarray] = None
     ):
         self._x, self._y, self._t = x, y, t
@@ -53,7 +52,8 @@ class BaseTaskSet(TorchDataset):
 
         self.trsf = trsf
         self.target_trsf = target_trsf
-        self.data_type = data_type
+        self.data_type = TaskType.TENSOR
+        self.bounding_boxes = bounding_boxes
         self.bounding_boxes = bounding_boxes
 
         self._to_tensor = transforms.ToTensor()

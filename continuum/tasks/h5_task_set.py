@@ -6,10 +6,11 @@ from PIL import Image
 import torch
 from torchvision import transforms
 
-from continuum.tasks import ArrayTaskSet, TaskType
+from continuum.tasks.base import TaskType
+from continuum.tasks.image_path_task_set import PathTaskSet
 
 
-class H5TaskSet(ArrayTaskSet):
+class H5TaskSet(PathTaskSet):
     """A task dataset returned by the CLLoader.
 
     :param dataset_filename: a path to the dataset
@@ -20,7 +21,7 @@ class H5TaskSet(ArrayTaskSet):
 
     def __init__(
             self,
-            dataset: TaskType.H5,
+            dataset: ,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             bounding_boxes: Optional[np.ndarray] = None):
@@ -28,6 +29,7 @@ class H5TaskSet(ArrayTaskSet):
         dataset_filename, _, _ = dataset.get_data()
         self.h5_filename = dataset_filename
         self._size_dataset = None
+        self.task_type =  TaskType.H5
         with h5py.File(self.h5_filename, 'r') as hf:
             self._size_dataset = hf['y'].shape[0]
 

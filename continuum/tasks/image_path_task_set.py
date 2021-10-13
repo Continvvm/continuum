@@ -8,6 +8,7 @@ from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 from continuum.viz import plot_samples
+from continuum.tasks.base import TaskType
 from continuum.tasks.image_array_task_set import ArrayTaskSet
 
 class PathTaskSet(ArrayTaskSet):
@@ -30,6 +31,7 @@ class PathTaskSet(ArrayTaskSet):
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None
     ):
         super().__init__(x, y, t, trsf, target_trsf)
+        self.data_type = TaskType.IMAGE_PATH
 
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.

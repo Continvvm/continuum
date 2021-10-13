@@ -9,13 +9,13 @@ from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
 from continuum.viz import plot_samples
-from continuum.tasks.base import BaseTaskSet, _tensorize_list
+from continuum.tasks.base import BaseTaskSet, _tensorize_list, TaskType
 
 
 class TextTaskSet(BaseTaskSet):
-    """A task dataset returned by the CLLoader.
+    """A task dataset specific to  text returned by the CLLoader.
 
-    :param x: The data, either image-arrays or paths to images saved on disk.
+    :param x: The data, text here
     :param y: The targets, not one-hot encoded.
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
@@ -31,15 +31,8 @@ class TextTaskSet(BaseTaskSet):
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None
     ):
-        self._x, self._y, self._t = x, y, t
-
-        # if task index are not provided t is always -1
-        if self._t is None:
-            self._t = -1 * np.ones_like(y)
-
-        self.trsf = trsf
-        self.target_trsf = target_trsf
-        self._to_tensor = transforms.ToTensor()
+        super().__init__(x, y, t, trsf, target_trsf)
+        self.data_type = TaskType.TEXT
 
 
     def plot(

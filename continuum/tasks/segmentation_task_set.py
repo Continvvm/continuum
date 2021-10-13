@@ -8,6 +8,7 @@ from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 from continuum.viz import plot_samples
+from continuum.tasks.base import TaskType
 from continuum.tasks.image_path_task_set import PathTaskSet
 
 class SegmentationTaskSet(PathTaskSet):
@@ -31,6 +32,7 @@ class SegmentationTaskSet(PathTaskSet):
             bounding_boxes: Optional[np.ndarray] = None
     ):
         super().__init__(x, y, t, trsf, target_trsf)
+        self.data_type = TaskType.SEGMENTATION
         self.bounding_boxes = bounding_boxes
 
 
