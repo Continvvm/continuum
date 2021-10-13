@@ -3,7 +3,7 @@ import pytest
 import os
 from torchvision import transforms
 
-from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200, AwA2
+from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200, AwA2, Core50
 from continuum.scenarios import Rotations
 from continuum.scenarios import Permutations
 from continuum.scenarios import ClassIncremental
@@ -18,6 +18,7 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
                                                   (CIFAR10, "CIFAR10", [32, 32, 3]),
                                                   (CIFAR100, "CIFAR100", [32, 32, 3]),
                                                   (AwA2, "AwA2", [224, 224, 3]),
+                                                  (Core50, "Core50", [224, 224, 3]),
                                                   (TinyImageNet200, "TinyImageNet200", [64, 64, 3])])
 def test_visualization_ClassIncremental(dataset, name, shape):
     increment = 2
@@ -25,10 +26,12 @@ def test_visualization_ClassIncremental(dataset, name, shape):
     trsf = None
     if name == "CIFAR100":
         increment = 20
-    if name == "TinyImageNet200":
+    elif name == "TinyImageNet200":
         increment = 40
-    if name == "AwA2":
+    elif name == "AwA2":
         init_increment = 3
+        trsf = [transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])]
+    elif name == "Core50":
         trsf = [transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])]
     scenario = ClassIncremental(cl_dataset=dataset(data_path=DATA_PATH, download=True, train=True),
                                 increment=increment, initial_increment=init_increment, transformations=trsf)
