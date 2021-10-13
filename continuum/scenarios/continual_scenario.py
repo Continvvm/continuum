@@ -30,28 +30,28 @@ class ContinualScenario(_BaseScenario):
 
     def check_data(self, cl_dataset: _ContinuumDataset):
 
-        if cl_dataset.data_type !=  TaskType.H5:
-            x, y, t = cl_dataset.get_data()
+        x, y, t = cl_dataset.get_data()
 
-            assert t is not None, print("The t vector should be defined for this scenario")
+        assert t is not None, print("The t vector should be defined for this scenario")
+
+        if cl_dataset.data_type != TaskType.H5:
             assert len(x) == len(y) == len(t), print("data, label and task label vectors need to have the same length")
-
-            list_unique_tasks_ids = np.unique(t)
-            self._nb_tasks = len(list_unique_tasks_ids)
-            self.dataset = (x, y, t)
-
-            # we order the list to check if all index from 0 to nb_tasks are in the list
-            list_unique_tasks_ids.sort()
-
-            assert np.all(list_unique_tasks_ids == np.arange(self.nb_tasks)), print(
-                f"there should be at least one data point"
-                f"for each task from task id equal"
-                f"zero to num_tasks-1 \n (unique task indexes) {list_unique_tasks_ids} vs "
-                f"(expected) {np.arange(self.nb_tasks)}")
         else:
-            # data check should have been done while creating the H5 file
-            pass
+            assert len(y) == len(t), print("label and task label vectors need to have the same length")
 
-    #nothing to do in the setup function
+        list_unique_tasks_ids = np.unique(t)
+        self._nb_tasks = len(list_unique_tasks_ids)
+        self.dataset = (x, y, t)
+
+        # we order the list to check if all index from 0 to nb_tasks are in the list
+        list_unique_tasks_ids.sort()
+
+        assert np.all(list_unique_tasks_ids == np.arange(self.nb_tasks)), print(
+            f"there should be at least one data point"
+            f"for each task from task id equal"
+            f"zero to num_tasks-1 \n (unique task indexes) {list_unique_tasks_ids} vs "
+            f"(expected) {np.arange(self.nb_tasks)}")
+
+    # nothing to do in the setup function
     def _setup(self, nb_tasks: int) -> int:
         return nb_tasks

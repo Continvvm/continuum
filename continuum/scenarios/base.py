@@ -128,7 +128,7 @@ class _BaseScenario(abc.ABC):
 
         This class returns the "task_index" in addition of the x, y, t data.
         This task index is either an integer or a list of integer when the user
-        used a slice. We need this variable when in segmentation to disangle
+        used a slice. We need this variable when in segmentation to disentangle
         samples with multiple task ids.
 
         :param task_index: The unique index of a task. As for List, you can use
@@ -170,7 +170,12 @@ class _BaseScenario(abc.ABC):
             else:
                 indexes = np.where(t == task_index)[0]
 
-        selected_x = x[indexes]
+        if self.cl_dataset.data_type == TaskType.H5:
+            # for h5 TaskType, x is just the filename containing all data
+            # no need for slicing here
+            selected_x = x
+        else:
+            selected_x = x[indexes]
         selected_y = y[indexes]
         selected_t = t[indexes]
 

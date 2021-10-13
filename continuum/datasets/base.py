@@ -181,12 +181,11 @@ class H5Dataset(InMemoryDataset):
             y: np.ndarray,
             t: Union[None, np.ndarray] = None,
             data_path: str = "h5_dataset.h5",
-            data_type: TaskType = TaskType.H5,
             train: bool = True,
             download: bool = True,
     ):
-        super().__init__(x, y, t, data_type, train=train, download=download)
-        self._data_type = data_type
+        super().__init__(x, y, t, data_type=TaskType.H5, train=train, download=download)
+        self._data_type = TaskType.H5
         self.data_path = data_path
 
         assert t is not None, AssertionError("This dataset is made for predefined t vector")
@@ -219,7 +218,7 @@ class H5Dataset(InMemoryDataset):
     def get_classes(self):
         classes_vector = None
         with h5py.File(self.data_path, 'r') as hf:
-            task_indexe_vector = hf['y'][:]
+            classes_vector = hf['y'][:]
         return classes_vector
 
     def add_data(self, x, y, t):
@@ -238,18 +237,9 @@ class H5Dataset(InMemoryDataset):
             hf["t"][-x.shape[0]:] = t
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return self.data_path, None, None
+        return self.data_path, self.get_classes(), self.get_task_indexes()
 
-    # def get_task_data(self, ind_task: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    #     task_data = None
-    #     x, y, t = None, None, None
-    #     with h5py.File(self.data_path, 'r') as hf:
-    #         data_indexes = np.where(hf["t"][:] == ind_task)[0]
-    #         x = hf["x"][data_indexes]
-    #         y = hf["y"][data_indexes]
-    #         t = hf["t"][data_indexes]
-    #
-    #     return [x, y, t]
+
 
 
 class ImageFolderDataset(_ContinuumDataset):

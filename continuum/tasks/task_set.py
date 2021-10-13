@@ -14,6 +14,7 @@ from continuum.tasks.image_array_task_set import ArrayTaskSet
 from continuum.tasks.image_path_task_set import PathTaskSet
 from continuum.tasks.segmentation_task_set import SegmentationTaskSet
 from continuum.tasks.text_task_set import TextTaskSet
+from continuum.tasks.h5_task_set import H5TaskSet
 
 
 def TaskSet(x: np.ndarray,
@@ -38,6 +39,10 @@ def TaskSet(x: np.ndarray,
     elif data_type == TaskType.TENSOR:
         assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.TENSOR")
         task_set = BaseTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
+    elif data_type == TaskType.H5:
+        if bounding_boxes is not None:
+            raise NotImplementedError("h5 datasets are not yet compatible with bounding_boxes")
+        task_set = H5TaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
     else:
         raise AssertionError(f"No TaskSet for data_type {data_type}")
 

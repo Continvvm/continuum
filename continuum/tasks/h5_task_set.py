@@ -21,23 +21,24 @@ class H5TaskSet(PathTaskSet):
 
     def __init__(
             self,
-            dataset: ,
+            x: str,
+            y: np.ndarray,
+            t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             bounding_boxes: Optional[np.ndarray] = None):
 
-        dataset_filename, _, _ = dataset.get_data()
-        self.h5_filename = dataset_filename
+        self.h5_filename = x
         self._size_dataset = None
-        self.task_type =  TaskType.H5
+        self.data_type = TaskType.H5
         with h5py.File(self.h5_filename, 'r') as hf:
             self._size_dataset = hf['y'].shape[0]
 
-        super().__init__(x=dataset_filename,
-                            y=None,
-                            t=None,
-                            trsf=trsf,
-                            target_trsf = target_trsf)
+        super().__init__(x=self.h5_filename,
+                         y=None,
+                         t=None,
+                         trsf=trsf,
+                         target_trsf=target_trsf)
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
@@ -52,14 +53,8 @@ class H5TaskSet(PathTaskSet):
             t = hf['t'][index]
 
         if isinstance(x, str):
-            x = Image.open(x).convert("RGB")
-        elif isinstance(x, torch.Tensor):
-            #not thing to do here
-            pass
-        elif isinstance(x, np.ndarray):
-            x = self._to_tensor(x)
-        else:
-            raise NotImplementedError(f"The type {type(x)} is not compatible with h5 task set.")
+            #x = Image.open(x).convert("RGB")
+            raise NotImplementedError("H5 taskset are not yet compatible to path array.")
 
         x, y, t = self._prepare_data(x, y, t)
         return x, y, t
