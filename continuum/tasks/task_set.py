@@ -23,20 +23,16 @@ def TaskSet(x: np.ndarray,
         assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.TEXT")
         task_set = TextTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
     elif data_type == TaskType.IMAGE_ARRAY:
-        assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.IMAGE_ARRAY")
-        task_set = ArrayTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
+        task_set = ArrayTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes)
     elif data_type == TaskType.IMAGE_PATH:
-        assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.IMAGE_PATH")
-        task_set = PathTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
+        task_set = PathTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes)
     elif data_type == TaskType.SEGMENTATION:
         task_set = SegmentationTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes)
     elif data_type == TaskType.TENSOR:
         assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.TENSOR")
         task_set = BaseTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
     elif data_type == TaskType.H5:
-        if bounding_boxes is not None:
-            raise NotImplementedError("h5 datasets are not yet compatible with bounding_boxes")
-        task_set = H5TaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
+        task_set = H5TaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes)
     else:
         raise AssertionError(f"No TaskSet for data_type {data_type}")
 

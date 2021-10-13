@@ -26,7 +26,9 @@ class H5TaskSet(PathTaskSet):
             y: np.ndarray,
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
-            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None):
+            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
+            bounding_boxes: Optional[np.ndarray] = None
+    ):
 
         self.h5_filename = x
         self._size_dataset = None
@@ -34,11 +36,7 @@ class H5TaskSet(PathTaskSet):
         with h5py.File(self.h5_filename, 'r') as hf:
             self._size_dataset = hf['y'].shape[0]
 
-        super().__init__(x=self.h5_filename,
-                         y=None,
-                         t=None,
-                         trsf=trsf,
-                         target_trsf=target_trsf)
+        super().__init__(self.h5_filename, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
@@ -54,6 +52,15 @@ class H5TaskSet(PathTaskSet):
                 t = hf['t'][index]
             else:
                 t = -1
+
+        if self.bounding_boxes is not None:
+            bbox = self.bounding_boxes[index]
+            x = x.crop((
+                max(bbox[0], 0),  # x1
+                max(bbox[1], 0),  # y1
+                min(bbox[2], x.size[0]),  # x2
+                min(bbox[3], x.size[1]),  # y2
+            ))
 
         if isinstance(x, str):
             # x = Image.open(x).convert("RGB")

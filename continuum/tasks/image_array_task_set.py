@@ -11,6 +11,7 @@ from continuum.viz import plot_samples
 
 from continuum.tasks.base import BaseTaskSet, _tensorize_list, TaskType
 
+
 class ArrayTaskSet(BaseTaskSet):
     """A task dataset returned by the CLLoader specialized into numpy/torch image arrays data.
 
@@ -19,6 +20,7 @@ class ArrayTaskSet(BaseTaskSet):
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
     :param target_trsf: The transformations to apply on the labels.
+    :param bounding_boxes: The bounding boxes annotations to crop images
     """
 
     def __init__(
@@ -27,9 +29,10 @@ class ArrayTaskSet(BaseTaskSet):
             y: np.ndarray,
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
-            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
+            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]],
+            bounding_boxes: Optional[np.ndarray] = None
     ):
-        super().__init__(x, y, t, trsf, target_trsf)
+        super().__init__(x, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
         self.data_type = TaskType.IMAGE_ARRAY
 
     def plot(
@@ -74,7 +77,6 @@ class ArrayTaskSet(BaseTaskSet):
 
         return _tensorize_list(samples), _tensorize_list(targets), _tensorize_list(tasks)
 
-
     def get_sample(self, index: int) -> np.ndarray:
         """Returns a Pillow image corresponding to the given `index`.
 
@@ -90,6 +92,16 @@ class ArrayTaskSet(BaseTaskSet):
         x = self.get_sample(index)
         y = self._y[index]
         t = self._t[index]
+
+        if self.bounding_boxes is not None:
+            bbox = self.bounding_boxes[index]
+            x = x.crop((
+                max(bbox[0], 0),  # x1
+                max(bbox[1], 0),  # y1
+                min(bbox[2], x.size[0]),  # x2
+                min(bbox[3], x.size[1]),  # y2
+            ))
+
         x, y, t = self._prepare_data(x, y, t)
 
         if self.target_trsf is not None:

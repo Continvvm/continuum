@@ -35,29 +35,6 @@ class SegmentationTaskSet(PathTaskSet):
         self.data_type = TaskType.SEGMENTATION
         self.bounding_boxes = bounding_boxes
 
-
-    def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
-        """Method used by PyTorch's DataLoaders to query a sample and its target."""
-        x = self.get_sample(index)
-        y = self._y[index]
-        t = self._t[index]
-
-        if self.bounding_boxes is not None:
-            bbox = self.bounding_boxes[index]
-            x = x.crop((
-                max(bbox[0], 0),  # x1
-                max(bbox[1], 0),  # y1
-                min(bbox[2], x.size[0]),  # x2
-                min(bbox[3], x.size[1]),  # y2
-            ))
-
-        x, y, t = self._prepare_data(x, y, t)
-
-        if self.target_trsf is not None:
-            y = self.get_task_target_trsf(t)(y)
-
-        return x, y, t
-
     def _prepare_data(self, x, y, t):
         y = Image.open(y)
         if self.trsf is not None:

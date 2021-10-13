@@ -11,6 +11,7 @@ from continuum.viz import plot_samples
 from continuum.tasks.base import TaskType
 from continuum.tasks.image_array_task_set import ArrayTaskSet
 
+
 class PathTaskSet(ArrayTaskSet):
     """A task dataset returned by the CLLoader specialized into array of image's path to images.
 
@@ -19,16 +20,19 @@ class PathTaskSet(ArrayTaskSet):
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
     :param target_trsf: The transformations to apply on the labels.
+    :param bounding_boxes: The bounding boxes annotations to crop images
     """
+
     def __init__(
             self,
             x: np.ndarray,
             y: np.ndarray,
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
-            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None
+            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]],
+            bounding_boxes: Optional[np.ndarray] = None
     ):
-        super().__init__(x, y, t, trsf, target_trsf)
+        super().__init__(x, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
         self.data_type = TaskType.IMAGE_PATH
 
     def get_sample(self, index: int) -> np.ndarray:
@@ -40,4 +44,3 @@ class PathTaskSet(ArrayTaskSet):
         x = self._x[index]
         x = Image.open(x).convert("RGB")
         return x
-
