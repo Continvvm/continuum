@@ -128,7 +128,7 @@ class _BaseScenario(abc.ABC):
 
         This class returns the "task_index" in addition of the x, y, t data.
         This task index is either an integer or a list of integer when the user
-        used a slice. We need this variable when in segmentation to disangle
+        used a slice. We need this variable when in segmentation to disentangle
         samples with multiple task ids.
 
         :param task_index: The unique index of a task. As for List, you can use
@@ -151,46 +151,38 @@ class _BaseScenario(abc.ABC):
         if isinstance(task_index, np.ndarray):
             task_index = list(task_index)
 
-        if self.cl_dataset.dataset_type == "h5":
-            if isinstance(task_index, list):
-                for i, task_id in enumerate(task_index):
-                    if i == 0:
-                        x, y, t = self.cl_dataset.get_task_data(ind_task=task_index)
-                    else:
-                        x_, y_, t_ = self.cl_dataset.get_task_data(ind_task=task_index)
-                        x = np.concatenate([x,x_], axis=0)
-                        y = np.concatenate([y,y_], axis=0)
-                        t = np.concatenate([t,t_], axis=0)
+        x, y, t = self.dataset  # type: ignore
+
+        if isinstance(task_index, list):
+            task_index = [
+                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
+            ]
+            if len(t.shape) == 2:
+                indexes = np.unique(np.where(t[:, task_index] == 1)[0])
             else:
-                selected_x, selected_y, selected_t = self.cl_dataset.get_task_data(ind_task=task_index)
+                indexes = np.where(np.isin(t, task_index))[0]
         else:
-            x, y, t = self.dataset  # type: ignore
+            if task_index < 0:
+                task_index = _handle_negative_indexes(task_index, len(self))
 
-            if isinstance(task_index, list):
-                task_index = [
-                    t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
-                ]
-                if len(t.shape) == 2:
-                    indexes = np.unique(np.where(t[:, task_index] == 1)[0])
-                else:
-                    indexes = np.where(np.isin(t, task_index))[0]
+            if len(t.shape) == 2:
+                indexes = np.where(t[:, task_index] == 1)[0]
             else:
-                if task_index < 0:
-                    task_index = _handle_negative_indexes(task_index, len(self))
+                indexes = np.where(t == task_index)[0]
 
-                if len(t.shape) == 2:
-                    indexes = np.where(t[:, task_index] == 1)[0]
-                else:
-                    indexes = np.where(t == task_index)[0]
-
+        if self.cl_dataset.data_type == TaskType.H5:
+            # for h5 TaskType, x is just the filename containing all data
+            # no need for slicing here
+            selected_x = x
+        else:
             selected_x = x[indexes]
-            selected_y = y[indexes]
-            selected_t = t[indexes]
+        selected_y = y[indexes]
+        selected_t = t[indexes]
 
-            if self.cl_dataset.need_class_remapping:  # TODO: to remove with TransformIncremental
-                # A remapping of the class ids is done to handle some special cases
-                # like PermutedMNIST or RotatedMNIST.
-                selected_y = self.cl_dataset.class_remapping(selected_y)
+        if self.cl_dataset.need_class_remapping:  # TODO: to remove with TransformIncremental
+            # A remapping of the class ids is done to handle some special cases
+            # like PermutedMNIST or RotatedMNIST.
+            selected_y = self.cl_dataset.class_remapping(selected_y)
 
         return selected_x, selected_y, selected_t, task_index
 

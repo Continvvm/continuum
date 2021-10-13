@@ -1,15 +1,14 @@
 import abc
 import os
-from typing import List, Tuple, Union
 import warnings
+from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import h5py
+from continuum.tasks import TaskSet, TaskType
+from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
 from torchvision import datasets as torchdata
 from torchvision import transforms
-
-from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
-from continuum.tasks import TaskType
 
 
 class _ContinuumDataset(abc.ABC):
@@ -18,7 +17,6 @@ class _ContinuumDataset(abc.ABC):
         self.data_path = os.path.expanduser(data_path)
         self.download = download
         self.train = train
-        self.dataset_type = "array"
 
         if self.data_path is not None and self.data_path != "" and not os.path.exists(self.data_path):
             os.makedirs(self.data_path)
@@ -33,19 +31,11 @@ class _ContinuumDataset(abc.ABC):
             )
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        pass
+        """Returns the loaded data under the form of x, y, and t."""
+        raise NotImplementedError("This method should be implemented!")
 
     def _download(self):
         pass
-
-    @property
-    def class_order(self) -> Union[None, List[int]]:
-        return None
-
-    @property
-    def need_class_remapping(self) -> bool:
-        """Flag for method `class_remapping`."""
-        return False
 
     def class_remapping(self, class_ids: np.ndarray) -> np.ndarray:
         """Optional class remapping.
@@ -56,6 +46,37 @@ class _ContinuumDataset(abc.ABC):
         :return: A remapping of the class ids.
         """
         return class_ids
+
+    def to_taskset(
+            self,
+            trsf: Optional[List[Callable]] = None,
+            target_trsf: Optional[List[Callable]] = None
+    ) -> TaskSet:
+        """Returns a TaskSet that can be directly given to a torch's DataLoader.
+
+        You can use this method if you don't care about the continual aspect and
+        simply want to use the datasets in a classical supervised setting.
+
+        :param trsf: List of transformations to be applied on x.
+        :param target_trsf: List of transformations to be applied on y.
+        :return taskset: A taskset which implement the interface of torch's Dataset.
+        """
+        return TaskSet(
+            *self.get_data(),
+            trsf=trsf if trsf is not None else self.transformations,
+            target_trsf=target_trsf,
+            data_type=self.data_type,
+            bounding_boxes=self.bounding_boxes
+        )
+
+    @property
+    def class_order(self) -> Union[None, List[int]]:
+        return None
+
+    @property
+    def need_class_remapping(self) -> bool:
+        """Flag for method `class_remapping`."""
+        return False
 
     @property
     def data_type(self) -> TaskType:
@@ -82,14 +103,6 @@ class _ContinuumDataset(abc.ABC):
         has been L2 normalized along side its attributes dimension.
         """
         return None
-
-
-class _SemanticSegmentationDataset(_ContinuumDataset):
-    """Base class for segmentation-based dataset."""
-
-    @property
-    def data_type(self) -> str:
-        return TaskType.SEGMENTATION
 
 
 class PyTorchDataset(_ContinuumDataset):
@@ -168,7 +181,7 @@ class InMemoryDataset(_ContinuumDataset):
 
 
 class H5Dataset(InMemoryDataset):
-    """Continuum dataset for in-memory data with h5 file. There are suppose to be compatible only with ContinualScenario
+    """Continuum dataset for in-memory data with h5 file.
 
     :param x_train: Numpy array of images or paths to images for the train set.
     :param y_train: Targets for the train set.
@@ -182,80 +195,82 @@ class H5Dataset(InMemoryDataset):
             y: np.ndarray,
             t: Union[None, np.ndarray] = None,
             data_path: str = "h5_dataset.h5",
-            data_type: TaskType = TaskType.IMAGE_ARRAY,
             train: bool = True,
             download: bool = True,
     ):
-        super().__init__(x, y, t, data_type, train=train, download=download)
-        self._data_type = data_type
+        super().__init__(x, y, t, data_type=TaskType.H5, train=train, download=download)
+        self._data_type = TaskType.H5
         self.data_path = data_path
-        self.dataset_type = "h5"
-
-        assert t is not None, AssertionError("This dataset is made for predefined t vector")
 
         if len(x) != len(y):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of labels ({len(y)})!")
-        if len(t) != len(x):
-            raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
+
+        self.no_task_index = False
+        if t is None:
+            self.no_task_index = True
+
+        else:
+            if len(t) != len(x):
+                raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.create_file(x, y, t, data_path)
 
     def create_file(self, x, y, t, data_path):
-
+        """"Create and initiate h5 file with data, labels and task index (if not none)"""
         with h5py.File(data_path, 'w') as hf:
-            task_indexes = np.unique(t)
-            for task_index in task_indexes:
-                data_indexes = np.where(t == task_index)[0]
+            hf.create_dataset('x', data=x, chunks=True, maxshape=([None] + list(x[0].shape)))
+            hf.create_dataset('y', data=y, chunks=True, maxshape=([None]))
+            if not self.no_task_index:
+                hf.create_dataset('t', data=t, chunks=True, maxshape=([None]))
 
-                g1 = hf.create_group(f'task-{task_index}')
-                g1.create_dataset('x', data=x[data_indexes])
-                g1.create_dataset('y', data=y[data_indexes])
-                g1.create_dataset('t', data=t[data_indexes])
+    def get_task_indexes(self):
+        """"Return the whole vector of task index"""
+        task_indexe_vector = None
+        if not self.no_task_index:
+            with h5py.File(self.data_path, 'r') as hf:
+                task_indexe_vector = hf['t'][:]
+        return task_indexe_vector
 
-    def keys(self):
+    def get_task_index(self, index):
+        """"Return one task index value value for a given index"""
+        task_indexes_value = None
+        if not self.no_task_index:
+            with h5py.File(self.data_path, 'r') as hf:
+                task_indexes_value = hf['t'][index]
+        return task_indexes_value
+
+    def get_classes(self):
+        """"Return the whole vector of classes"""
+        classes_vector = None
         with h5py.File(self.data_path, 'r') as hf:
-            keys = list(hf.keys())
-        return keys
+            classes_vector = hf['y'][:]
+        return classes_vector
+
+    def get_class(self, index):
+        """"Return one class value for a given index"""
+        class_value = None
+        with h5py.File(self.data_path, 'r') as hf:
+            class_value = hf['y'][index]
+        return class_value
 
     def add_data(self, x, y, t):
         """"This method is here to be able to build the h5 by part"""
 
-        with h5py.File(self.data_path, 'w') as hf:
-            task_indexes = np.unique(t)
-            for task_index in task_indexes:
-                data_indexes = np.where(t == task_index)[0]
+        if not (self.no_task_index == (t is None)):
+            raise AssertionError("You can not add data with task index to h5 without task index or the opposite")
 
-                if f'task-{task_index}' in hf.keys():
-                    self._update(hf, x, y, t, str_key=f"task-{task_index}")
-                else:
-                    g1 = hf.create_group(f'task-{task_index}')
-                    g1.create_dataset('x', data=x[data_indexes])
-                    g1.create_dataset('y', data=y[data_indexes])
-                    g1.create_dataset('t', data=t[data_indexes])
-
-    def _update(self, file_hf, x, y, t, str_key):
-
-        h5x = file_hf.get(f'{str_key}/x')
-        h5y = file_hf.get(f'{str_key}/y')
-        h5t = file_hf.get(f'{str_key}/t')
-        del file_hf[str_key]
-        x = np.concatenate([h5x, x], axis=0)
-        y = np.concatenate([h5y, y], axis=0)
-        t = np.concatenate([h5t, t], axis=0)
-        g1 = file_hf.create_group(str_key)
-        g1.create_dataset('x', data=x)
-        g1.create_dataset('y', data=y)
-        g1.create_dataset('t', data=t)
+        with h5py.File(self.data_path, 'a') as hf:
+            reshape_size = hf["t"].shape[0] + t.shape[0]
+            hf['x'].resize(reshape_size, axis=0)
+            hf["x"][-x.shape[0]:] = x
+            hf['y'].resize(reshape_size, axis=0)
+            hf["y"][-x.shape[0]:] = y
+            if not self.no_task_index:
+                hf['t'].resize(reshape_size, axis=0)
+                hf["t"][-x.shape[0]:] = t
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        raise AssertionError("h5dataset are not made to load all data in one time. Use get_task_data instead.")
-
-    def get_task_data(self, ind_task: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        task_data = None
-        with h5py.File(self.data_path, 'r') as hf:
-            hf = h5py.File(self.data_path, 'r')
-            task_data = hf.get(f'task-{ind_task}')
-        return [task_data['x'], task_data['y'], task_data['t']]
+        return self.data_path, self.get_classes(), self.get_task_indexes()
 
 
 class ImageFolderDataset(_ContinuumDataset):

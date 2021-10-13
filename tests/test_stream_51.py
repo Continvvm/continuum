@@ -16,7 +16,11 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 Test the visualization with instance_class scenario
 '''
 @pytest.mark.slow
-def test_scenario_clip_ClassIncremental(tmpdir):
+def test_scenario_clip_ClassIncremental():
+
+    folder = "tests/samples/stream51/class_incremental/"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
     dataset = Stream51(DATA_PATH, task_criterion="clip")
     # dataset = Stream51('../Datasets', task_criterion="video")
@@ -27,7 +31,7 @@ def test_scenario_clip_ClassIncremental(tmpdir):
     print(f"Nb tasks : {scenario.nb_tasks} ")
     for task_id, task_set in enumerate(scenario):
         print(f"Task {task_id} : {task_set.nb_classes} classes")
-        task_set.plot(path="tests/samples/stream51/ci",
+        task_set.plot(path=folder,
                       title="Stream51_InstanceIncremental_{}.jpg".format(task_id),
                       nb_samples=100)
 
@@ -37,7 +41,10 @@ def test_scenario_clip_ClassIncremental(tmpdir):
 Test the visualization with instance scenario
 '''
 @pytest.mark.slow
-def test_scenario_clip_InstanceIncremental(tmpdir):
+def test_scenario_clip_InstanceIncremental():
+    folder = "tests/samples/stream51/class_incremental/"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
     dataset = Stream51(DATA_PATH, task_criterion="clip")
     scenario = InstanceIncremental(dataset, transformations=[Resize((224, 224)), ToTensor()])
@@ -46,6 +53,6 @@ def test_scenario_clip_InstanceIncremental(tmpdir):
     print(f"Nb tasks : {scenario.nb_tasks} ")
     for task_id, task_set in enumerate(scenario):
         print(f"Task {task_id} : {task_set.nb_classes} classes")
-        task_set.plot(path="tests/samples/stream51/ci",
+        task_set.plot(path=folder,
                       title="Stream51_InstanceIncremental_{}.jpg".format(task_id),
                       nb_samples=100)

@@ -1,11 +1,16 @@
 from typing import Tuple, List
 
+
+import torch
 import numpy as np
 
-from continuum.tasks import TaskSet
+from continuum.tasks.base import BaseTaskSet
+from continuum.tasks.task_set import TaskSet
 
 
-def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, TaskSet]:
+
+
+def split_train_val(dataset: BaseTaskSet, val_split: float = 0.1) -> Tuple[BaseTaskSet, BaseTaskSet]:
     """Split train dataset into two datasets, one for training and one for validation.
 
     :param dataset: A torch dataset, with .x and .y attributes.
@@ -28,12 +33,12 @@ def split_train_val(dataset: TaskSet, val_split: float = 0.1) -> Tuple[TaskSet, 
     return train_dataset, val_dataset
 
 
-def concat(task_sets: List[TaskSet]) -> TaskSet:
+def concat(task_sets: List[BaseTaskSet]) -> BaseTaskSet:
     """Concatenate a dataset A with one or many *other* datasets.
 
     The transformations will be those of the first dataset.
 
-    :param Tasksets: A list of task sets.
+    :param task_sets: A list of task sets.
     :return: A concatenated task set.
     """
     x, y, t = [], [], []
