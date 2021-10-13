@@ -31,6 +31,23 @@ class ArrayTaskSet(BaseTaskSet):
     ):
         super().__init__(x, y, t, trsf, target_trsf)
 
+    def plot(
+            self,
+            path: Union[str, None] = None,
+            title: str = "",
+            nb_samples: int = 100,
+            shape: Optional[Tuple[int, int]] = None,
+    ) -> None:
+        """Plot samples of the current task, useful to check if everything is ok.
+
+        :param path: If not None, save on disk at this path.
+        :param title: The title of the figure.
+        :param nb_samples: Amount of samples randomly selected.
+        :param shape: Shape to resize the image before plotting.
+        """
+        plot_samples(self, title=title, path=path, nb_samples=nb_samples,
+                     shape=shape, data_type=self.data_type)
+
     def get_samples(self, indexes):
         samples, targets, tasks = [], [], []
 
@@ -84,5 +101,4 @@ class ArrayTaskSet(BaseTaskSet):
             x = self.get_task_trsf(t)(x)
         if not isinstance(x, torch.Tensor):
             x = self._to_tensor(x)
-
         return x, y, t

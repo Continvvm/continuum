@@ -17,7 +17,7 @@ class TaskType(enum.Enum):
     TENSOR = 4
     SEGMENTATION = 5
     OBJ_DETECTION = 6
-    H5_DATASET = 6
+    H5 = 7
 
 def _tensorize_list(x):
     if isinstance(x[0], torch.Tensor):
@@ -110,8 +110,7 @@ class BaseTaskSet(TorchDataset):
         :param nb_samples: Amount of samples randomly selected.
         :param shape: Shape to resize the image before plotting.
         """
-        plot_samples(self, title=title, path=path, nb_samples=nb_samples,
-                     shape=shape, data_type=self.data_type)
+        raise NotImplementedError("we do not plot Tensor task set yet.")
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
@@ -129,19 +128,6 @@ class BaseTaskSet(TorchDataset):
         for index in indexes:
             # we need to use __getitem__ to have the transform used
             sample, y, t = self[index]
-
-            if self.data_type in [TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.SEGMENTATION]:
-                # we check dimension of images
-                if w is None:
-                    w, h = sample.shape[:2]
-                elif w != sample.shape[0] or h != sample.shape[1]:
-                    raise Exception(
-                        "Images dimension are inconsistent, resize them to a "
-                        "common size using a transformation.\n"
-                        "For example, give to the scenario you're using as `transformations` argument "
-                        "the following: [transforms.Resize((224, 224)), transforms.ToTensor()]"
-                    )
-
             samples.append(sample)
             targets.append(y)
             tasks.append(t)
@@ -155,21 +141,14 @@ class BaseTaskSet(TorchDataset):
         return self._x[indexes], self._y[indexes], self._t[indexes]
 
     def get_sample(self, index: int) -> np.ndarray:
-        """Returns a Pillow image corresponding to the given `index`.
+        """Returns the tensor corresponding to the given `index`.
 
         :param index: Index to query the image.
         :return: A Pillow image.
         """
         x = self._x[index]
-
-        if self.data_type in (TaskType.IMAGE_PATH, TaskType.SEGMENTATION):
-            x = Image.open(x).convert("RGB")
-        elif self.data_type == TaskType.IMAGE_ARRAY:
-            x = Image.fromarray(x.astype("uint8"))
-        elif self.data_type == TaskType.TENSOR:
-            if not torch.is_tensor(x):
-                x = torch.tensor(x)
-
+        if not torch.is_tensor(x):
+            x = torch.tensor(x)
         return x
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
@@ -177,22 +156,6 @@ class BaseTaskSet(TorchDataset):
         x = self.get_sample(index)
         y = self._y[index]
         t = self._t[index]
-
-        if self.bounding_boxes is not None:
-            bbox = self.bounding_boxes[index]
-            x = x.crop((
-                max(bbox[0], 0),  # x1
-                max(bbox[1], 0),  # y1
-                min(bbox[2], x.size[0]),  # x2
-                min(bbox[3], x.size[1]),  # y2
-            ))
-
-        if self.data_type == TaskType.SEGMENTATION:
-            x, y, t = self._prepare_segmentation(x, y, t)
-        elif self.data_type == TaskType.IMAGE_ARRAY or self.data_type == TaskType.IMAGE_PATH:
-            x, y, t = self._prepare(x, y, t)
-        else:  # self.data_type == "tensor"
-            pass
 
         if self.target_trsf is not None:
             y = self.get_task_target_trsf(t)(y)
@@ -208,23 +171,3 @@ class BaseTaskSet(TorchDataset):
         if isinstance(self.target_trsf, list):
             return self.target_trsf[t]
         return self.target_trsf
-
-    def _prepare(self, x, y, t):
-        if self.trsf is not None:
-            x = self.get_task_trsf(t)(x)
-        if not isinstance(x, torch.Tensor):
-            x = self._to_tensor(x)
-
-        return x, y, t
-
-    def _prepare_segmentation(self, x, y, t):
-        y = Image.open(y)
-        if self.trsf is not None:
-            x, y = self.get_task_trsf(t)(x, y)
-
-        if not isinstance(x, torch.Tensor):
-            x = self._to_tensor(x)
-        if not isinstance(y, torch.Tensor):
-            y = self._to_tensor(y)
-
-        return x, y, t
