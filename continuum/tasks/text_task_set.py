@@ -19,8 +19,7 @@ class TextTaskSet(BaseTaskSet):
     :param y: The targets, not one-hot encoded.
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
-    :param data_type: Type of the data, either "image_path", "image_array",
-                      "text", "tensor" or "segmentation".
+    :param target_trsf: The transformations to apply on the labels.
     """
 
     def __init__(

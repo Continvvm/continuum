@@ -12,16 +12,14 @@ from continuum.tasks.base import TaskType
 from continuum.tasks.image_array_task_set import ArrayTaskSet
 
 class PathTaskSet(ArrayTaskSet):
-    """A task dataset returned by the CLLoader.
+    """A task dataset returned by the CLLoader specialized into array of image's path to images.
 
     :param x: The data, either image-arrays or paths to images saved on disk.
     :param y: The targets, not one-hot encoded.
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
-    :param data_type: Type of the data, either "image_path", "image_array",
-                      "text", "tensor" or "segmentation".
+    :param target_trsf: The transformations to apply on the labels.
     """
-
     def __init__(
             self,
             x: np.ndarray,

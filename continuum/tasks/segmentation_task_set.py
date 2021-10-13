@@ -12,14 +12,14 @@ from continuum.tasks.base import TaskType
 from continuum.tasks.image_path_task_set import PathTaskSet
 
 class SegmentationTaskSet(PathTaskSet):
-    """A task dataset returned by the CLLoader.
+    """A task dataset returned by the CLLoader specialized into segmentation data.
 
     :param x: The data, either image-arrays or paths to images saved on disk.
     :param y: The targets, not one-hot encoded.
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
-    :param data_type: Type of the data, either "image_path", "image_array",
-                      "text", "tensor" or "segmentation".
+    :param target_trsf: The transformations to apply on the labels.
+    :param bounding_boxes: The bounding boxes annotations to crop images
     """
 
     def __init__(

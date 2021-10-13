@@ -181,7 +181,7 @@ class InMemoryDataset(_ContinuumDataset):
 
 
 class H5Dataset(InMemoryDataset):
-    """Continuum dataset for in-memory data with h5 file. There are suppose to be compatible only with ContinualScenario
+    """Continuum dataset for in-memory data with h5 file.
 
     :param x_train: Numpy array of images or paths to images for the train set.
     :param y_train: Targets for the train set.
@@ -216,7 +216,7 @@ class H5Dataset(InMemoryDataset):
         self.create_file(x, y, t, data_path)
 
     def create_file(self, x, y, t, data_path):
-        """"Create and initiate h5 file"""
+        """"Create and initiate h5 file with data, labels and task index (if not none)"""
         with h5py.File(data_path, 'w') as hf:
             hf.create_dataset('x', data=x, chunks=True, maxshape=([None] + list(x[0].shape)))
             hf.create_dataset('y', data=y, chunks=True, maxshape=([None]))
@@ -224,6 +224,7 @@ class H5Dataset(InMemoryDataset):
                 hf.create_dataset('t', data=t, chunks=True, maxshape=([None]))
 
     def get_task_indexes(self):
+        """"Return the whole vector of task index"""
         task_indexe_vector = None
         if not self.no_task_index:
             with h5py.File(self.data_path, 'r') as hf:
@@ -231,19 +232,22 @@ class H5Dataset(InMemoryDataset):
         return task_indexe_vector
 
     def get_task_index(self, index):
-        task_indexe_value = None
+        """"Return one task index value value for a given index"""
+        task_indexes_value = None
         if not self.no_task_index:
             with h5py.File(self.data_path, 'r') as hf:
-                task_indexe_value = hf['t'][index]
-        return task_indexe_value
+                task_indexes_value = hf['t'][index]
+        return task_indexes_value
 
     def get_classes(self):
+        """"Return the whole vector of classes"""
         classes_vector = None
         with h5py.File(self.data_path, 'r') as hf:
             classes_vector = hf['y'][:]
         return classes_vector
 
     def get_class(self, index):
+        """"Return one class value for a given index"""
         class_value = None
         with h5py.File(self.data_path, 'r') as hf:
             class_value = hf['y'][index]

@@ -11,12 +11,13 @@ from continuum.tasks.image_path_task_set import PathTaskSet
 
 
 class H5TaskSet(PathTaskSet):
-    """A task dataset returned by the CLLoader.
+    """A task dataset returned by the CLLoader specialized into h5 data .
 
-    :param dataset_filename: a path to the dataset
+    :param x: The data, either image-arrays or paths to images saved on disk.
+    :param y: The targets, not one-hot encoded.
+    :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
-    :param data_type: Type of the data, either "image_path", "image_array",
-                      "text", "tensor" or "segmentation".
+    :param target_trsf: The transformations to apply on the labels.
     """
 
     def __init__(
@@ -25,8 +26,7 @@ class H5TaskSet(PathTaskSet):
             y: np.ndarray,
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
-            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
-            bounding_boxes: Optional[np.ndarray] = None):
+            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None):
 
         self.h5_filename = x
         self._size_dataset = None
