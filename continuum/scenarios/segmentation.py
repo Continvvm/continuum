@@ -111,7 +111,7 @@ class SegmentationClassIncremental(ClassIncremental):
         if isinstance(task_index, slice) and task_index.step is not None:
             raise ValueError("Step in slice for segmentation is not supported.")
 
-        x, y, t, task_index = self._select_data_by_task(task_index)
+        x, y, t, task_index, data_indexes = self._select_data_by_task(task_index)
         t = self._get_task_ids(t, task_index)
 
         return TaskSet(

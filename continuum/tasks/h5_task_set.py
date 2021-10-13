@@ -18,6 +18,8 @@ class H5TaskSet(PathTaskSet):
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
     :param target_trsf: The transformations to apply on the labels.
+    :param data_index_index: data index of the current task (it makes possible to distinguish data of the current task
+    from data from other tasks that are in the same h5 file.)
     """
 
     def __init__(
@@ -27,24 +29,35 @@ class H5TaskSet(PathTaskSet):
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
-            bounding_boxes: Optional[np.ndarray] = None
+            bounding_boxes: Optional[np.ndarray] = None,
+            data_indexes: np.ndarray = None
     ):
 
         self.h5_filename = x
-        self._size_dataset = None
+        self._size_task_set = None
         self.data_type = TaskType.H5
-        with h5py.File(self.h5_filename, 'r') as hf:
-            self._size_dataset = hf['y'].shape[0]
+        self.data_indexes = data_indexes
+
+        if data_indexes is not None:
+            self._size_task_set = len(data_indexes)
+        else:
+            with h5py.File(self.h5_filename, 'r') as hf:
+                self._size_task_set = hf['y'].shape[0]
 
         super().__init__(self.h5_filename, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
-        return self._size_dataset
+        return self._size_task_set
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
         x, y, t = None, None, None
+
+        if self.data_indexes is not None:
+            # the index is index data in the task not in the full dataset
+            index = self.data_indexes[index]
+
         with h5py.File(self.h5_filename, 'r') as hf:
             x = hf['x'][index]
             y = hf['y'][index]
