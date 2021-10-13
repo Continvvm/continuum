@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import os
+from torchvision import transforms
 
 from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200, AwA2
 from continuum.scenarios import Rotations
@@ -8,6 +9,7 @@ from continuum.scenarios import Permutations
 from continuum.scenarios import ClassIncremental
 from continuum.datasets import MNISTFellowship
 
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 @pytest.mark.slow
 @pytest.mark.parametrize("dataset, name, shape", [(MNIST, "MNIST", [28, 28, 1]),
@@ -15,16 +17,21 @@ from continuum.datasets import MNISTFellowship
                                                   (FashionMNIST, "FashionMNIST", [28, 28, 1]),
                                                   (CIFAR10, "CIFAR10", [32, 32, 3]),
                                                   (CIFAR100, "CIFAR100", [32, 32, 3]),
-                                                  (AwA2, "AwA2", [32, 32, 3]),
+                                                  (AwA2, "AwA2", [224, 224, 3]),
                                                   (TinyImageNet200, "TinyImageNet200", [64, 64, 3])])
-def test_visualization_ClassIncremental(tmpdir, dataset, name, shape):
+def test_visualization_ClassIncremental(dataset, name, shape):
     increment = 2
+    init_increment = 0
+    trsf = None
     if name == "CIFAR100":
         increment = 20
     if name == "TinyImageNet200":
         increment = 40
-    scenario = ClassIncremental(cl_dataset=dataset(data_path=tmpdir, download=True, train=True),
-                                increment=increment)
+    if name == "AwA2":
+        init_increment = 3
+        trsf = [transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])]
+    scenario = ClassIncremental(cl_dataset=dataset(data_path=DATA_PATH, download=True, train=True),
+                                increment=increment, initial_increment=init_increment, transformations=trsf)
 
     folder = "tests/samples/class_incremental/"
     if not os.path.exists(folder):
@@ -41,8 +48,8 @@ def test_visualization_ClassIncremental(tmpdir, dataset, name, shape):
 Test the visualization with three tasks for rotations tasks
 '''
 @pytest.mark.slow
-def test_visualization_rotations(tmpdir):
-    scenario = Rotations(cl_dataset=MNIST(data_path=tmpdir, download=True, train=True),
+def test_visualization_rotations():
+    scenario = Rotations(cl_dataset=MNIST(data_path=DATA_PATH, download=True, train=True),
                          nb_tasks=3,
                          list_degrees=[0, 45, 92])
 
@@ -61,8 +68,8 @@ def test_visualization_rotations(tmpdir):
 Test the visualization with three tasks for permutations tasks
 '''
 @pytest.mark.slow
-def test_visualization_permutations(tmpdir):
-    scenario = Permutations(cl_dataset=MNIST(data_path=tmpdir, download=True, train=True),
+def test_visualization_permutations():
+    scenario = Permutations(cl_dataset=MNIST(data_path=DATA_PATH, download=True, train=True),
                             nb_tasks=3,
                             seed=0)
 
@@ -81,8 +88,8 @@ def test_visualization_permutations(tmpdir):
 Test the visualization with three tasks for incremental tasks
 '''
 @pytest.mark.slow
-def test_visualization_MNISTFellowship(tmpdir):
-    cl_dataset = MNISTFellowship(data_path=tmpdir, download=True, train=True)
+def test_visualization_MNISTFellowship():
+    cl_dataset = MNISTFellowship(data_path=DATA_PATH, download=True, train=True)
     scenario = ClassIncremental(cl_dataset=cl_dataset,
                                 increment=10)
 
