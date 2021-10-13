@@ -37,7 +37,6 @@ def test_creation_h5dataset():
 
     x_0, y_0, t_0 = h5dataset.get_data()
 
-    data_indexes = np.where(t_ == 0)[0]
     assert isinstance(x_0, str) # x is only the path to the file
     assert len(y_0) == len(y_)
     assert len(t_0) == len(t_)
@@ -70,6 +69,9 @@ def test_h5dataset_ContinualScenario():
     scenario = ContinualScenario(h5dataset)
 
     assert scenario.nb_tasks == nb_task
+
+    data_indexes = np.where(t_ == 0)[0]
+    assert len(data_indexes) == len(scenario[0])
 
     os.remove(filename_h5)
 
