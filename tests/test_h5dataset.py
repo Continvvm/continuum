@@ -37,7 +37,7 @@ def test_creation_h5dataset():
 
     x_0, y_0, t_0 = h5dataset.get_data()
 
-    assert isinstance(x_0, str) # x is only the path to the file
+    assert isinstance(x_0, str)  # x is only the path to the file
     assert len(y_0) == len(y_)
     assert len(t_0) == len(t_)
 
@@ -53,6 +53,8 @@ def test_concatenate_h5dataset():
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
+    assert len(h5dataset.get_classes()) == 2 * len(y_)
+
     os.remove(filename_h5)
 
 
@@ -63,7 +65,6 @@ def test_h5dataset_ContinualScenario():
 
     x_, y_, t_ = gen_data()
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
-    h5dataset.add_data(x_, y_, t_)
 
     nb_task = len(np.unique(t_))
     scenario = ContinualScenario(h5dataset)
@@ -92,6 +93,7 @@ def test_h5dataset_add_data():
 
     os.remove(filename_h5)
 
+
 def test_h5dataset_IncrementalScenario():
     filename_h5 = "test_h5.hdf5"
     if os.path.exists(filename_h5):
@@ -105,12 +107,17 @@ def test_h5dataset_IncrementalScenario():
 
     assert scenario.nb_tasks == nb_task
 
+    tot_len = 0
     for task_set in scenario:
+        tot_len += len(task_set)
         loader = DataLoader(task_set)
         for _ in loader:
             pass
 
+    assert tot_len == len(y_)
+
     os.remove(filename_h5)
+
 
 def test_h5dataset_loading():
     filename_h5 = "test_h5.hdf5"
@@ -131,6 +138,7 @@ def test_h5dataset_loading():
 
     assert scenario.nb_tasks == nb_task
     os.remove(filename_h5)
+
 
 @pytest.mark.slow
 def test_time():
@@ -165,7 +173,6 @@ def test_time():
     print(f"open only once __getitem__ {end - start}")
 
 
-
 @pytest.mark.slow
 def test_on_array_dataset_incremental():
     filename_h5 = "test_CIFAR100_h5.hdf5"
@@ -191,6 +198,7 @@ def test_on_array_dataset_incremental():
 
     assert scenario.nb_tasks == nb_tasks  # number of task of CIFAR100Lifelong
     os.remove(filename_h5)
+
 
 @pytest.mark.slow
 def test_on_array_dataset():
