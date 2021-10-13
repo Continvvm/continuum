@@ -1,15 +1,14 @@
 import abc
 import os
-from typing import List, Tuple, Union
 import warnings
+from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import h5py
+from continuum.tasks import TaskSet, TaskType
+from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
 from torchvision import datasets as torchdata
 from torchvision import transforms
-
-from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
-from continuum.tasks import TaskType
 
 
 class _ContinuumDataset(abc.ABC):
@@ -32,19 +31,11 @@ class _ContinuumDataset(abc.ABC):
             )
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        pass
+        """Returns the loaded data under the form of x, y, and t."""
+        raise NotImplementedError("This method should be implemented!")
 
     def _download(self):
         pass
-
-    @property
-    def class_order(self) -> Union[None, List[int]]:
-        return None
-
-    @property
-    def need_class_remapping(self) -> bool:
-        """Flag for method `class_remapping`."""
-        return False
 
     def class_remapping(self, class_ids: np.ndarray) -> np.ndarray:
         """Optional class remapping.
@@ -55,6 +46,37 @@ class _ContinuumDataset(abc.ABC):
         :return: A remapping of the class ids.
         """
         return class_ids
+
+    def to_taskset(
+        self,
+        trsf: Optional[List[Callable]] = None,
+        target_trsf: Optional[List[Callable]] = None
+    ) -> TaskSet:
+        """Returns a TaskSet that can be directly given to a torch's DataLoader.
+
+        You can use this method if you don't care about the continual aspect and
+        simply want to use the datasets in a classical supervised setting.
+
+        :param trsf: List of transformations to be applied on x.
+        :param target_trsf: List of transformations to be applied on y.
+        :return taskset: A taskset which implement the interface of torch's Dataset.
+        """
+        return TaskSet(
+            *self.get_data(),
+            trsf=trsf if trsf is not None else self.transformations,
+            target_trsf=target_trsf,
+            data_type=self.data_type,
+            bounding_boxes=self.bounding_boxes
+        )
+
+    @property
+    def class_order(self) -> Union[None, List[int]]:
+        return None
+
+    @property
+    def need_class_remapping(self) -> bool:
+        """Flag for method `class_remapping`."""
+        return False
 
     @property
     def data_type(self) -> TaskType:
@@ -82,14 +104,12 @@ class _ContinuumDataset(abc.ABC):
         """
         return None
 
-
 class _SemanticSegmentationDataset(_ContinuumDataset):
     """Base class for segmentation-based dataset."""
 
     @property
     def data_type(self) -> str:
         return TaskType.SEGMENTATION
-
 
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.

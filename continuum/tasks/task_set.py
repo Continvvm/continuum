@@ -1,14 +1,8 @@
-import enum
-from copy import copy
-from typing import Tuple, Union, Optional, List
+from typing import List, Optional, Union
 
 import numpy as np
-import torch
-from PIL import Image
-from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
-from continuum.viz import plot_samples
 from continuum.tasks.base import BaseTaskSet, TaskType
 from continuum.tasks.image_array_task_set import ArrayTaskSet
 from continuum.tasks.image_path_task_set import PathTaskSet
@@ -47,8 +41,3 @@ def TaskSet(x: np.ndarray,
         raise AssertionError(f"No TaskSet for data_type {data_type}")
 
     return task_set
-
-def _tensorize_list(x):
-    if isinstance(x[0], torch.Tensor):
-        return torch.stack(x)
-    return torch.tensor(x)

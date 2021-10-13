@@ -48,7 +48,7 @@ class BaseTaskSet(TorchDataset):
 
         # if task index are not provided t is always -1
         if self._t is None:
-            self._t = -1 * np.ones_like(y)
+            self._t = -1 * np.ones_like(y, dtype=np.int64)
 
         self.trsf = trsf
         self.target_trsf = target_trsf
