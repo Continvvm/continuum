@@ -188,17 +188,18 @@ class H5Dataset(InMemoryDataset):
         self._data_type = TaskType.H5
         self.data_path = data_path
 
-        assert t is not None, AssertionError("This dataset is made for predefined t vector")
-
         if len(x) != len(y):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of labels ({len(y)})!")
-        if len(t) != len(x):
-            raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.no_task_index = False
         if t is None:
             self.no_task_index = True
-            t = np.ones(len(y)) * -1
+
+        else:
+            if len(t) != len(x):
+                raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
+
+
 
         self.create_file(x, y, t, data_path)
 
@@ -207,19 +208,34 @@ class H5Dataset(InMemoryDataset):
         with h5py.File(data_path, 'w') as hf:
             hf.create_dataset('x', data=x, chunks=True, maxshape=([None] + list(x[0].shape)))
             hf.create_dataset('y', data=y, chunks=True, maxshape=([None]))
-            hf.create_dataset('t', data=t, chunks=True, maxshape=([None]))
+            if not self.no_task_index:
+                hf.create_dataset('t', data=t, chunks=True, maxshape=([None]))
 
     def get_task_indexes(self):
         task_indexe_vector = None
-        with h5py.File(self.data_path, 'r') as hf:
-            task_indexe_vector = hf['t'][:]
+        if not self.no_task_index:
+            with h5py.File(self.data_path, 'r') as hf:
+                task_indexe_vector = hf['t'][:]
         return task_indexe_vector
+
+    def get_task_index(self, index):
+        task_indexe_value = None
+        if not self.no_task_index:
+            with h5py.File(self.data_path, 'r') as hf:
+                task_indexe_value = hf['t'][index]
+        return task_indexe_value
 
     def get_classes(self):
         classes_vector = None
         with h5py.File(self.data_path, 'r') as hf:
             classes_vector = hf['y'][:]
         return classes_vector
+
+    def get_class(self, index):
+        class_value = None
+        with h5py.File(self.data_path, 'r') as hf:
+            class_value = hf['y'][index]
+        return class_value
 
     def add_data(self, x, y, t):
         """"This method is here to be able to build the h5 by part"""
@@ -233,8 +249,9 @@ class H5Dataset(InMemoryDataset):
             hf["x"][-x.shape[0]:] = x
             hf['y'].resize(reshape_size, axis=0)
             hf["y"][-x.shape[0]:] = y
-            hf['t'].resize(reshape_size, axis=0)
-            hf["t"][-x.shape[0]:] = t
+            if not self.no_task_index:
+                hf['t'].resize(reshape_size, axis=0)
+                hf["t"][-x.shape[0]:] = t
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data_path, self.get_classes(), self.get_task_indexes()

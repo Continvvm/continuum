@@ -50,10 +50,13 @@ class H5TaskSet(PathTaskSet):
         with h5py.File(self.h5_filename, 'r') as hf:
             x = hf['x'][index]
             y = hf['y'][index]
-            t = hf['t'][index]
+            if 't' in hf.keys():
+                t = hf['t'][index]
+            else:
+                t = -1
 
         if isinstance(x, str):
-            #x = Image.open(x).convert("RGB")
+            # x = Image.open(x).convert("RGB")
             raise NotImplementedError("H5 taskset are not yet compatible to path array.")
 
         x, y, t = self._prepare_data(x, y, t)

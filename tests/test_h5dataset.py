@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision.transforms as trsf
 
-from continuum.scenarios import ContinualScenario
+from continuum.scenarios import ContinualScenario, ClassIncremental
 from continuum.datasets import H5Dataset, CIFAR100, Core50
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
@@ -71,7 +71,7 @@ def test_h5dataset_ContinualScenario():
     os.remove(filename_h5)
 
 
-def test_h5dataset_ContinualScenario():
+def test_h5dataset_add_data():
     filename_h5 = "test_h5.hdf5"
     if os.path.exists(filename_h5):
         os.remove(filename_h5)
@@ -87,6 +87,25 @@ def test_h5dataset_ContinualScenario():
 
     os.remove(filename_h5)
 
+def test_h5dataset_IncrementalScenario():
+    filename_h5 = "test_h5.hdf5"
+    if os.path.exists(filename_h5):
+        os.remove(filename_h5)
+
+    x_, y_, t_ = gen_data()
+    nb_task = 2
+    h5dataset = H5Dataset(x_, y_, None, data_path=filename_h5)
+
+    scenario = ClassIncremental(h5dataset, nb_tasks=nb_task)
+
+    assert scenario.nb_tasks == nb_task
+
+    for task_set in scenario:
+        loader = DataLoader(task_set)
+        for _ in loader:
+            pass
+
+    os.remove(filename_h5)
 
 def test_h5dataset_loading():
     filename_h5 = "test_h5.hdf5"
@@ -108,6 +127,31 @@ def test_h5dataset_loading():
     assert scenario.nb_tasks == nb_task
     os.remove(filename_h5)
 
+@pytest.mark.slow
+def test_on_array_dataset_incremental():
+    filename_h5 = "test_CIFAR100_h5.hdf5"
+    if os.path.exists(filename_h5):
+        os.remove(filename_h5)
+
+    nb_tasks = 10
+
+    cl_dataset = CIFAR100(data_path=DATA_PATH,
+                          download=False,
+                          train=True)
+    # in practice the construction is part by part to reduce data load but here we do it at once
+    x, y, t = cl_dataset.get_data()
+    h5dataset = H5Dataset(x, y, t, data_path=filename_h5)
+
+    scenario = ClassIncremental(h5dataset, nb_tasks=nb_tasks)
+
+    for task_set in scenario:
+        loader = DataLoader(task_set, batch_size=64)
+        for x, y, t in loader:
+            assert x.shape == torch.Size([64, 3, 32, 32])
+            break
+
+    assert scenario.nb_tasks == nb_tasks  # number of task of CIFAR100Lifelong
+    os.remove(filename_h5)
 
 @pytest.mark.slow
 def test_on_array_dataset():
