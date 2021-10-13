@@ -111,13 +111,14 @@ class _BaseScenario(abc.ABC):
                 "different set of transformations per task"
             )
 
-        x, y, t, _ = self._select_data_by_task(task_index)
+        x, y, t, _, data_indexes = self._select_data_by_task(task_index)
 
         return TaskSet(
             x, y, t,
             trsf=self.trsf[task_index] if isinstance(self.trsf, list) else self.trsf,
             data_type=self.cl_dataset.data_type,
-            bounding_boxes=self.cl_dataset.bounding_boxes
+            bounding_boxes=self.cl_dataset.bounding_boxes,
+            data_indexes=data_indexes
         )
 
     def _select_data_by_task(
@@ -158,33 +159,33 @@ class _BaseScenario(abc.ABC):
                 t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
             ]
             if len(t.shape) == 2:
-                indexes = np.unique(np.where(t[:, task_index] == 1)[0])
+                data_indexes = np.unique(np.where(t[:, task_index] == 1)[0])
             else:
-                indexes = np.where(np.isin(t, task_index))[0]
+                data_indexes = np.where(np.isin(t, task_index))[0]
         else:
             if task_index < 0:
                 task_index = _handle_negative_indexes(task_index, len(self))
 
             if len(t.shape) == 2:
-                indexes = np.where(t[:, task_index] == 1)[0]
+                data_indexes = np.where(t[:, task_index] == 1)[0]
             else:
-                indexes = np.where(t == task_index)[0]
+                data_indexes = np.where(t == task_index)[0]
 
         if self.cl_dataset.data_type == TaskType.H5:
             # for h5 TaskType, x is just the filename containing all data
             # no need for slicing here
             selected_x = x
         else:
-            selected_x = x[indexes]
-        selected_y = y[indexes]
-        selected_t = t[indexes]
+            selected_x = x[data_indexes]
+        selected_y = y[data_indexes]
+        selected_t = t[data_indexes]
 
         if self.cl_dataset.need_class_remapping:  # TODO: to remove with TransformIncremental
             # A remapping of the class ids is done to handle some special cases
             # like PermutedMNIST or RotatedMNIST.
             selected_y = self.cl_dataset.class_remapping(selected_y)
 
-        return selected_x, selected_y, selected_t, task_index
+        return selected_x, selected_y, selected_t, task_index, data_indexes
 
 
 def _handle_negative_indexes(index: int, total_len: int) -> int:
