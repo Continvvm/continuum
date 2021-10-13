@@ -37,9 +37,12 @@ class H5TaskSet(PathTaskSet):
         self._size_task_set = None
         self.data_type = TaskType.H5
         self.data_indexes = data_indexes
+        self.classes_vector_task = y
+        self.task_index_vector_task = t
 
         if data_indexes is not None:
             self._size_task_set = len(data_indexes)
+            assert len(data_indexes) == len(y)
         else:
             with h5py.File(self.h5_filename, 'r') as hf:
                 self._size_task_set = hf['y'].shape[0]
@@ -54,17 +57,20 @@ class H5TaskSet(PathTaskSet):
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
         x, y, t = None, None, None
 
+        # we use class vector in memory since it might have been modified by a label transform
+        y = self.classes_vector_task[index]
+        if t is not None:
+            t = self.task_index_vector_task[index]
+        else:
+            t = -1
+
         if self.data_indexes is not None:
-            # the index is index data in the task not in the full dataset
+            # the  "index" variable is indexing data in the task not in the full dataset
+            # so we convert it into index in the full dataset
             index = self.data_indexes[index]
 
         with h5py.File(self.h5_filename, 'r') as hf:
             x = hf['x'][index]
-            y = hf['y'][index]
-            if 't' in hf.keys():
-                t = hf['t'][index]
-            else:
-                t = -1
 
         if self.bounding_boxes is not None:
             bbox = self.bounding_boxes[index]
