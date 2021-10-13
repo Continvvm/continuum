@@ -1,4 +1,6 @@
 import os
+import time
+import h5py
 import numpy as np
 import pytest
 import torch
@@ -7,6 +9,7 @@ import torchvision.transforms as trsf
 
 from continuum.scenarios import ContinualScenario, ClassIncremental
 from continuum.datasets import H5Dataset, CIFAR100, Core50
+from continuum.tasks.h5_task_set import H5TaskSet
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
@@ -126,6 +129,40 @@ def test_h5dataset_loading():
 
     assert scenario.nb_tasks == nb_task
     os.remove(filename_h5)
+
+@pytest.mark.slow
+def test_time():
+    cl_dataset = CIFAR100(data_path="../Datasets",
+                          download=False,
+                          train=True,
+                          labels_type="category",
+                          task_labels="lifelong")
+    # in practice the construction is part by part to reduce data load but here we do it at once
+    x, y, t = cl_dataset.get_data()
+    h5_filename = "test_time_h5.hdf5"
+    h5dataset = H5Dataset(x, y, t, data_path=h5_filename)
+
+    task_set = H5TaskSet(h5_filename, y=h5dataset.get_classes(), t=h5dataset.get_task_indexes(), trsf=None)
+
+    start = time.time()
+    for i in range(10000):
+        a = task_set[5]
+    end = time.time()
+    print(f"normal __getitem__ {end - start}")
+
+    start = time.time()
+    with h5py.File("test_time_h5.hdf5", 'r') as hf:
+        for i in range(10000):
+            x = hf['x'][5]
+            y = hf['y'][5]
+            if 't' in hf.keys():
+                t = hf['t'][5]
+            else:
+                t = -1
+    end = time.time()
+    print(f"open only once __getitem__ {end - start}")
+
+
 
 @pytest.mark.slow
 def test_on_array_dataset_incremental():
