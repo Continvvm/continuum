@@ -6,6 +6,7 @@ import numpy as np
 
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import _BaseScenario
+from continuum.tasks import TaskType
 
 
 class ContinualScenario(_BaseScenario):
@@ -29,7 +30,7 @@ class ContinualScenario(_BaseScenario):
 
     def check_data(self, cl_dataset: _ContinuumDataset):
 
-        if cl_dataset.dataset_type == "array":
+        if cl_dataset.data_type !=  TaskType.H5:
             x, y, t = cl_dataset.get_data()
 
             assert t is not None, print("The t vector should be defined for this scenario")
@@ -47,13 +48,9 @@ class ContinualScenario(_BaseScenario):
                 f"for each task from task id equal"
                 f"zero to num_tasks-1 \n (unique task indexes) {list_unique_tasks_ids} vs "
                 f"(expected) {np.arange(self.nb_tasks)}")
-        elif cl_dataset.dataset_type == "h5":
-            # checks should have been already done while creating the h5 file
-            print(cl_dataset.keys())
-            print(len(cl_dataset.keys()))
-            self._nb_tasks = len(cl_dataset.keys())
         else:
-            raise NotImplementedError("Unknown dataset type (h5 or array)")
+            # data check should have been done while creating the H5 file
+            pass
 
     #nothing to do in the setup function
     def _setup(self, nb_tasks: int) -> int:
