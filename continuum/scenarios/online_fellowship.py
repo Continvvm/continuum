@@ -2,7 +2,7 @@ from typing import Callable, List, Union
 from torchvision import transforms
 import numpy as np
 
-from continuum.datasets import _ContinuumDataset
+from continuum.datasets import _ContinuumDataset, InMemoryDataset
 from continuum.scenarios import _BaseScenario
 from continuum.tasks import TaskSet
 
@@ -18,18 +18,20 @@ class OnlineFellowship(_BaseScenario):
 
     def __init__(
             self,
-            data_path,
             cl_datasets: List[_ContinuumDataset],
             transformations: Union[List[Callable], List[List[Callable]]] = None,
             update_labels=True,
-            train=True
+            list_dict_args=[{"data_path":".", "train": True, "download": False}]
     ) -> None:
-        self.data_path = data_path
         self.cl_datasets = cl_datasets
         self.update_labels = update_labels
-        self.training = train
+        self.list_dict_args = list_dict_args
+        assert len(self.list_dict_args)==1 or len(self.list_dict_args)==len(cl_datasets)
         # init with first task
-        self.cl_dataset = cl_datasets[0](data_path, train=self.training)
+        if isinstance(cl_datasets[0], InMemoryDataset):
+            self.cl_dataset = cl_datasets[0]
+        else:
+            self.cl_dataset = cl_datasets[0](**self._get_args(0))
         super().__init__(cl_dataset=self.cl_dataset, nb_tasks=1, transformations=transformations)
         self._nb_tasks = len(cl_datasets)
 
@@ -41,7 +43,10 @@ class OnlineFellowship(_BaseScenario):
         label_trsf = []
         self.list_classes = []
         for task_ind, cl_dataset in enumerate(cl_datasets):
-            dataset = cl_dataset(data_path, train=self.training)
+            if isinstance(cl_dataset, InMemoryDataset):
+                dataset = cl_dataset
+            else:
+                dataset = cl_dataset(**self._get_args(task_ind))
             if self.update_labels:
                 # we just shift the label number by the nb of classes seen so far
                 label_trsf.append(transforms.Lambda(lambda x: x + _tot_num_classes))
@@ -54,6 +59,12 @@ class OnlineFellowship(_BaseScenario):
             label_trsf = None
         self.target_trsf = label_trsf
 
+    def _get_args(self, ind_task):
+        if len(self.list_dict_args) == 1:
+            return self.list_dict_args[0]
+        else:
+            return self.list_dict_args[ind_task]
+
 
     @property
     def nb_tasks(self) -> int:
@@ -62,12 +73,12 @@ class OnlineFellowship(_BaseScenario):
 
     @property
     def nb_classes(self) -> int:
-        """Number of tasks in the whole continual setting."""
+        """Number of classes in the whole continual setting."""
         return len(self.classes)
 
     @property
     def classes(self) -> List:
-        """Number of tasks in the whole continual setting."""
+        """List of classes in the whole continual setting."""
         return np.unique(self.list_classes)
 
     def __getitem__(self, task_index: Union[int, slice]):
@@ -82,7 +93,10 @@ class OnlineFellowship(_BaseScenario):
             raise NotImplementedError(
                 f"You cannot select multiple task ({task_index}) on OnlineFellowship yet"
             )
-        self.cl_dataset = self.cl_datasets[task_index](self.data_path, train=self.training)
+        if isinstance(self.cl_datasets[task_index], InMemoryDataset):
+            self.cl_dataset = self.cl_datasets[task_index]
+        else:
+            self.cl_dataset = self.cl_datasets[task_index](**self._get_args(task_index))
         x, y, _ = self.cl_dataset.get_data()
         t = np.ones(len(y)) * task_index
 
