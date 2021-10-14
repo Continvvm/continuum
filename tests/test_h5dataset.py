@@ -7,8 +7,8 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision.transforms as trsf
 
-from continuum.scenarios import ContinualScenario, ClassIncremental
-from continuum.datasets import H5Dataset, CIFAR100, Core50
+from continuum.scenarios import ContinualScenario, ClassIncremental, Permutations
+from continuum.datasets import H5Dataset, CIFAR100, MNIST
 from continuum.tasks.h5_task_set import H5TaskSet
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
@@ -225,6 +225,39 @@ def test_on_array_dataset():
 
     assert scenario.nb_tasks == 5  # number of task of CIFAR100Lifelong
     os.remove(filename_h5)
+
+# Not compatible at the moment (it is less necessary to use h5 with transform incremental scenarios.)
+# @pytest.mark.slow
+# def test_on_transform_scenario():
+#     filename_h5 = "test_permutation.hdf5"
+#     if os.path.exists(filename_h5):
+#         os.remove(filename_h5)
+#
+#     cl_dataset = MNIST(data_path=DATA_PATH,
+#                           download=False,
+#                           train=True)
+#     # in practice the construction is part by part to reduce data load but here we do it at once
+#     x, y, t = cl_dataset.get_data()
+#     h5dataset = H5Dataset(x, y, t, data_path=filename_h5)
+#
+#     scenario = Permutations(h5dataset, nb_tasks=3, shared_label_space=True)
+#
+#     for task_set in scenario:
+#         loader = DataLoader(task_set, batch_size=64)
+#         for x, y, t in loader:
+#             break
+#
+#     # SECOND TEST WITH A LABEL TRANSFORMATION
+#
+#     scenario = Permutations(h5dataset, nb_tasks=3, shared_label_space=False)
+#
+#     for task_set in scenario:
+#         loader = DataLoader(task_set, batch_size=64)
+#         for x, y, t in loader:
+#             break
+#
+#     assert scenario.nb_tasks == 5  # number of task of CIFAR100Lifelong
+#     os.remove(filename_h5)
 
 # Not compatible at the moment (it is not really necessary to use h5 when images are referenced by a path.)
 # @pytest.mark.slow
