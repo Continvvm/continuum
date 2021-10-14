@@ -65,10 +65,10 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
             if t is None:
                 t = (torch.ones(len(y)) * task_id).long()
 
-            if task_id == 0:
-                encoded_dataset = H5Dataset(features.cpu(), y, t, data_path=filename)
+            if task_id == 0 and i==0:
+                encoded_dataset = H5Dataset(features.cpu().numpy(), y, t, data_path=filename)
             else:
-                encoded_dataset.add_data(features.cpu(), y, t)
+                encoded_dataset.add_data(features.cpu().numpy(), y, t)
 
     return encoded_dataset
 
