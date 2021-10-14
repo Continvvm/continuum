@@ -6,11 +6,11 @@ import string
 
 import torch.nn as nn
 
-from continuum.datasets import InMemoryDataset
+from continuum.datasets import InMemoryDataset, MNIST
 from continuum.scenarios import ClassIncremental, create_subscenario, encode_scenario
 from continuum.tasks import TaskType
 
-
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 def gen_data():
     x_ = np.random.randint(0, 255, size=(20, 32, 32, 3))
@@ -120,14 +120,35 @@ def test_encode_scenario_inference_fct():
     assert scenario.nb_tasks == encoded_scenario.nb_tasks
     assert len(scenario[0]) == len(encoded_scenario[0])
 
-
-    assert encoded_scenario[0][0].shape[0] == 50
+    assert encoded_scenario[0][0][0].shape[0] == 50
 
     os.remove(filename_h5)
 
 
 @pytest.mark.slow
 def test_encode_scenario():
+    filename_h5 = "test_encode_scenario.hdf5"
+    if os.path.exists(filename_h5):
+        os.remove(filename_h5)
 
-    pass
+    dataset = MNIST(data_path=DATA_PATH,
+                          download=False,
+                          train=True)
+    scenario = ClassIncremental(dataset, increment=2)
+
+    model = nn.Linear(28*28, 50)
+    inference_fct = lambda model, x: model(x.view(-1, 28*28))
+
+    encoded_scenario = encode_scenario(model=model,
+                                       scenario=scenario,
+                                       batch_size=64,
+                                       file_name=filename_h5,
+                                       inference_fct=inference_fct)
+
+    assert scenario.nb_tasks == encoded_scenario.nb_tasks
+    assert len(scenario[0]) == len(encoded_scenario[0])
+
+    assert encoded_scenario[0][0][0].shape[0] == 50
+
+    os.remove(filename_h5)
 

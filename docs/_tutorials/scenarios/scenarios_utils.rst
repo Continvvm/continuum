@@ -32,7 +32,7 @@ It reduces the computation footprint and the time spent on encoding data for eve
     from continuum.scenarios import encode_scenario
     # let say you have a continuum scenario with 5 tasks.
     scenario = some_func(nb_task=5)
-    model = some_model()
+    feature_extractor = some_model()
 
     # inference function is an optional parameter to give function that will exctract the latent representation you want.
     # by default
@@ -40,7 +40,7 @@ It reduces the computation footprint and the time spent on encoding data for eve
 
     # encode the scenario
     encoded_scenario = encode_scenario(scenario,
-                                         model,
+                                         feature_extractor,
                                          batch_size=64,
                                          file_name="encoded_scenario.hdf5",
                                          inference_fct=inference_fct)

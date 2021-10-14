@@ -27,11 +27,14 @@ class H5TaskSet(PathTaskSet):
             x: str,
             y: np.ndarray,
             t: np.ndarray,
-            trsf: Union[transforms.Compose, List[transforms.Compose]],
+            trsf: Union[transforms.Compose, List[transforms.Compose]] = None,
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             bounding_boxes: Optional[np.ndarray] = None,
             data_indexes: np.ndarray = None
     ):
+
+        print("HELLO")
+        print(trsf)
 
         self.h5_filename = x
         self._size_task_set = None
@@ -85,7 +88,10 @@ class H5TaskSet(PathTaskSet):
             # x = Image.open(x).convert("RGB")
             raise NotImplementedError("H5 taskset are not yet compatible to path array.")
 
-        x, y, t = self._prepare_data(x, y, t)
+        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(x.shape)==1:
+            x = torch.Tensor(x)
+        else:
+            x, y, t = self._prepare_data(x, y, t)
         return x, y, t
 
     def concat(self, *task_sets):
