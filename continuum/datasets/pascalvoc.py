@@ -24,6 +24,7 @@ class PascalVOC2012(_ContinuumDataset):
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True, augmented: bool = True) -> None:
         super().__init__(data_path=data_path, train=train, download=download)
         self.augmented = augmented
+        self.number_classes = 20
 
     @property
     def data_type(self) -> TaskType:
@@ -95,6 +96,7 @@ class PascalVOC2007(_ContinuumDataset):
         self.mode = mode
 
         super().__init__(data_path, train, download)
+        self.number_classes = 20
 
     @property
     def data_type(self) -> TaskType:

@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 from torchvision import datasets as torchdata
@@ -20,6 +20,8 @@ class Food101(ImageFolderDataset):
     def __init__(self, data_path, train: bool = True, download: bool = True):
         self._attributes = None
         super().__init__(data_path, train, download)
+
+        self.number_classes = 101
 
     @property
     def data_type(self) -> TaskType:

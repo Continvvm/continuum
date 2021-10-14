@@ -56,6 +56,16 @@ class Fellowship(_ContinuumDataset):
 
         return x, y, t
 
+    @property
+    def nb_classes(self) -> int:
+        """Number of classes"""
+        return len(self.classes)
+
+    @property
+    def classes(self) -> List:
+        """list of class"""
+        return list(np.unique(self.datasets[1]))
+
 
 class MNISTFellowship(Fellowship):
 

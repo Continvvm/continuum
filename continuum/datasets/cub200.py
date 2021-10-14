@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 import pandas as pd
 import numpy as np
@@ -17,6 +17,8 @@ class CUB200(_ContinuumDataset):
         data_path = os.path.expanduser(data_path)
         self._attributes = None
         super().__init__(data_path, train, download)
+
+        self.number_classes = 200
 
     @property
     def attributes(self):

@@ -1,6 +1,6 @@
 import os
 import glob
-from typing import Tuple
+from typing import Tuple, List
 
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -21,15 +21,16 @@ class Caltech101(_ContinuumDataset):
     # Google drive ids
     data_id = "137RyRjvTBkBiIfeYBNZBtViDHQ6_Ewsp"
     folder = "101_ObjectCategories"
+    number_classes = 101
 
     def __init__(
-        self,
-        data_path: str = "",
-        train: bool = True,
-        download: bool = True,
-        test_split: float = 0.2,
-        random_seed: int = 1,
-        remove_bg_google: bool = True
+            self,
+            data_path: str = "",
+            train: bool = True,
+            download: bool = True,
+            test_split: float = 0.2,
+            random_seed: int = 1,
+            remove_bg_google: bool = True
     ):
 
         super().__init__(data_path=data_path, train=train, download=download)
@@ -70,7 +71,6 @@ class Caltech101(_ContinuumDataset):
                 x.append(path)
                 y.append(c)
 
-
         x, y = np.array(x), np.array(y)
 
         x_train, x_test, y_train, y_test = train_test_split(
@@ -80,15 +80,26 @@ class Caltech101(_ContinuumDataset):
         )
 
         if self.train:
+            self.list_classes = np.unique(y_train)
             return x_train, y_train, None
+        self.list_classes = np.unique(y_test)
         return x_test, y_test, None
+
+    @property
+    def nb_classes(self) -> int:
+        """Return number of classes in the dataset"""
+        if self.remove_bg_google:
+            return self.number_classes
+        else:
+            return self.number_classes + 1
 
 
 class Caltech256(Caltech101):
-    """Catech 256 Dataset.
+    """Caltech 256 Dataset.
 
     Has 257 classes actually because why not.
     """
 
     data_id = "1r6o0pSROcV1_VwT4oSjA2FBUSCWGuxLK"
     folder = "256_ObjectCategories"
+    number_classes = 256

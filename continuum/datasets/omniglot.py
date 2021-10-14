@@ -25,6 +25,7 @@ class Omniglot(_ContinuumDataset):
             train=train,
             download=download,
         )
+        self.number_classes = 964
 
         if not train:
             warnings.warn("Omniglot has not train/test set, serving train set instead.")

@@ -24,6 +24,8 @@ class _ContinuumDataset(abc.ABC):
         if self.download:
             self._download()
 
+        self.number_classes = None
+
         if not isinstance(self.data_type, TaskType):
             raise NotImplementedError(
                 f"Dataset's data_type ({self.data_type}) is not supported."
@@ -31,6 +33,16 @@ class _ContinuumDataset(abc.ABC):
             )
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        pass
+
+    @property
+    def classes(self) -> List:
+        """Return list of classes in the dataset"""
+        pass
+
+    @property
+    def nb_classes(self) -> int:
+        """Return number of classes in the dataset"""
         pass
 
     def _download(self):
@@ -81,6 +93,16 @@ class _ContinuumDataset(abc.ABC):
         """
         return None
 
+    @property
+    def classes(self) -> List:
+        """Return list of classes in the dataset"""
+        return list(np.arange(self.nb_classes))
+
+    @property
+    def nb_classes(self) -> int:
+        """Return number of classes in the dataset"""
+        return self.number_classes
+
 
 class _SemanticSegmentationDataset(_ContinuumDataset):
     """Base class for segmentation-based dataset."""
@@ -123,6 +145,16 @@ class PyTorchDataset(_ContinuumDataset):
 
         return x, y, None
 
+    @property
+    def classes(self) -> List:
+        """Return list of classes in the dataset"""
+        return list(np.unique(self.dataset.targets))
+
+    @property
+    def nb_classes(self) -> int:
+        """Return number of classes in the dataset"""
+        return len(self.classes)
+
 
 class InMemoryDataset(_ContinuumDataset):
     """Continuum dataset for in-memory data.
@@ -163,6 +195,15 @@ class InMemoryDataset(_ContinuumDataset):
     def data_type(self, data_type: TaskType) -> None:
         self._data_type = data_type
 
+    @property
+    def classes(self) -> List:
+        """Return list of classes in the dataset"""
+        return list(np.unique(self.data[1]))
+
+    @property
+    def nb_classes(self) -> int:
+        """Return number of classes in the dataset"""
+        return len(self.classes)
 
 class ImageFolderDataset(_ContinuumDataset):
     """Continuum dataset for datasets with tree-like structure.
@@ -187,13 +228,17 @@ class ImageFolderDataset(_ContinuumDataset):
         if data_type not in allowed_data_types:
             raise ValueError(f"Invalid data_type={data_type}, allowed={allowed_data_types}.")
 
+        self.number_classes = None
+
     @property
     def data_type(self) -> TaskType:
         return self._data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         self.dataset = torchdata.ImageFolder(self.data_path)
-        return self._format(self.dataset.imgs)
+        x, y, t = self._format(self.dataset.imgs)
+        self.list_classes = np.unique(y)
+        return x, y, t
 
     @staticmethod
     def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:
@@ -205,3 +250,18 @@ class ImageFolderDataset(_ContinuumDataset):
             y[i] = target
 
         return x, y, None
+
+
+    @property
+    def classes(self) -> List:
+        """Return list of classes in the dataset"""
+        return list(np.arange(self.nb_classes))
+
+    @property
+    def nb_classes(self) -> int:
+        """Number of classes"""
+        if self.number_classes is None:
+            self.dataset = torchdata.ImageFolder(self.data_path)
+            x, y, t = self._format(self.dataset.imgs)
+            self.number_classes = len(np.unique(y))
+        return self.number_classes

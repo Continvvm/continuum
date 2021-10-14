@@ -53,6 +53,7 @@ class Stream51(_ContinuumDataset):
         self.ratio = ratio
         self.task_criterion = task_criterion
         self._bounding_boxes = None
+        self.number_classes = 51
 
     def _download(self):
         path = os.path.join(self.data_path, "Stream-51")

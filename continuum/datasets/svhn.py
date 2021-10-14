@@ -19,6 +19,7 @@ class SVHN(_ContinuumDataset):
             download=self.download,
             split="train" if train else "test"
         )
+        self.number_classes = 10
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = np.array(self.dataset.data), np.array(self.dataset.labels)

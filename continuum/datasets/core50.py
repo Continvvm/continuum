@@ -1,5 +1,5 @@
 import os
-from typing import Iterable, Set, Tuple, Union
+from typing import Iterable, Set, Tuple, Union, List
 
 import numpy as np
 
@@ -40,6 +40,7 @@ class Core50(_ContinuumDataset):
         self.train_image_ids = train_image_ids
         super().__init__(data_path=data_path, train=train, download=download)
 
+        self.number_classes = 50
         self.scenario = scenario
         self.classification = classification
 
@@ -134,6 +135,7 @@ class Core50(_ContinuumDataset):
                         # Ranges from 0-49
                         class_label = object_id
                     else:
+                        self.number_classes = 10
                         # Ranges from 0-9
                         class_label = object_id // 5
                     y.append(class_label)
@@ -160,6 +162,17 @@ class Core50(_ContinuumDataset):
         return x, y, t
 
 
+    @property
+    def classes(self) -> List:
+        """Return list of classes in the dataset"""
+        return np.arange(self.number_classes)
+
+    @property
+    def nb_classes(self) -> int:
+        """Return number of classes in the dataset"""
+        return self.number_classes
+
+
 class Core50v2_79(_ContinuumDataset):
     data_url = "http://bias.csr.unibo.it/maltoni/download/core50/core50_128x128.zip"
     splits_url = "https://vlomonaco.github.io/core50/data/batches_filelists_NICv2.zip"
@@ -176,6 +189,7 @@ class Core50v2_79(_ContinuumDataset):
                 f" invalid run_id={run_id}."
             )
         self.run_id = run_id
+        self.number_classes = 50
 
         super().__init__(data_path=data_path, train=train, download=download)
 
@@ -245,6 +259,16 @@ class Core50v2_79(_ContinuumDataset):
                 targets.append(int(t))
 
         return np.array(paths), np.array(targets)
+
+    @property
+    def classes(self) -> List:
+        """Return list of classes in the dataset"""
+        return np.arange(self.number_classes)
+
+    @property
+    def nb_classes(self) -> int:
+        """Return number of classes in the dataset"""
+        return self.number_classes
 
 
 class Core50v2_196(Core50v2_79):

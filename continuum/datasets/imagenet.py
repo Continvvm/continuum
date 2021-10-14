@@ -15,6 +15,9 @@ class ImageNet1000(ImageFolderDataset):
     Simple wrapper around ImageFolderDataset to provide a link to the download
     page.
     """
+
+    number_classes = 1000
+
     @property
     def transformations(self):
         """Default transformations if nothing is provided to the scenario."""
@@ -50,6 +53,7 @@ class ImageNet100(ImageNet1000):
     ):
         self.data_subset = data_subset
         super().__init__(*args, **kwargs)
+        self.number_classes = 100
 
     def _download(self):
         super()._download()
@@ -97,6 +101,7 @@ class TinyImageNet200(ImageFolderDataset):
     """
 
     url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
+    number_classes = 200
 
     def _download(self):
         path = os.path.join(self.data_path, "tiny-imagenet-200")
