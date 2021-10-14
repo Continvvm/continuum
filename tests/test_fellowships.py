@@ -1,3 +1,4 @@
+import os
 import pytest
 import numpy as np
 from torch.utils.data import DataLoader
@@ -8,6 +9,7 @@ from continuum.datasets import (
     InMemoryDataset, Fellowship
 )
 
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 @pytest.fixture
 def dataset7c():
@@ -68,6 +70,24 @@ def test_Online_Fellowship(dataset7c, dataset10c, dataset20c):
     assert scenario[1].nb_classes == 10
     assert scenario[2].nb_classes == 20
 
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "list_datasets", [
+        ([MNIST, FashionMNIST]),
+        ([KMNIST, MNIST, FashionMNIST]),
+        ([CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST]),
+    ]
+)
+def test_online_Fellowship_classes(list_datasets):
+    scenario = OnlineFellowship(DATA_PATH, list_datasets, train=True, update_labels=True)
+
+    assert len(scenario) == len(list_datasets)
+    tot_nb_classes = 0
+
+    for task_id, taskset in enumerate(scenario):
+        tot_nb_classes += taskset.nb_classes
+
+    assert tot_nb_classes == scenario.nb_classes
 
 @pytest.mark.parametrize("increment", [1, [7, 10, 20]])
 def test_inMemory_keepLabels_Fellowship(increment, dataset7c, dataset10c, dataset20c):

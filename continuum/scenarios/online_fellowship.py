@@ -18,15 +18,20 @@ class OnlineFellowship(_BaseScenario):
 
     def __init__(
             self,
+            data_path,
             cl_datasets: List[_ContinuumDataset],
             transformations: Union[List[Callable], List[List[Callable]]] = None,
-            update_labels=True
+            update_labels=True,
+            train=True
     ) -> None:
-        self._nb_tasks = len(cl_datasets)
+        self.data_path = data_path
         self.cl_datasets = cl_datasets
         self.update_labels = update_labels
+        self.training = train
         # init with first task
-        super().__init__(cl_dataset=cl_datasets[0], nb_tasks=1, transformations=transformations)
+        self.cl_dataset = cl_datasets[0](data_path, train=self.training)
+        super().__init__(cl_dataset=self.cl_dataset, nb_tasks=1, transformations=transformations)
+        self._nb_tasks = len(cl_datasets)
 
         if isinstance(self.trsf, list):
             # if we have a list of transformations, it should be a transformation per cl_dataset
@@ -36,13 +41,14 @@ class OnlineFellowship(_BaseScenario):
         label_trsf = []
         self.list_classes = []
         for task_ind, cl_dataset in enumerate(cl_datasets):
+            dataset = cl_dataset(data_path, train=self.training)
             if self.update_labels:
                 # we just shift the label number by the nb of classes seen so far
                 label_trsf.append(transforms.Lambda(lambda x: x + _tot_num_classes))
-                self.list_classes += (list(np.array(cl_dataset.classes)+_tot_num_classes))
+                self.list_classes += (list(np.array(dataset.classes)+_tot_num_classes))
             else:
-                self.list_classes += cl_dataset.classes
-            _tot_num_classes += cl_dataset.nb_classes
+                self.list_classes += dataset.classes
+            _tot_num_classes += dataset.nb_classes
 
         if not self.update_labels:
             label_trsf = None
@@ -76,7 +82,7 @@ class OnlineFellowship(_BaseScenario):
             raise NotImplementedError(
                 f"You cannot select multiple task ({task_index}) on OnlineFellowship yet"
             )
-        self.cl_dataset = self.cl_datasets[task_index]
+        self.cl_dataset = self.cl_datasets[task_index](self.data_path, train=self.training)
         x, y, _ = self.cl_dataset.get_data()
         t = np.ones(len(y)) * task_index
 
