@@ -141,7 +141,7 @@ def test_encode_scenario():
 
     encoded_scenario = encode_scenario(model=model,
                                        scenario=scenario,
-                                       batch_size=64,
+                                       batch_size=264,
                                        file_name=filename_h5,
                                        inference_fct=inference_fct)
 
