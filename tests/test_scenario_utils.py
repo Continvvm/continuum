@@ -146,7 +146,9 @@ def test_encode_scenario():
                                        inference_fct=inference_fct)
 
     assert scenario.nb_tasks == encoded_scenario.nb_tasks
-    assert len(scenario[0]) == len(encoded_scenario[0])
+
+    for encoded_taskset, taskset in zip(encoded_scenario ,scenario):
+        assert len(encoded_taskset) == len(taskset)
 
     assert encoded_scenario[0][0][0].shape[0] == 50
 
