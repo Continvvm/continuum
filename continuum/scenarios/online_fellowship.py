@@ -14,6 +14,8 @@ class OnlineFellowship(_BaseScenario):
     :param transformations: A list of transformations applied to all tasks. If
                             it's a list of list, then the transformation will be
                             different per task.
+    :param update_labels: if true we update labels values such as not having same classes in different tasks.
+    :param list_dict_args: Parameters to use to instanciate datasets.
     """
 
     def __init__(
@@ -39,6 +41,7 @@ class OnlineFellowship(_BaseScenario):
             # if we have a list of transformations, it should be a transformation per cl_dataset
             assert len(transformations) == self._nb_tasks
 
+        # We count total number of classes here and define label_trsf if necessary if (update_labels==True)
         _tot_num_classes = 0
         label_trsf = []
         self.list_classes = []

@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from continuum.scenarios import ClassIncremental, InstanceIncremental, OnlineFellowship
 from continuum.datasets import (
     CIFAR10, CIFAR100, KMNIST, MNIST, CIFARFellowship, FashionMNIST, Fellowship, MNISTFellowship,
-    InMemoryDataset, Fellowship
+    InMemoryDataset, Fellowship, Core50
 )
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
@@ -57,7 +57,7 @@ def test_inMemory_updateLabels_Fellowship(increment, dataset7c, dataset10c, data
 
 
 def test_Online_Fellowship(dataset7c, dataset10c, dataset20c):
-    scenario = OnlineFellowship(DATA_PATH, [dataset7c, dataset10c, dataset20c])
+    scenario = OnlineFellowship([dataset7c, dataset10c, dataset20c])
     for i, task_set in enumerate(scenario):
         if i == 0:
             assert task_set.nb_classes == 7
@@ -99,6 +99,24 @@ def test_online_Fellowship_args(list_datasets):
     ]
 )
 def test_online_Fellowship_multiple_args(list_datasets):
+    list_dict_args = [{"data_path": DATA_PATH, "train": True, "download": False}] * len(list_datasets)
+    scenario = OnlineFellowship(list_datasets, update_labels=True, list_dict_args=list_dict_args)
+
+    assert len(scenario) == len(list_datasets)
+    tot_nb_classes = 0
+
+    for task_id, taskset in enumerate(scenario):
+        tot_nb_classes += taskset.nb_classes
+
+    assert tot_nb_classes == scenario.nb_classes
+
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "list_datasets", [
+        ([Core50, CIFAR10])
+    ]
+)
+def test_online_Fellowship_mix_path_array(list_datasets):
     list_dict_args = [{"data_path": DATA_PATH, "train": True, "download": False}] * len(list_datasets)
     scenario = OnlineFellowship(list_datasets, update_labels=True, list_dict_args=list_dict_args)
 
