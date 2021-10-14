@@ -33,9 +33,6 @@ class H5TaskSet(PathTaskSet):
             data_indexes: np.ndarray = None
     ):
 
-        print("HELLO")
-        print(trsf)
-
         self.h5_filename = x
         self._size_task_set = None
         self.data_type = TaskType.H5
@@ -88,16 +85,14 @@ class H5TaskSet(PathTaskSet):
             # x = Image.open(x).convert("RGB")
             raise NotImplementedError("H5 taskset are not yet compatible to path array.")
 
-        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(x.shape)==1:
+        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(x.shape) == 1:
             x = torch.Tensor(x)
         else:
             x, y, t = self._prepare_data(x, y, t)
         return x, y, t
 
     def concat(self, *task_sets):
-        super().concat(task_sets)
-        with h5py.File(self.h5_filename, 'r') as hf:
-            self._size_dataset = hf['y'].shape[0]
+        raise NotImplementedError("taskset concatenation is not yet available for h5 task_sets")
 
     def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
         # TODO
