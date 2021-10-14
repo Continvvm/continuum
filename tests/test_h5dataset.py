@@ -7,8 +7,8 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision.transforms as trsf
 
-from continuum.scenarios import ContinualScenario, ClassIncremental
-from continuum.datasets import H5Dataset, CIFAR100, Core50
+from continuum.scenarios import ContinualScenario, ClassIncremental, Permutations
+from continuum.datasets import H5Dataset, CIFAR100, MNIST
 from continuum.tasks.h5_task_set import H5TaskSet
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
@@ -37,8 +37,7 @@ def test_creation_h5dataset():
 
     x_0, y_0, t_0 = h5dataset.get_data()
 
-    data_indexes = np.where(t_ == 0)[0]
-    assert isinstance(x_0, str) # x is only the path to the file
+    assert isinstance(x_0, str)  # x is only the path to the file
     assert len(y_0) == len(y_)
     assert len(t_0) == len(t_)
 
@@ -54,6 +53,8 @@ def test_concatenate_h5dataset():
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
+    assert len(h5dataset.get_classes()) == 2 * len(y_)
+
     os.remove(filename_h5)
 
 
@@ -64,12 +65,14 @@ def test_h5dataset_ContinualScenario():
 
     x_, y_, t_ = gen_data()
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
-    h5dataset.add_data(x_, y_, t_)
 
     nb_task = len(np.unique(t_))
     scenario = ContinualScenario(h5dataset)
 
     assert scenario.nb_tasks == nb_task
+
+    data_indexes = np.where(t_ == 0)[0]
+    assert len(data_indexes) == len(scenario[0])
 
     os.remove(filename_h5)
 
@@ -90,6 +93,7 @@ def test_h5dataset_add_data():
 
     os.remove(filename_h5)
 
+
 def test_h5dataset_IncrementalScenario():
     filename_h5 = "test_h5.hdf5"
     if os.path.exists(filename_h5):
@@ -103,12 +107,17 @@ def test_h5dataset_IncrementalScenario():
 
     assert scenario.nb_tasks == nb_task
 
+    tot_len = 0
     for task_set in scenario:
+        tot_len += len(task_set)
         loader = DataLoader(task_set)
         for _ in loader:
             pass
 
+    assert tot_len == len(y_)
+
     os.remove(filename_h5)
+
 
 def test_h5dataset_loading():
     filename_h5 = "test_h5.hdf5"
@@ -129,6 +138,7 @@ def test_h5dataset_loading():
 
     assert scenario.nb_tasks == nb_task
     os.remove(filename_h5)
+
 
 @pytest.mark.slow
 def test_time():
@@ -163,7 +173,6 @@ def test_time():
     print(f"open only once __getitem__ {end - start}")
 
 
-
 @pytest.mark.slow
 def test_on_array_dataset_incremental():
     filename_h5 = "test_CIFAR100_h5.hdf5"
@@ -190,6 +199,7 @@ def test_on_array_dataset_incremental():
     assert scenario.nb_tasks == nb_tasks  # number of task of CIFAR100Lifelong
     os.remove(filename_h5)
 
+
 @pytest.mark.slow
 def test_on_array_dataset():
     filename_h5 = "test_CIFAR100_h5.hdf5"
@@ -215,6 +225,39 @@ def test_on_array_dataset():
 
     assert scenario.nb_tasks == 5  # number of task of CIFAR100Lifelong
     os.remove(filename_h5)
+
+# Not compatible at the moment (it is less necessary to use h5 with transform incremental scenarios.)
+# @pytest.mark.slow
+# def test_on_transform_scenario():
+#     filename_h5 = "test_permutation.hdf5"
+#     if os.path.exists(filename_h5):
+#         os.remove(filename_h5)
+#
+#     cl_dataset = MNIST(data_path=DATA_PATH,
+#                           download=False,
+#                           train=True)
+#     # in practice the construction is part by part to reduce data load but here we do it at once
+#     x, y, t = cl_dataset.get_data()
+#     h5dataset = H5Dataset(x, y, t, data_path=filename_h5)
+#
+#     scenario = Permutations(h5dataset, nb_tasks=3, shared_label_space=True)
+#
+#     for task_set in scenario:
+#         loader = DataLoader(task_set, batch_size=64)
+#         for x, y, t in loader:
+#             break
+#
+#     # SECOND TEST WITH A LABEL TRANSFORMATION
+#
+#     scenario = Permutations(h5dataset, nb_tasks=3, shared_label_space=False)
+#
+#     for task_set in scenario:
+#         loader = DataLoader(task_set, batch_size=64)
+#         for x, y, t in loader:
+#             break
+#
+#     assert scenario.nb_tasks == 5  # number of task of CIFAR100Lifelong
+#     os.remove(filename_h5)
 
 # Not compatible at the moment (it is not really necessary to use h5 when images are referenced by a path.)
 # @pytest.mark.slow

@@ -17,7 +17,8 @@ def TaskSet(x: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             data_type: TaskType = TaskType.IMAGE_ARRAY,
-            bounding_boxes: Optional[np.ndarray] = None):
+            bounding_boxes: Optional[np.ndarray] = None,
+            data_indexes = None):
 
     if data_type == TaskType.TEXT:
         assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.TEXT")
@@ -32,7 +33,10 @@ def TaskSet(x: np.ndarray,
         assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.TENSOR")
         task_set = BaseTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
     elif data_type == TaskType.H5:
-        task_set = H5TaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes)
+        task_set = H5TaskSet(x=x, y=y, t=t, trsf=trsf,
+                             target_trsf=target_trsf,
+                             bounding_boxes=bounding_boxes,
+                             data_indexes=data_indexes)
     else:
         raise AssertionError(f"No TaskSet for data_type {data_type}")
 
