@@ -215,8 +215,13 @@ class H5Dataset(InMemoryDataset):
 
         self.create_file(x, y, t, data_path)
 
+    def __len__(self):
+        return len(self.get_classes())
+
+
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""
+
         with h5py.File(data_path, 'w') as hf:
             hf.create_dataset('x', data=x, chunks=True, maxshape=([None] + list(x[0].shape)))
             hf.create_dataset('y', data=y, chunks=True, maxshape=([None]))
