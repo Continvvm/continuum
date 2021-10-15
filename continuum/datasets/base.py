@@ -1,14 +1,14 @@
 import abc
 import os
-from typing import List, Tuple, Union
 import warnings
+from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
+import h5py
+from continuum.tasks import TaskSet, TaskType
+from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
 from torchvision import datasets as torchdata
 from torchvision import transforms
-
-from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
-from continuum.tasks import TaskType
 
 
 class _ContinuumDataset(abc.ABC):
@@ -33,7 +33,8 @@ class _ContinuumDataset(abc.ABC):
             )
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        pass
+        """Returns the loaded data under the form of x, y, and t."""
+        raise NotImplementedError("This method should be implemented!")
 
     @property
     def classes(self) -> List:
@@ -48,15 +49,6 @@ class _ContinuumDataset(abc.ABC):
     def _download(self):
         pass
 
-    @property
-    def class_order(self) -> Union[None, List[int]]:
-        return None
-
-    @property
-    def need_class_remapping(self) -> bool:
-        """Flag for method `class_remapping`."""
-        return False
-
     def class_remapping(self, class_ids: np.ndarray) -> np.ndarray:
         """Optional class remapping.
 
@@ -66,6 +58,37 @@ class _ContinuumDataset(abc.ABC):
         :return: A remapping of the class ids.
         """
         return class_ids
+
+    def to_taskset(
+            self,
+            trsf: Optional[List[Callable]] = None,
+            target_trsf: Optional[List[Callable]] = None
+    ) -> TaskSet:
+        """Returns a TaskSet that can be directly given to a torch's DataLoader.
+
+        You can use this method if you don't care about the continual aspect and
+        simply want to use the datasets in a classical supervised setting.
+
+        :param trsf: List of transformations to be applied on x.
+        :param target_trsf: List of transformations to be applied on y.
+        :return taskset: A taskset which implement the interface of torch's Dataset.
+        """
+        return TaskSet(
+            *self.get_data(),
+            trsf=trsf if trsf is not None else self.transformations,
+            target_trsf=target_trsf,
+            data_type=self.data_type,
+            bounding_boxes=self.bounding_boxes
+        )
+
+    @property
+    def class_order(self) -> Union[None, List[int]]:
+        return None
+
+    @property
+    def need_class_remapping(self) -> bool:
+        """Flag for method `class_remapping`."""
+        return False
 
     @property
     def data_type(self) -> TaskType:
@@ -103,13 +126,6 @@ class _ContinuumDataset(abc.ABC):
         """Return number of classes in the dataset"""
         return self.number_classes
 
-
-class _SemanticSegmentationDataset(_ContinuumDataset):
-    """Base class for segmentation-based dataset."""
-
-    @property
-    def data_type(self) -> str:
-        return TaskType.SEGMENTATION
 
 class PyTorchDataset(_ContinuumDataset):
     """Continuum version of torchvision datasets.
@@ -205,6 +221,104 @@ class InMemoryDataset(_ContinuumDataset):
         """Return number of classes in the dataset"""
         return len(self.classes)
 
+class H5Dataset(_ContinuumDataset):
+    """Continuum dataset for in-memory data with h5 file.
+
+    :param x_train: Numpy array of images or paths to images for the train set.
+    :param y_train: Targets for the train set.
+    :param data_type: Format of the data.
+    :param t_train: Optional task ids for the train set.
+    """
+
+    def __init__(
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            t: Union[None, np.ndarray] = None,
+            data_path: str = "h5_dataset.h5",
+            train: bool = True,
+            download: bool = True,
+    ):
+        super().__init__(x, y, t, data_type=TaskType.H5, train=train, download=download)
+        self._data_type = TaskType.H5
+        self.data_path = data_path
+
+        if len(x) != len(y):
+            raise ValueError(f"Number of datapoints ({len(x)}) != number of labels ({len(y)})!")
+
+        self.no_task_index = False
+        if t is None:
+            self.no_task_index = True
+
+        else:
+            if len(t) != len(x):
+                raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
+
+        self.create_file(x, y, t, data_path)
+
+    def create_file(self, x, y, t, data_path):
+        """"Create and initiate h5 file with data, labels and task index (if not none)"""
+        with h5py.File(data_path, 'w') as hf:
+            hf.create_dataset('x', data=x, chunks=True, maxshape=([None] + list(x[0].shape)))
+            hf.create_dataset('y', data=y, chunks=True, maxshape=([None]))
+            if not self.no_task_index:
+                hf.create_dataset('t', data=t, chunks=True, maxshape=([None]))
+
+    def get_task_indexes(self):
+        """"Return the whole vector of task index"""
+        task_indexe_vector = None
+        if not self.no_task_index:
+            with h5py.File(self.data_path, 'r') as hf:
+                task_indexe_vector = hf['t'][:]
+        return task_indexe_vector
+
+    def get_task_index(self, index):
+        """"Return one task index value value for a given index"""
+        task_indexes_value = None
+        if not self.no_task_index:
+            with h5py.File(self.data_path, 'r') as hf:
+                task_indexes_value = hf['t'][index]
+        return task_indexes_value
+
+    def get_classes(self):
+        """"Return the whole vector of classes"""
+        classes_vector = None
+        with h5py.File(self.data_path, 'r') as hf:
+            classes_vector = hf['y'][:]
+        return classes_vector
+
+    def get_class(self, index):
+        """"Return one class value for a given index"""
+        class_value = None
+        with h5py.File(self.data_path, 'r') as hf:
+            class_value = hf['y'][index]
+        return class_value
+
+    def add_data(self, x, y, t):
+        """"This method is here to be able to build the h5 by part"""
+
+        if not (self.no_task_index == (t is None)):
+            raise AssertionError("You can not add data with task index to h5 without task index or the opposite")
+
+        with h5py.File(self.data_path, 'a') as hf:
+            reshape_size = hf["t"].shape[0] + t.shape[0]
+            hf['x'].resize(reshape_size, axis=0)
+            hf["x"][-x.shape[0]:] = x
+            hf['y'].resize(reshape_size, axis=0)
+            hf["y"][-x.shape[0]:] = y
+            if not self.no_task_index:
+                hf['t'].resize(reshape_size, axis=0)
+                hf["t"][-x.shape[0]:] = t
+
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        return self.data_path, self.get_classes(), self.get_task_indexes()
+
+
+    @property
+    def data_type(self) -> TaskType:
+        return self._data_type
+
+
 class ImageFolderDataset(_ContinuumDataset):
     """Continuum dataset for datasets with tree-like structure.
 
@@ -214,11 +328,11 @@ class ImageFolderDataset(_ContinuumDataset):
     """
 
     def __init__(
-        self,
-        data_path: str,
-        train: bool = True,
-        download: bool = True,
-        data_type: TaskType = TaskType.IMAGE_PATH
+            self,
+            data_path: str,
+            train: bool = True,
+            download: bool = True,
+            data_type: TaskType = TaskType.IMAGE_PATH
     ):
         self.data_path = data_path
         self._data_type = data_type

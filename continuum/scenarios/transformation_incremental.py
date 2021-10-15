@@ -5,7 +5,7 @@ from torchvision import transforms
 
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import InstanceIncremental
-from continuum.tasks import TaskSet
+from continuum.tasks import TaskSet, TaskType
 
 
 class TransformationIncremental(InstanceIncremental):
@@ -32,6 +32,9 @@ class TransformationIncremental(InstanceIncremental):
         nb_tasks = len(incremental_transformations)
         if incremental_transformations is None:
             raise ValueError("For this scenario a list transformation should be set")
+
+        if cl_dataset.data_type == TaskType.H5:
+            raise NotImplementedError("TransformationIncremental are not compatible yet with h5 files.")
 
         self.inc_trsf = incremental_transformations
         #self._nb_tasks = self._setup(nb_tasks)
