@@ -180,7 +180,7 @@ class InMemoryDataset(_ContinuumDataset):
         self._data_type = data_type
 
 
-class H5Dataset(InMemoryDataset):
+class H5Dataset(_ContinuumDataset):
     """Continuum dataset for in-memory data with h5 file.
 
     :param x_train: Numpy array of images or paths to images for the train set.
@@ -276,6 +276,11 @@ class H5Dataset(InMemoryDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data_path, self.get_classes(), self.get_task_indexes()
+
+
+    @property
+    def data_type(self) -> TaskType:
+        return self._data_type
 
 
 class ImageFolderDataset(_ContinuumDataset):

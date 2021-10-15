@@ -139,6 +139,20 @@ def test_h5dataset_loading():
     assert scenario.nb_tasks == nb_task
     os.remove(filename_h5)
 
+def test_h5dataset_to_taskset():
+    filename_h5 = "test_h5.hdf5"
+    if os.path.exists(filename_h5):
+        os.remove(filename_h5)
+
+    x_, y_, t_ = gen_data()
+    h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
+    task_set = h5dataset.to_taskset()
+    loader = DataLoader(task_set)
+    for _ in loader:
+        pass
+
+    os.remove(filename_h5)
+
 
 @pytest.mark.slow
 def test_time():

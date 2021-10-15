@@ -33,7 +33,7 @@ class TransformationIncremental(InstanceIncremental):
         if incremental_transformations is None:
             raise ValueError("For this scenario a list transformation should be set")
 
-        if cl_dataset.data_type == TaskType.h5:
+        if cl_dataset.data_type == TaskType.H5:
             raise NotImplementedError("TransformationIncremental are not compatible yet with h5 files.")
 
         self.inc_trsf = incremental_transformations

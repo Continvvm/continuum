@@ -37,62 +37,27 @@ class H5TaskSet(PathTaskSet):
         self._size_task_set = None
         self.data_type = TaskType.H5
         self.data_indexes = data_indexes
-        self.classes_vector_task = y
-        self.task_index_vector_task = t
+        self._y = y
+        self._t = t
 
         if data_indexes is not None:
             self._size_task_set = len(data_indexes)
             assert len(data_indexes) == len(y)
-        else:
-            with h5py.File(self.h5_filename, 'r') as hf:
-                self._size_task_set = hf['y'].shape[0]
 
         super().__init__(self.h5_filename, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
 
-    def __len__(self) -> int:
-        """The amount of images in the current task."""
-        return self._size_task_set
-
-    def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
-        """Method used by PyTorch's DataLoaders to query a sample and its target."""
-        x, y, t = None, None, None
-
-        # we use class vector in memory since it might have been modified by a label transform
-        y = self.classes_vector_task[index]
-        if t is not None:
-            t = self.task_index_vector_task[index]
-        else:
-            t = -1
-
-        if self.data_indexes is not None:
-            # the  "index" variable is indexing data in the task not in the full dataset
-            # so we convert it into index in the full dataset
-            index = self.data_indexes[index]
-
+    def get_sample(self, index):
         with h5py.File(self.h5_filename, 'r') as hf:
             x = hf['x'][index]
+        return x
 
-        if self.bounding_boxes is not None:
-            bbox = self.bounding_boxes[index]
-            x = x.crop((
-                max(bbox[0], 0),  # x1
-                max(bbox[1], 0),  # y1
-                min(bbox[2], x.size[0]),  # x2
-                min(bbox[3], x.size[1]),  # y2
-            ))
-
-        if isinstance(x, str):
-            # x = Image.open(x).convert("RGB")
-            raise NotImplementedError("H5 taskset are not yet compatible to path array.")
-
-        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(x.shape) == 1:
-            x = torch.Tensor(x)
-        else:
-            x, y, t = self._prepare_data(x, y, t)
-        return x, y, t
+    def __getitem__(self, index):
+        remapped_index = self.data_indexes[index]  # Note that 'data_indexes' should simply be called 'indexes'
+        return super().__getitem__(remapped_index)
 
     def concat(self, *task_sets):
         raise NotImplementedError("taskset concatenation is not yet available for h5 task_sets")
+
 
     def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
         # TODO
