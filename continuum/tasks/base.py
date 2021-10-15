@@ -114,7 +114,7 @@ class BaseTaskSet(TorchDataset):
 
     def __len__(self) -> int:
         """The amount of images in the current task."""
-        return self._x.shape[0]
+        return self._y.shape[0]
 
     def get_random_samples(self, nb_samples):
         nb_tot_samples = self._x.shape[0]
