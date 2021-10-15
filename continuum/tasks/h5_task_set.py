@@ -52,5 +52,5 @@ class H5TaskSet(PathTaskSet):
         return x
 
     def __getitem__(self, index):
-        remapped_index = self.data_indexes[index]  # Note that 'data_indexes' should simply be called 'indexes'
+        remapped_index = self.data_indexes[index]
         return super().__getitem__(remapped_index)
