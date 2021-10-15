@@ -82,7 +82,6 @@ class H5TaskSet(PathTaskSet):
             ))
 
         if isinstance(x, str):
-            # x = Image.open(x).convert("RGB")
             raise NotImplementedError("H5 taskset are not yet compatible to path array.")
 
         x, y, t = self._prepare_data(x, y, t)
