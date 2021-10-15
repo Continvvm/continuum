@@ -49,6 +49,11 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
     :param filename: filename for the h5 dataset.
     :param inference_fct: A function that make possible to have a sophisticate way to get features.
     """
+    training_mode = model.training
+
+    # ...
+    # Extract embeddings
+    # ...
 
     if inference_fct is None:
         inference_fct = (lambda model, x: model(x))
@@ -70,6 +75,7 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
             else:
                 encoded_dataset.add_data(features.cpu().numpy(), y, t)
 
+    model.train(training_mode)
     return encoded_dataset
 
 
@@ -84,7 +90,7 @@ def encode_scenario(scenario, model, batch_size, file_name, inference_fct=None):
     """
 
     if os.path.isfile(file_name):
-        raise ValueError("File name already exists")
+        raise ValueError(f"File name: {file_name} already exists")
 
     print(f"Encoding {file_name}.")
     encoded_dataset = encode_into_dataset(model, scenario, batch_size, file_name, inference_fct)
