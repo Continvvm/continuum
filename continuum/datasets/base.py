@@ -6,7 +6,7 @@ from typing import Callable, List, Optional, Tuple, Union
 import numpy as np
 import h5py
 from continuum.tasks import TaskSet, TaskType
-from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
+from continuum.transforms import segmentation as transforms_seg
 from torchvision import datasets as torchdata
 from torchvision import transforms
 
@@ -14,7 +14,7 @@ from torchvision import transforms
 class _ContinuumDataset(abc.ABC):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
-        self.data_path = os.path.expanduser(data_path)
+        self.data_path = os.path.expanduser(data_path) if data_path is not None else None
         self.download = download
         self.train = train
 
@@ -61,9 +61,14 @@ class _ContinuumDataset(abc.ABC):
         :param target_trsf: List of transformations to be applied on y.
         :return taskset: A taskset which implement the interface of torch's Dataset.
         """
+        if trsf is None and self.data_type == TaskType.SEGMENTATION:
+            trsf = transforms_seg.Compose(self.transformations)
+        elif trsf is None:
+            trsf = transforms.Compose(self.transformations)
+
         return TaskSet(
             *self.get_data(),
-            trsf=trsf if trsf is not None else self.transformations,
+            trsf=trsf,
             target_trsf=target_trsf,
             data_type=self.data_type,
             bounding_boxes=self.bounding_boxes
@@ -86,7 +91,7 @@ class _ContinuumDataset(abc.ABC):
     def transformations(self):
         """Default transformations if nothing is provided to the scenario."""
         if self.data_type == TaskType.SEGMENTATION:
-            return [ToTensorSegmentation()]
+            return [transforms_seg.ToTensor()]
         return [transforms.ToTensor()]
 
     @property
@@ -198,8 +203,7 @@ class H5Dataset(_ContinuumDataset):
             train: bool = True,
             download: bool = True,
     ):
-        super().__init__(x, y, t, data_type=TaskType.H5, train=train, download=download)
-        self._data_type = TaskType.H5
+        super().__init__(data_path=None, train=train, download=download)
         self.data_path = data_path
 
         if len(x) != len(y):
@@ -208,12 +212,15 @@ class H5Dataset(_ContinuumDataset):
         self.no_task_index = False
         if t is None:
             self.no_task_index = True
-
         else:
             if len(t) != len(x):
                 raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
-        self.create_file(x, y, t, data_path)
+        self.create_file(x, y, t, self.data_path)
+
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.H5
 
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""
@@ -255,7 +262,6 @@ class H5Dataset(_ContinuumDataset):
 
     def add_data(self, x, y, t):
         """"This method is here to be able to build the h5 by part"""
-
         if not (self.no_task_index == (t is None)):
             raise AssertionError("You can not add data with task index to h5 without task index or the opposite")
 
@@ -271,11 +277,6 @@ class H5Dataset(_ContinuumDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data_path, self.get_classes(), self.get_task_indexes()
-
-
-    @property
-    def data_type(self) -> TaskType:
-        return self._data_type
 
 
 class ImageFolderDataset(_ContinuumDataset):

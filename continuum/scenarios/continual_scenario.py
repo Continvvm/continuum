@@ -29,7 +29,6 @@ class ContinualScenario(_BaseScenario):
         super().__init__(cl_dataset=cl_dataset, nb_tasks=self.nb_tasks, transformations=transformations)
 
     def check_data(self, cl_dataset: _ContinuumDataset):
-
         x, y, t = cl_dataset.get_data()
 
         assert t is not None, print("The t vector should be defined for this scenario")
