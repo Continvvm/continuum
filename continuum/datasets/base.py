@@ -10,6 +10,7 @@ from torchvision import transforms
 
 from continuum.tasks import TaskSet, TaskType
 from continuum.transforms import segmentation as transforms_seg
+from continuum import utils
 
 
 class _ContinuumDataset(abc.ABC):
@@ -66,43 +67,17 @@ class _ContinuumDataset(abc.ABC):
         :param discard_tasks: Discard samples with these task ids.
         :return: A new Continuum dataset ready to be given to a scenario.
         """
-        if keep_classes is not None and discard_classes is not None:
-            raise ValueError("Only use `keep_classes` or `discard_classes`, not both.")
-        if keep_tasks is not None and discard_tasks is not None:
-            raise ValueError("Only use `keep_tasks` or `discard_tasks`, not both.")
         if self.data_type == TaskType.SEGMENTATION:
             raise NotImplementedError("It's not possible yet to slice Segmentation datasets.")
 
         x, y, t = self.get_data()
-        if t is None and (keep_tasks is not None or discard_tasks is not None):
-            raise Exception(
-                "No task ids information is present by default with this dataset, "
-                "thus you cannot slice some task ids."
-            )
-        y, t = y.astype(np.int64), t.astype(np.int64)
 
-        indexes = set()
-        if keep_classes:
-            indexes = set(np.where(np.isin(y, keep_classes))[0])
-        elif discard_classes:
-            keep_classes = list(set(y) - set(discard_classes))
-            indexes = set(np.where(np.isin(y, keep_classes))[0])
+        indexes = utils._slice(
+            y, t,
+            keep_classes, discard_classes,
+            keep_tasks, discard_tasks
+        )
 
-        if keep_tasks:
-            _indexes = np.where(np.isin(t, keep_tasks))[0]
-            if len(indexes) > 0:
-                indexes = indexes.intersection(_indexes)
-            else:
-                indexes = indexes.union(_indexes)
-        elif discard_tasks:
-            keep_tasks = list(set(t) - set(discard_tasks))
-            _indexes = np.where(np.isin(t, keep_tasks))[0]
-            if len(indexes) > 0:
-                indexes = indexes.intersection(_indexes)
-            else:
-                indexes = indexes.union(_indexes)
-
-        indexes = np.array(list(indexes), dtype=np.int64)
         new_x, new_y, new_t = x[indexes], y[indexes], t[indexes]
         sliced_dataset = InMemoryDataset(
             new_x, new_y, new_t,
@@ -317,6 +292,46 @@ class H5Dataset(_ContinuumDataset):
     @property
     def data_type(self) -> TaskType:
         return TaskType.H5
+
+    def slice(
+        self,
+        new_h5_path: str,
+        keep_classes: Optional[List[int]] = None,
+        discard_classes: Optional[List[int]] = None,
+        keep_tasks: Optional[List[int]] = None,
+        discard_tasks: Optional[List[int]] = None
+    ):
+        """Slice dataset to keep/discard some classes/task-ids.
+
+        Note that keep_* and and discard_* are mutually exclusive.
+        Note also that if a selection (keep or discard) is being made on the classes
+        and on the task ids, the resulting intersection will be taken.
+
+        :param new_h5_path: A path where to store the sliced dataset as H5.
+        :param keep_classes: Only keep samples with these classes.
+        :param discard_classes: Discard samples with these classes.
+        :param keep_tasks: Only keep samples with these task ids.
+        :param discard_tasks: Discard samples with these task ids.
+        :return: A new Continuum dataset ready to be given to a scenario.
+        """
+        _, y, t = self.get_data()
+
+        indexes = utils._slice(
+            y, t,
+            keep_classes, discard_classes,
+            keep_tasks, discard_tasks
+        )
+
+        with h5py.File(self.data_path, 'r') as hf:
+            new_x = hf['x'][indexes]
+
+        new_y, new_t = y[indexes], t[indexes]
+        sliced_dataset = H5Dataset(
+            new_x, new_y, new_t,
+            data_path=new_h5_path
+        )
+
+        return sliced_dataset
 
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""
