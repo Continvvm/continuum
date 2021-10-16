@@ -14,7 +14,8 @@ from continuum.tasks.h5_task_set import H5TaskSet
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 
-def gen_data():
+@pytest.fixture
+def data():
     x_ = np.random.randint(0, 255, size=(20, 32, 32, 3))
     y_ = []
     for i in range(10):
@@ -27,10 +28,10 @@ def gen_data():
 
 
 # yapf: disable
-def test_creation_h5dataset(tmpdir):
+def test_creation_h5dataset(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
 
     x_0, y_0, t_0 = h5dataset.get_data()
@@ -40,20 +41,20 @@ def test_creation_h5dataset(tmpdir):
     assert len(t_0) == len(t_)
 
 
-def test_concatenate_h5dataset(tmpdir):
+def test_concatenate_h5dataset(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
     assert len(h5dataset.get_classes()) == 2 * len(y_)
 
 
-def test_h5dataset_ContinualScenario(tmpdir):
+def test_h5dataset_ContinualScenario(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
 
     nb_task = len(np.unique(t_))
@@ -65,10 +66,10 @@ def test_h5dataset_ContinualScenario(tmpdir):
     assert len(data_indexes) == len(scenario[0])
 
 
-def test_h5dataset_add_data(tmpdir):
+def test_h5dataset_add_data(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
@@ -78,10 +79,10 @@ def test_h5dataset_add_data(tmpdir):
     assert scenario.nb_tasks == nb_task
 
 
-def test_h5dataset_IncrementalScenario(tmpdir):
+def test_h5dataset_IncrementalScenario(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     nb_task = 2
     h5dataset = H5Dataset(x_, y_, None, data_path=filename_h5)
 
@@ -99,10 +100,10 @@ def test_h5dataset_IncrementalScenario(tmpdir):
     assert tot_len == len(y_)
 
 
-def test_h5dataset_loading(tmpdir):
+def test_h5dataset_loading(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
@@ -117,10 +118,10 @@ def test_h5dataset_loading(tmpdir):
     assert scenario.nb_tasks == nb_task
 
 
-def test_h5dataset_to_taskset(tmpdir):
+def test_h5dataset_to_taskset(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     task_set = h5dataset.to_taskset()
     loader = DataLoader(task_set)
