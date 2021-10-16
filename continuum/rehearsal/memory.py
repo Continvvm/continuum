@@ -1,9 +1,10 @@
-from typing import Union, Callable, Tuple, Any
+from typing import Union, Callable, Tuple, Any, Tuple, Optional, List
 import warnings
 
 import numpy as np
 
 from continuum.rehearsal import herd_random, herd_closest_to_cluster, herd_closest_to_barycenter
+from continuum import utils
 
 
 class RehearsalMemory:
@@ -63,6 +64,20 @@ class RehearsalMemory:
 
         self._x = self._y = self._t = None
 
+    @property
+    def nb_classes(self) -> int:
+        """Current number of seen classes."""
+        return len(self.seen_classes)
+
+    @property
+    def memory_per_class(self) -> int:
+        """Number of samples per classes."""
+        if self.fixed_memory:
+            return self.memory_size // self.nb_total_classes
+        elif self.nb_classes > 0:
+            return self.memory_size // self.nb_classes
+        return self.memory_size
+
     def save(self, path: str = "memory.npz"):
         """Save memory on disk in a single file."""
         np.savez(
@@ -88,19 +103,36 @@ class RehearsalMemory:
 
         self.seen_classes = set([y for y in np.unique(self._y)])
 
-    @property
-    def nb_classes(self) -> int:
-        """Current number of seen classes."""
-        return len(self.seen_classes)
+    def slice(
+        self,
+        keep_classes: Optional[List[int]] = None,
+        discard_classes: Optional[List[int]] = None,
+        keep_tasks: Optional[List[int]] = None,
+        discard_tasks: Optional[List[int]] = None
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Slice memory to keep/discard some classes/task-ids.
 
-    @property
-    def memory_per_class(self) -> int:
-        """Number of samples per classes."""
-        if self.fixed_memory:
-            return self.memory_size // self.nb_total_classes
-        elif self.nb_classes > 0:
-            return self.memory_size // self.nb_classes
-        return self.memory_size
+        Note that keep_* and and discard_* are mutually exclusive.
+        Note also that if a selection (keep or discard) is being made on the classes
+        and on the task ids, the resulting intersection will be taken.
+
+        :param keep_classes: Only keep samples with these classes.
+        :param discard_classes: Discard samples with these classes.
+        :param keep_tasks: Only keep samples with these task ids.
+        :param discard_tasks: Discard samples with these task ids.
+        :return: The data x, y, t that has been sliced. Ready to be given to a new
+                 memory object, an InMemoryDataset, or a TaskSet.
+        """
+        x, y, t = self.get()
+
+        indexes = utils._slice(
+            y, t,
+            keep_classes, discard_classes,
+            keep_tasks, discard_tasks
+        )
+
+        new_x, new_y, new_t = x[indexes], y[indexes], t[indexes]
+        return new_x, new_y, new_t
 
     def get(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Get the memory data to be added to a TaskSet."""
