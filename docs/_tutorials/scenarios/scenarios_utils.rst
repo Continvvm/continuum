@@ -34,9 +34,9 @@ It reduces the computation footprint and the time spent on encoding data for eve
     scenario = some_func(nb_task=5)
     feature_extractor = some_model()
 
-    # inference function is an optional parameter to give function that will exctract the latent representation you want.
+    # inference function is an optional parameter to give function that will extract the latent representation you want.
     # by default
-    inference_fct = lambda model, x: model(x)
+    inference_fct = (lambda model, x: model.to(torch.device('cuda:0'))(x.to(torch.device('cuda:0'))))
 
     # encode the scenario
     encoded_scenario = encode_scenario(scenario,
