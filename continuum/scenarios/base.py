@@ -31,6 +31,7 @@ class _BaseScenario(abc.ABC):
         self.cl_dataset = cl_dataset
         self._nb_tasks = nb_tasks
         self.transformations = transformations
+        self._counter = 0
 
         if transformations is None:
             self.transformations = self.cl_dataset.transformations
