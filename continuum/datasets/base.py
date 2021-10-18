@@ -205,6 +205,7 @@ class H5Dataset(_ContinuumDataset):
     ):
         self._data_type = TaskType.H5
         super().__init__(data_path=None, train=train, download=download)
+        self.data_path = data_path
 
         if len(x) != len(y):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of labels ({len(y)})!")
@@ -224,7 +225,6 @@ class H5Dataset(_ContinuumDataset):
 
     def __len__(self):
         return len(self.get_classes())
-
 
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""

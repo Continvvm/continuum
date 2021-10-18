@@ -66,7 +66,7 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
             if t is None:
                 t = (torch.ones(len(y)) * task_id).long()
 
-            if task_id == 0 and i==0:
+            if task_id == 0 and i == 0:
                 encoded_dataset = H5Dataset(features.cpu().numpy(), y, t, data_path=filename)
             else:
                 encoded_dataset.add_data(features.cpu().numpy(), y, t)
@@ -75,7 +75,7 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
     return encoded_dataset
 
 
-def encode_scenario(scenario, model, batch_size, file_name, inference_fct=None):
+def encode_scenario(scenario, model, batch_size, filename, inference_fct=None):
     """This function created an encoded scenario dataset and convert it into a ContinualScenario.
 
     :param model: model to encode the data.
@@ -85,11 +85,11 @@ def encode_scenario(scenario, model, batch_size, file_name, inference_fct=None):
     :param inference_fct: A function that make possible to have a sophisticate way to get features.
     """
 
-    if os.path.isfile(file_name):
-        raise ValueError(f"File name: {file_name} already exists")
+    if os.path.isfile(filename):
+        raise ValueError(f"File name: {filename} already exists")
 
-    print(f"Encoding {file_name}.")
-    encoded_dataset = encode_into_dataset(model, scenario, batch_size, file_name, inference_fct)
+    print(f"Encoding {filename}.")
+    encoded_dataset = encode_into_dataset(model, scenario, batch_size, filename, inference_fct)
     print(f"Encoding is done.")
 
     return ContinualScenario(encoded_dataset)

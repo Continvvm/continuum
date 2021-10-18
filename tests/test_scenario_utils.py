@@ -12,6 +12,7 @@ from continuum.tasks import TaskType
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
+
 def gen_data():
     x_ = np.random.randint(0, 255, size=(20, 32, 32, 3))
     y_ = []
@@ -72,33 +73,30 @@ def test_slicing_list_path_array(list_tasks):
 
 
 def test_encode_scenario():
-
-
     filename_h5 = "test_encode_scenario.hdf5"
     if os.path.exists(filename_h5):
         os.remove(filename_h5)
 
     train = gen_data()
     x, y, t = train
-    x = x.reshape(-1, 32*32*3)
+    x = x.reshape(-1, 32 * 32 * 3)
 
-    dummy = InMemoryDataset(x,y,t)
+    dummy = InMemoryDataset(x, y, t)
     scenario = ClassIncremental(dummy, increment=1)
 
-    model = nn.Linear(32*32*3, 50)
+    model = nn.Sequential(nn.Flatten(), nn.Linear(32 * 32 * 3, 50))
     encoded_scenario = encode_scenario(model=model,
                                        scenario=scenario,
                                        batch_size=64,
-                                       file_name=filename_h5)
+                                       filename=filename_h5)
 
     assert scenario.nb_tasks == encoded_scenario.nb_tasks
     assert len(scenario[0]) == len(encoded_scenario[0])
 
     os.remove(filename_h5)
 
+
 def test_encode_scenario_inference_fct():
-
-
     filename_h5 = "test_encode_scenario.hdf5"
     if os.path.exists(filename_h5):
         os.remove(filename_h5)
@@ -108,13 +106,13 @@ def test_encode_scenario_inference_fct():
     dummy = InMemoryDataset(*train)
     scenario = ClassIncremental(dummy, increment=1)
 
-    model = nn.Linear(32*32*3, 50)
-    inference_fct = lambda model, x: model(x.view(-1, 32*32*3))
+    model = nn.Linear(32 * 32 * 3, 50)
+    inference_fct = lambda model, x: model(x.view(-1, 32 * 32 * 3))
 
     encoded_scenario = encode_scenario(model=model,
                                        scenario=scenario,
                                        batch_size=64,
-                                       file_name=filename_h5,
+                                       filename=filename_h5,
                                        inference_fct=inference_fct)
 
     assert scenario.nb_tasks == encoded_scenario.nb_tasks
@@ -126,31 +124,30 @@ def test_encode_scenario_inference_fct():
 
 
 @pytest.mark.slow
-def test_encode_scenario():
+def test_encode_scenario_MNIST():
     filename_h5 = "test_encode_scenario.hdf5"
     if os.path.exists(filename_h5):
         os.remove(filename_h5)
 
     dataset = MNIST(data_path=DATA_PATH,
-                          download=False,
-                          train=True)
+                    download=False,
+                    train=True)
     scenario = ClassIncremental(dataset, increment=2)
 
-    model = nn.Linear(28*28, 50)
-    inference_fct = lambda model, x: model(x.view(-1, 28*28))
+    model = nn.Linear(28 * 28, 50)
+    inference_fct = lambda model, x: model(x.view(-1, 28 * 28))
 
     encoded_scenario = encode_scenario(model=model,
                                        scenario=scenario,
                                        batch_size=264,
-                                       file_name=filename_h5,
+                                       filename=filename_h5,
                                        inference_fct=inference_fct)
 
     assert scenario.nb_tasks == encoded_scenario.nb_tasks
 
-    for encoded_taskset, taskset in zip(encoded_scenario ,scenario):
+    for encoded_taskset, taskset in zip(encoded_scenario, scenario):
         assert len(encoded_taskset) == len(taskset)
 
     assert encoded_scenario[0][0][0].shape[0] == 50
 
     os.remove(filename_h5)
-
