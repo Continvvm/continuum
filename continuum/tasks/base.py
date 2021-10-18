@@ -7,7 +7,7 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
-from continuum.viz import plot_samples
+
 
 class TaskType(enum.Enum):
     """Enumeration to list all possible data types supported."""
@@ -19,10 +19,12 @@ class TaskType(enum.Enum):
     OBJ_DETECTION = 6
     H5 = 7
 
+
 def _tensorize_list(x):
     if isinstance(x[0], torch.Tensor):
         return torch.stack(x)
     return torch.tensor(x)
+
 
 class BaseTaskSet(TorchDataset):
     """A task dataset returned by the CLLoader.
@@ -124,7 +126,6 @@ class BaseTaskSet(TorchDataset):
     def get_samples(self, indexes):
         samples, targets, tasks = [], [], []
 
-        w, h = None, None
         for index in indexes:
             # we need to use __getitem__ to have the transform used
             sample, y, t = self[index]

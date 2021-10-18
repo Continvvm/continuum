@@ -14,7 +14,8 @@ from continuum.tasks.h5_task_set import H5TaskSet
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 
-def gen_data():
+@pytest.fixture
+def data():
     x_ = np.random.randint(0, 255, size=(20, 32, 32, 3))
     y_ = []
     for i in range(10):
@@ -27,12 +28,10 @@ def gen_data():
 
 
 # yapf: disable
-def test_creation_h5dataset():
-    filename_h5 = "test_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
+def test_creation_h5dataset(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
 
     x_0, y_0, t_0 = h5dataset.get_data()
@@ -41,29 +40,21 @@ def test_creation_h5dataset():
     assert len(y_0) == len(y_)
     assert len(t_0) == len(t_)
 
-    os.remove(filename_h5)
 
+def test_concatenate_h5dataset(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-def test_concatenate_h5dataset():
-    filename_h5 = "test_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
-
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
     assert len(h5dataset.get_classes()) == 2 * len(y_)
 
-    os.remove(filename_h5)
 
+def test_h5dataset_ContinualScenario(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-def test_h5dataset_ContinualScenario():
-    filename_h5 = "test_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
-
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
 
     nb_task = len(np.unique(t_))
@@ -74,15 +65,11 @@ def test_h5dataset_ContinualScenario():
     data_indexes = np.where(t_ == 0)[0]
     assert len(data_indexes) == len(scenario[0])
 
-    os.remove(filename_h5)
 
+def test_h5dataset_add_data(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-def test_h5dataset_add_data():
-    filename_h5 = "test_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
-
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
@@ -91,15 +78,11 @@ def test_h5dataset_add_data():
 
     assert scenario.nb_tasks == nb_task
 
-    os.remove(filename_h5)
 
+def test_h5dataset_IncrementalScenario(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-def test_h5dataset_IncrementalScenario():
-    filename_h5 = "test_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
-
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     nb_task = 2
     h5dataset = H5Dataset(x_, y_, None, data_path=filename_h5)
 
@@ -116,15 +99,11 @@ def test_h5dataset_IncrementalScenario():
 
     assert tot_len == len(y_)
 
-    os.remove(filename_h5)
 
+def test_h5dataset_loading(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
-def test_h5dataset_loading():
-    filename_h5 = "test_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
-
-    x_, y_, t_ = gen_data()
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
@@ -137,33 +116,30 @@ def test_h5dataset_loading():
             pass
 
     assert scenario.nb_tasks == nb_task
-    os.remove(filename_h5)
 
-def test_h5dataset_to_taskset():
-    filename_h5 = "test_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
 
-    x_, y_, t_ = gen_data()
+def test_h5dataset_to_taskset(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
+
+    x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     task_set = h5dataset.to_taskset()
     loader = DataLoader(task_set)
     for _ in loader:
         pass
 
-    os.remove(filename_h5)
-
 
 @pytest.mark.slow
-def test_time():
-    cl_dataset = CIFAR100(data_path="../Datasets",
+def test_time(tmpdir):
+    global DATA_PATH
+    cl_dataset = CIFAR100(data_path=DATA_PATH,
                           download=False,
                           train=True,
                           labels_type="category",
                           task_labels="lifelong")
     # in practice the construction is part by part to reduce data load but here we do it at once
     x, y, t = cl_dataset.get_data()
-    h5_filename = "test_time_h5.hdf5"
+    h5_filename = os.path.join(tmpdir, "test_time_h5.hdf5")
     h5dataset = H5Dataset(x, y, t, data_path=h5_filename)
 
     task_set = H5TaskSet(h5_filename, y=h5dataset.get_classes(), t=h5dataset.get_task_indexes(), trsf=None)
@@ -175,7 +151,7 @@ def test_time():
     print(f"normal __getitem__ {end - start}")
 
     start = time.time()
-    with h5py.File("test_time_h5.hdf5", 'r') as hf:
+    with h5py.File(h5_filename, 'r') as hf:
         for i in range(10000):
             x = hf['x'][5]
             y = hf['y'][5]
@@ -188,10 +164,8 @@ def test_time():
 
 
 @pytest.mark.slow
-def test_on_array_dataset_incremental():
-    filename_h5 = "test_CIFAR100_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
+def test_on_array_dataset_incremental(tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_CIFAR100_h5.hdf5")
 
     nb_tasks = 10
 
@@ -211,14 +185,11 @@ def test_on_array_dataset_incremental():
             break
 
     assert scenario.nb_tasks == nb_tasks  # number of task of CIFAR100Lifelong
-    os.remove(filename_h5)
 
 
 @pytest.mark.slow
-def test_on_array_dataset():
-    filename_h5 = "test_CIFAR100_h5.hdf5"
-    if os.path.exists(filename_h5):
-        os.remove(filename_h5)
+def test_on_array_dataset(tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_CIFAR100_h5.hdf5")
 
     cl_dataset = CIFAR100(data_path=DATA_PATH,
                           download=False,
@@ -238,7 +209,6 @@ def test_on_array_dataset():
             break
 
     assert scenario.nb_tasks == 5  # number of task of CIFAR100Lifelong
-    os.remove(filename_h5)
 
 # Not compatible at the moment (it is less necessary to use h5 with transform incremental scenarios.)
 # @pytest.mark.slow
