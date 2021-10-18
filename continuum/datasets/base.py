@@ -224,7 +224,7 @@ class H5Dataset(_ContinuumDataset):
         return TaskType.H5
 
     def __len__(self):
-        return len(self.get_classes())
+        return len(self.get_class_vector())
 
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""
@@ -251,7 +251,7 @@ class H5Dataset(_ContinuumDataset):
                 task_indexes_value = hf['t'][index]
         return task_indexes_value
 
-    def get_classes(self):
+    def get_class_vector(self):
         """"Return the whole vector of classes"""
         classes_vector = None
         with h5py.File(self.data_path, 'r') as hf:
@@ -281,7 +281,7 @@ class H5Dataset(_ContinuumDataset):
                 hf["t"][-x.shape[0]:] = t
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        return self.data_path, self.get_classes(), self.get_task_indexes()
+        return self.data_path, self.get_class_vector(), self.get_task_indexes()
 
 
 class ImageFolderDataset(_ContinuumDataset):
