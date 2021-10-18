@@ -198,8 +198,8 @@ class H5Dataset(_ContinuumDataset):
             train: bool = True,
             download: bool = True,
     ):
-        super().__init__(x, y, t, data_type=TaskType.H5, train=train, download=download)
         self._data_type = TaskType.H5
+        super().__init__(train=train, download=download)
         self.data_path = data_path
 
         if len(x) != len(y):

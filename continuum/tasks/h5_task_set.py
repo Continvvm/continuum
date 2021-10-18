@@ -55,6 +55,14 @@ class H5TaskSet(PathTaskSet):
         remapped_index = self.data_indexes[index]  # Note that 'data_indexes' should simply be called 'indexes'
         return super().__getitem__(remapped_index)
 
+    def _prepare_data(self, x, y, t):
+        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(x.shape) == 1:
+            x = torch.Tensor(x)
+        else:
+            x, y, t = super()._prepare_data(x, y, t)
+        return x, y, t
+
+
     def concat(self, *task_sets):
         raise NotImplementedError("taskset concatenation is not yet available for h5 task_sets")
 

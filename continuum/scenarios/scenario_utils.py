@@ -51,22 +51,18 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
     """
     training_mode = model.training
 
-    # ...
-    # Extract embeddings
-    # ...
-
     if inference_fct is None:
-        inference_fct = (lambda model, x: model(x))
+        inference_fct = (lambda model, x: model.to(torch.device('cuda:0'))(x.to(torch.device('cuda:0'))))
 
     # we save feature in eval mode
-    model.cuda().eval()
+    model.eval()
 
     encoded_dataset = None
     for task_id, taskset in enumerate(scenario):
         # we need to load the data to use the transformation if there is some
         loader = DataLoader(taskset, shuffle=False, batch_size=batch_size)
         for i, (x, y, t) in enumerate(loader):
-            features = inference_fct(model, x.cuda())
+            features = inference_fct(model, x)
             if t is None:
                 t = (torch.ones(len(y)) * task_id).long()
 
