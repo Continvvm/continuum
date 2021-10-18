@@ -12,24 +12,17 @@ from continuum.datasets import MNISTFellowship
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 @pytest.mark.slow
-@pytest.mark.parametrize("dataset, name, shape", [(MNIST, "MNIST", [28, 28, 1]),
-                                                  (KMNIST, "KMNIST", [28, 28, 1]),
-                                                  (FashionMNIST, "FashionMNIST", [28, 28, 1]),
-                                                  (CIFAR10, "CIFAR10", [32, 32, 3]),
-                                                  (CIFAR100, "CIFAR100", [32, 32, 3]),
-                                                  (AwA2, "AwA2", [224, 224, 3]),
-                                                  (Core50, "Core50", [224, 224, 3]),
-                                                  (TinyImageNet200, "TinyImageNet200", [64, 64, 3])])
-def test_visualization_ClassIncremental(dataset, name, shape):
-    increment = 2
-    init_increment = 0
+@pytest.mark.parametrize("dataset, name, shape, init_increment, increment", [(MNIST, "MNIST", [28, 28, 1], 0, 2),
+                                                  (KMNIST, "KMNIST", [28, 28, 1], 0, 2),
+                                                  (FashionMNIST, "FashionMNIST", [28, 28, 1], 0, 2),
+                                                  (CIFAR10, "CIFAR10", [32, 32, 3], 0, 2),
+                                                  (CIFAR100, "CIFAR100", [32, 32, 3], 0, 20),
+                                                  (AwA2, "AwA2", [224, 224, 3], 7, 5),
+                                                  (Core50, "Core50", [224, 224, 3], 0, 10),
+                                                  (TinyImageNet200, "TinyImageNet200", [64, 64, 3], 0, 40)])
+def test_visualization_ClassIncremental(dataset, name, shape, init_increment, increment):
     trsf = None
-    if name == "CIFAR100":
-        increment = 20
-    elif name == "TinyImageNet200":
-        increment = 40
-    elif name == "AwA2":
-        init_increment = 3
+    if name == "AwA2":
         trsf = [transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])]
     elif name == "Core50":
         trsf = [transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])]
