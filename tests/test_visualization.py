@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import os
 from torchvision import transforms
+from torch.utils.data import DataLoader
 
 from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200, AwA2, Core50
 from continuum.scenarios import Rotations
@@ -45,6 +46,9 @@ def test_visualization_ClassIncremental(dataset, name, shape):
                      title="{}_ClassIncremental_{}.jpg".format(name, task_id),
                      nb_samples=100,
                      shape=shape)
+        loader = DataLoader(taskset)
+        _, _, _ = next(iter(loader))
+
 
 
 '''
