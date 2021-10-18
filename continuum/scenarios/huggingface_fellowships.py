@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Tuple
 
 import datasets
 from datasets.arrow_dataset import Dataset as HFDataset
@@ -17,7 +17,12 @@ class HuggingFaceFellowship(_BaseScenario):
     :param lazy: Load datasets on-the-fly when needed.
     :param train: Train split vs test split.
     """
-    def __init__(self, hf_datasets: Union[List[HFDataset], List[str]], lazy: bool = False, train: bool = True):
+    def __init__(
+        self,
+        hf_datasets: Union[List[HFDataset], List[str], List[Tuple]],
+        lazy: bool = False,
+        train: bool = True
+    ):
         self.hf_datasets = hf_datasets
         self.lazy = lazy
         self.split = "train" if train else "test"
@@ -39,11 +44,11 @@ class HuggingFaceFellowship(_BaseScenario):
 
     @property
     def nb_classes(self) -> int:
-        raise NotImplementedError("Not available for HuggingFace scenarios.")
+        raise NotImplementedError("Not available for this kind of scenario.")
 
     @property
-    def classes(self) -> int:
-        raise NotImplementedError("Not available for HuggingFace scenarios.")
+    def classes(self) -> List:
+        raise NotImplementedError("Not available for this kind of scenario.")
 
     def __len__(self):
         return len(self.hf_datasets)
