@@ -36,3 +36,4 @@ from continuum.datasets.omniglot import Omniglot
 from continuum.datasets.ctrl import CTRL, CTRLplus, CTRLminus, CTRLin, CTRLout, CTRLplastic
 from continuum.datasets.flowers102 import OxfordFlower102
 from continuum.datasets.oxford_pet import OxfordPet
+from continuum.datasets.gtsrb import GTSRB
