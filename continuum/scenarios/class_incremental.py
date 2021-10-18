@@ -121,7 +121,9 @@ class ClassIncremental(_BaseScenario):
             # Check if the total number of classes is compatible
             # with increment list and self.nb_classes
             if not sum(increment) == len(unique_classes):
-                raise Exception("The increment list is not compatible with the number of classes")
+                raise Exception(
+                    f"The increment list is not compatible with the number of classes ({len(unique_classes)})"
+                )
 
             increments = increment
         elif isinstance(increment, int) and increment > 0:
