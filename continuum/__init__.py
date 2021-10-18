@@ -14,4 +14,4 @@ from continuum.metrics import *
 from continuum.viz import plot_samples
 from continuum import generators
 
-__version__ = "1.1.4"
+__version__ = "1.1.5"
