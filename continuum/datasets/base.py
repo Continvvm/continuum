@@ -5,10 +5,12 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import h5py
-from continuum.tasks import TaskSet, TaskType
-from continuum.transforms import segmentation as transforms_seg
 from torchvision import datasets as torchdata
 from torchvision import transforms
+
+from continuum.tasks import TaskSet, TaskType
+from continuum.transforms import segmentation as transforms_seg
+from continuum import utils
 
 
 class _ContinuumDataset(abc.ABC):
@@ -30,12 +32,71 @@ class _ContinuumDataset(abc.ABC):
                 " It must be a member of the enum TaskType."
             )
 
+
+        # Initialization of the default properties
+        if self.data_type == TaskType.SEGMENTATION:
+            self._trsf = [transforms_seg.ToTensor()]
+        else:
+            self._trsf = [transforms.ToTensor()]
+        self._bboxes = None
+        self._attributes = None
+
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Returns the loaded data under the form of x, y, and t."""
         raise NotImplementedError("This method should be implemented!")
 
     def _download(self):
         pass
+
+    def slice(
+        self,
+        keep_classes: Optional[List[int]] = None,
+        discard_classes: Optional[List[int]] = None,
+        keep_tasks: Optional[List[int]] = None,
+        discard_tasks: Optional[List[int]] = None
+    ):
+        """Slice dataset to keep/discard some classes/task-ids.
+
+        Note that keep_* and and discard_* are mutually exclusive.
+        Note also that if a selection (keep or discard) is being made on the classes
+        and on the task ids, the resulting intersection will be taken.
+
+        :param keep_classes: Only keep samples with these classes.
+        :param discard_classes: Discard samples with these classes.
+        :param keep_tasks: Only keep samples with these task ids.
+        :param discard_tasks: Discard samples with these task ids.
+        :return: A new Continuum dataset ready to be given to a scenario.
+        """
+        if self.data_type == TaskType.SEGMENTATION:
+            raise NotImplementedError("It's not possible yet to slice Segmentation datasets.")
+
+        x, y, t = self.get_data()
+
+        indexes = utils._slice(
+            y, t,
+            keep_classes, discard_classes,
+            keep_tasks, discard_tasks
+        )
+
+        new_x, new_y, new_t = x[indexes], y[indexes], t[indexes]
+        sliced_dataset = InMemoryDataset(
+            new_x, new_y, new_t,
+            data_type=self.data_type
+        )
+        sliced_dataset.attributes = self.attributes
+        sliced_dataset.bounding_boxes = self.bounding_boxes
+        sliced_dataset.transformations = self.transformations
+
+        return sliced_dataset
+
+    @property
+    def class_order(self) -> Union[None, List[int]]:
+        return None
+
+    @property
+    def need_class_remapping(self) -> bool:
+        """Flag for method `class_remapping`."""
+        return False
 
     def class_remapping(self, class_ids: np.ndarray) -> np.ndarray:
         """Optional class remapping.
@@ -90,14 +151,20 @@ class _ContinuumDataset(abc.ABC):
     @property
     def transformations(self):
         """Default transformations if nothing is provided to the scenario."""
-        if self.data_type == TaskType.SEGMENTATION:
-            return [transforms_seg.ToTensor()]
-        return [transforms.ToTensor()]
+        return self._trsf
+
+    @transformations.setter
+    def transformations(self, trsf: List[Callable]):
+        self._trsf = trsf
 
     @property
     def bounding_boxes(self) -> List:
         """Returns a bounding box (x1, y1, x2, y2) per sample if they need to be cropped."""
-        return None
+        return self._bboxes
+
+    @bounding_boxes.setter
+    def bounding_boxes(self, bboxes: List):
+        self._bboxes = bboxes
 
     @property
     def attributes(self) -> np.ndarray:
@@ -107,7 +174,11 @@ class _ContinuumDataset(abc.ABC):
         CUB200, or AwA. The matrix shape is (nb_classes, nb_attributes), and it
         has been L2 normalized along side its attributes dimension.
         """
-        return None
+        return self._attributes
+
+    @attributes.setter
+    def attributes(self, attributes: np.ndarray):
+        self._attributes = attributes
 
 
 class PyTorchDataset(_ContinuumDataset):
@@ -221,6 +292,46 @@ class H5Dataset(_ContinuumDataset):
     @property
     def data_type(self) -> TaskType:
         return TaskType.H5
+
+    def slice(
+        self,
+        new_h5_path: str,
+        keep_classes: Optional[List[int]] = None,
+        discard_classes: Optional[List[int]] = None,
+        keep_tasks: Optional[List[int]] = None,
+        discard_tasks: Optional[List[int]] = None
+    ):
+        """Slice dataset to keep/discard some classes/task-ids.
+
+        Note that keep_* and and discard_* are mutually exclusive.
+        Note also that if a selection (keep or discard) is being made on the classes
+        and on the task ids, the resulting intersection will be taken.
+
+        :param new_h5_path: A path where to store the sliced dataset as H5.
+        :param keep_classes: Only keep samples with these classes.
+        :param discard_classes: Discard samples with these classes.
+        :param keep_tasks: Only keep samples with these task ids.
+        :param discard_tasks: Discard samples with these task ids.
+        :return: A new Continuum dataset ready to be given to a scenario.
+        """
+        _, y, t = self.get_data()
+
+        indexes = utils._slice(
+            y, t,
+            keep_classes, discard_classes,
+            keep_tasks, discard_tasks
+        )
+
+        with h5py.File(self.data_path, 'r') as hf:
+            new_x = hf['x'][indexes]
+
+        new_y, new_t = y[indexes], t[indexes]
+        sliced_dataset = H5Dataset(
+            new_x, new_y, new_t,
+            data_path=new_h5_path
+        )
+
+        return sliced_dataset
 
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""
