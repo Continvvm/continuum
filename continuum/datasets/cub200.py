@@ -75,7 +75,7 @@ class CUB200(_ContinuumDataset):
             self.data = self.data[self.data.is_training_img == 0]
 
         x = os.path.join(self.data_path, "CUB_200_2011", "images") + "/" + np.array(self.data["filedata_path"])
-        y = np.array(data["target"]) - 1  # Targets start at 1 by default, so shift to 0
+        y = np.array(self.data["target"]) - 1  # Targets start at 1 by default, so shift to 0
 
         self.dataset = [x, y, None]
 
