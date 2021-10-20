@@ -78,9 +78,14 @@ def test_Online_Fellowship(dataset7c, dataset10c, dataset20c):
         ([CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST]),
     ]
 )
-def test_online_Fellowship_args(list_datasets):
-    list_dict_args = [{"data_path": DATA_PATH, "train": True, "download": False}]
-    scenario = OnlineFellowship(list_datasets, update_labels=True, list_dict_args=list_dict_args)
+def test_online_Fellowship_inMemory(list_datasets):
+    list_dict_args = {"data_path": DATA_PATH, "train": True, "download": False}
+
+    list_instanciate_datasets = []
+    for dataset in list_datasets:
+        list_instanciate_datasets.append(dataset(**list_dict_args))
+
+    scenario = OnlineFellowship(list_instanciate_datasets, update_labels=True)
 
     assert len(scenario) == len(list_datasets)
     tot_nb_classes = 0
@@ -88,25 +93,8 @@ def test_online_Fellowship_args(list_datasets):
     for task_id, taskset in enumerate(scenario):
         tot_nb_classes += taskset.nb_classes
 
-    assert tot_nb_classes == scenario.nb_classes
-
-@pytest.mark.slow
-@pytest.mark.parametrize(
-    "list_datasets", [
-        ([MNIST, FashionMNIST]),
-        ([KMNIST, MNIST, FashionMNIST]),
-        ([CIFAR10, CIFAR100, KMNIST, MNIST, FashionMNIST]),
-    ]
-)
-def test_online_Fellowship_multiple_args(list_datasets):
-    list_dict_args = [{"data_path": DATA_PATH, "train": True, "download": False}] * len(list_datasets)
-    scenario = OnlineFellowship(list_datasets, update_labels=True, list_dict_args=list_dict_args)
-
-    assert len(scenario) == len(list_datasets)
-    tot_nb_classes = 0
-
-    for task_id, taskset in enumerate(scenario):
-        tot_nb_classes += taskset.nb_classes
+        loader = DataLoader(taskset)
+        _, _, _ = next(iter(loader))
 
     assert tot_nb_classes == scenario.nb_classes
 
@@ -118,13 +106,20 @@ def test_online_Fellowship_multiple_args(list_datasets):
 )
 def test_online_Fellowship_mix_path_array(list_datasets):
     list_dict_args = [{"data_path": DATA_PATH, "train": True, "download": False}] * len(list_datasets)
-    scenario = OnlineFellowship(list_datasets, update_labels=True, list_dict_args=list_dict_args)
+
+    list_instanciate_datasets = []
+    for i, dataset in enumerate(list_datasets):
+        list_instanciate_datasets.append(dataset(**list_dict_args[i]))
+
+    scenario = OnlineFellowship(list_instanciate_datasets, update_labels=True)
 
     assert len(scenario) == len(list_datasets)
     tot_nb_classes = 0
 
     for task_id, taskset in enumerate(scenario):
         tot_nb_classes += taskset.nb_classes
+        loader = DataLoader(taskset)
+        _, _, _ = next(iter(loader))
 
     assert tot_nb_classes == scenario.nb_classes
 
