@@ -24,8 +24,6 @@ class _ContinuumDataset(abc.ABC):
         if self.download:
             self._download()
 
-        self.number_classes = None
-
         if not isinstance(self.data_type, TaskType):
             raise NotImplementedError(
                 f"Dataset's data_type ({self.data_type}) is not supported."
@@ -35,16 +33,6 @@ class _ContinuumDataset(abc.ABC):
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Returns the loaded data under the form of x, y, and t."""
         raise NotImplementedError("This method should be implemented!")
-
-    @property
-    def classes(self) -> List:
-        """Return list of classes in the dataset"""
-        pass
-
-    @property
-    def nb_classes(self) -> int:
-        """Return number of classes in the dataset"""
-        pass
 
     def _download(self):
         pass
@@ -115,16 +103,6 @@ class _ContinuumDataset(abc.ABC):
         has been L2 normalized along side its attributes dimension.
         """
         return None
-
-    @property
-    def classes(self) -> List:
-        """Return list of classes in the dataset"""
-        return list(np.arange(self.nb_classes))
-
-    @property
-    def nb_classes(self) -> int:
-        """Return number of classes in the dataset"""
-        return self.number_classes
 
 
 class PyTorchDataset(_ContinuumDataset):
@@ -342,7 +320,6 @@ class ImageFolderDataset(_ContinuumDataset):
         if data_type not in allowed_data_types:
             raise ValueError(f"Invalid data_type={data_type}, allowed={allowed_data_types}.")
 
-        self.number_classes = None
 
     @property
     def data_type(self) -> TaskType:
@@ -364,18 +341,3 @@ class ImageFolderDataset(_ContinuumDataset):
             y[i] = target
 
         return x, y, None
-
-
-    @property
-    def classes(self) -> List:
-        """Return list of classes in the dataset"""
-        return list(np.arange(self.nb_classes))
-
-    @property
-    def nb_classes(self) -> int:
-        """Number of classes"""
-        if self.number_classes is None:
-            self.dataset = torchdata.ImageFolder(self.data_path)
-            x, y, t = self._format(self.dataset.imgs)
-            self.number_classes = len(np.unique(y))
-        return self.number_classes
