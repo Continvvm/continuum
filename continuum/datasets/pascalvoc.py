@@ -96,7 +96,6 @@ class PascalVOC2007(_ContinuumDataset):
         self.mode = mode
 
         super().__init__(data_path, train, download)
-        self.number_classes = 20
 
     @property
     def data_type(self) -> TaskType:

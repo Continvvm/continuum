@@ -25,7 +25,6 @@ class DTD(ImageFolderDataset):
         if not (1 <= int(split) <= 10):
             raise ValueError(f"Available splits are [1, ..., 10], not {split}")
         self.split = split
-        self.number_classes = 47
 
     def _download(self):
         archive_path = os.path.join(self.data_path, "dtd-r1.0.1.tar.gz")

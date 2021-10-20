@@ -91,9 +91,7 @@ class CIFAR100(PyTorchDataset):
         elif self.task_labels_type == "lifelong":
             self.t = get_lifelong_cifar100(self.dataset.targets)
 
-        self.number_classes = 100
         if self.labels_type == "category":
-            self.number_classes = 20
             # here we replace class labels by category labels to annotate data.
 
             # Classes labels from 0-19 (instead of 0 to 99)
@@ -133,13 +131,3 @@ class CIFAR100(PyTorchDataset):
         """Default transformations if nothing is provided to the scenario."""
         return [transforms.ToTensor(),
                 transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))]
-
-    @property
-    def classes(self) -> List:
-        """Return list of classes in the dataset"""
-        return np.arange(self.number_classes)
-
-    @property
-    def nb_classes(self) -> int:
-        """Return number of classes in the dataset"""
-        return self.number_classes

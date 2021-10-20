@@ -18,8 +18,6 @@ class CUB200(_ContinuumDataset):
         self._attributes = None
         super().__init__(data_path, train, download)
 
-        self.number_classes = 200
-
     @property
     def attributes(self):
         if self._attributes is None:

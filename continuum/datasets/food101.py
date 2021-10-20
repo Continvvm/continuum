@@ -21,8 +21,6 @@ class Food101(ImageFolderDataset):
         self._attributes = None
         super().__init__(data_path, train, download)
 
-        self.number_classes = 101
-
     @property
     def data_type(self) -> TaskType:
         return TaskType.IMAGE_PATH

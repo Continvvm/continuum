@@ -31,8 +31,6 @@ class STL10(_ContinuumDataset):
             download=self.download,
             split=self.train)
 
-        self.number_classes = 10
-
     @property
     def data_type(self) -> TaskType:
         return TaskType.IMAGE_ARRAY

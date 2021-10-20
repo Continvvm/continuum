@@ -21,7 +21,6 @@ class Caltech101(_ContinuumDataset):
     # Google drive ids
     data_id = "137RyRjvTBkBiIfeYBNZBtViDHQ6_Ewsp"
     folder = "101_ObjectCategories"
-    number_classes = 101
 
     def __init__(
             self,
@@ -85,14 +84,6 @@ class Caltech101(_ContinuumDataset):
         self.list_classes = np.unique(y_test)
         return x_test, y_test, None
 
-    @property
-    def nb_classes(self) -> int:
-        """Return number of classes in the dataset"""
-        if self.remove_bg_google:
-            return self.number_classes
-        else:
-            return self.number_classes + 1
-
 
 class Caltech256(Caltech101):
     """Caltech 256 Dataset.
@@ -102,4 +93,3 @@ class Caltech256(Caltech101):
 
     data_id = "1r6o0pSROcV1_VwT4oSjA2FBUSCWGuxLK"
     folder = "256_ObjectCategories"
-    number_classes = 256
