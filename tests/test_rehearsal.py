@@ -113,3 +113,18 @@ def test_save_memory(tmpdir, scenario, memory_size=50, method="random", fixed=Tr
         assert (memory._t == new_memory._t).all()
 
         memory.load(os.path.join(tmpdir, f"memory_{task_id}.npz"))
+
+
+def test_memory_slice():
+    memory = rehearsal.RehearsalMemory(
+        20, "random", True, 10
+    )
+    memory.add(
+        np.random.randn(20, 3, 4, 4),
+        np.arange(20),
+        np.arange(20), None
+    )
+
+    _, sliced_y, _ = memory.slice(keep_classes=list(range(20)))
+    assert (np.unique(sliced_y) == np.array(list(range(20)))).all()
+
