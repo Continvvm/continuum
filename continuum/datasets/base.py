@@ -215,16 +215,6 @@ class PyTorchDataset(_ContinuumDataset):
 
         return x, y, None
 
-    @property
-    def classes(self) -> List:
-        """Return list of classes in the dataset"""
-        return list(np.unique(self.dataset.targets))
-
-    @property
-    def nb_classes(self) -> int:
-        """Return number of classes in the dataset"""
-        return len(self.classes)
-
 
 class InMemoryDataset(_ContinuumDataset):
     """Continuum dataset for in-memory data.
@@ -264,16 +254,6 @@ class InMemoryDataset(_ContinuumDataset):
     @data_type.setter
     def data_type(self, data_type: TaskType) -> None:
         self._data_type = data_type
-
-    @property
-    def classes(self) -> List:
-        """Return list of classes in the dataset"""
-        return list(np.unique(self.data[1]))
-
-    @property
-    def nb_classes(self) -> int:
-        """Return number of classes in the dataset"""
-        return len(self.classes)
 
 class H5Dataset(_ContinuumDataset):
     """Continuum dataset for in-memory data with h5 file.
