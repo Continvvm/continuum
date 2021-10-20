@@ -38,6 +38,8 @@ class OnlineFellowship(_BaseScenario):
         trsf_0 = self._get_trsf(ind_task=0)
 
         super().__init__(cl_dataset=self.cl_dataset, nb_tasks=1, transformations=trsf_0)
+
+        self.transformations = transformations
         self._nb_tasks = len(cl_datasets)
         self._setup(nb_tasks=self._nb_tasks)
 
@@ -63,7 +65,10 @@ class OnlineFellowship(_BaseScenario):
         if isinstance(self.trsf, list):
             trsf = self.trsf[ind_task]
         else:
-            trsf = self.trsf
+            if self.trsf is None:
+                trsf = self.cl_datasets[ind_task].transformations
+            else:
+                trsf = self.trsf
         return trsf
 
     def _get_label_trsf(self, ind_task):
