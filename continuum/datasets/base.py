@@ -5,16 +5,18 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import h5py
-from continuum.tasks import TaskSet, TaskType
-from continuum.transforms.segmentation import ToTensor as ToTensorSegmentation
 from torchvision import datasets as torchdata
 from torchvision import transforms
+
+from continuum.tasks import TaskSet, TaskType
+from continuum.transforms import segmentation as transforms_seg
+from continuum import utils
 
 
 class _ContinuumDataset(abc.ABC):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
-        self.data_path = os.path.expanduser(data_path)
+        self.data_path = os.path.expanduser(data_path) if data_path is not None else None
         self.download = download
         self.train = train
 
@@ -30,12 +32,71 @@ class _ContinuumDataset(abc.ABC):
                 " It must be a member of the enum TaskType."
             )
 
+
+        # Initialization of the default properties
+        if self.data_type == TaskType.SEGMENTATION:
+            self._trsf = [transforms_seg.ToTensor()]
+        else:
+            self._trsf = [transforms.ToTensor()]
+        self._bboxes = None
+        self._attributes = None
+
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Returns the loaded data under the form of x, y, and t."""
         raise NotImplementedError("This method should be implemented!")
 
     def _download(self):
         pass
+
+    def slice(
+        self,
+        keep_classes: Optional[List[int]] = None,
+        discard_classes: Optional[List[int]] = None,
+        keep_tasks: Optional[List[int]] = None,
+        discard_tasks: Optional[List[int]] = None
+    ):
+        """Slice dataset to keep/discard some classes/task-ids.
+
+        Note that keep_* and and discard_* are mutually exclusive.
+        Note also that if a selection (keep or discard) is being made on the classes
+        and on the task ids, the resulting intersection will be taken.
+
+        :param keep_classes: Only keep samples with these classes.
+        :param discard_classes: Discard samples with these classes.
+        :param keep_tasks: Only keep samples with these task ids.
+        :param discard_tasks: Discard samples with these task ids.
+        :return: A new Continuum dataset ready to be given to a scenario.
+        """
+        if self.data_type == TaskType.SEGMENTATION:
+            raise NotImplementedError("It's not possible yet to slice Segmentation datasets.")
+
+        x, y, t = self.get_data()
+
+        indexes = utils._slice(
+            y, t,
+            keep_classes, discard_classes,
+            keep_tasks, discard_tasks
+        )
+
+        new_x, new_y, new_t = x[indexes], y[indexes], t[indexes]
+        sliced_dataset = InMemoryDataset(
+            new_x, new_y, new_t,
+            data_type=self.data_type
+        )
+        sliced_dataset.attributes = self.attributes
+        sliced_dataset.bounding_boxes = self.bounding_boxes
+        sliced_dataset.transformations = self.transformations
+
+        return sliced_dataset
+
+    @property
+    def class_order(self) -> Union[None, List[int]]:
+        return None
+
+    @property
+    def need_class_remapping(self) -> bool:
+        """Flag for method `class_remapping`."""
+        return False
 
     def class_remapping(self, class_ids: np.ndarray) -> np.ndarray:
         """Optional class remapping.
@@ -61,9 +122,14 @@ class _ContinuumDataset(abc.ABC):
         :param target_trsf: List of transformations to be applied on y.
         :return taskset: A taskset which implement the interface of torch's Dataset.
         """
+        if trsf is None and self.data_type == TaskType.SEGMENTATION:
+            trsf = transforms_seg.Compose(self.transformations)
+        elif trsf is None:
+            trsf = transforms.Compose(self.transformations)
+
         return TaskSet(
             *self.get_data(),
-            trsf=trsf if trsf is not None else self.transformations,
+            trsf=trsf,
             target_trsf=target_trsf,
             data_type=self.data_type,
             bounding_boxes=self.bounding_boxes
@@ -85,14 +151,20 @@ class _ContinuumDataset(abc.ABC):
     @property
     def transformations(self):
         """Default transformations if nothing is provided to the scenario."""
-        if self.data_type == TaskType.SEGMENTATION:
-            return [ToTensorSegmentation()]
-        return [transforms.ToTensor()]
+        return self._trsf
+
+    @transformations.setter
+    def transformations(self, trsf: List[Callable]):
+        self._trsf = trsf
 
     @property
     def bounding_boxes(self) -> List:
         """Returns a bounding box (x1, y1, x2, y2) per sample if they need to be cropped."""
-        return None
+        return self._bboxes
+
+    @bounding_boxes.setter
+    def bounding_boxes(self, bboxes: List):
+        self._bboxes = bboxes
 
     @property
     def attributes(self) -> np.ndarray:
@@ -102,7 +174,11 @@ class _ContinuumDataset(abc.ABC):
         CUB200, or AwA. The matrix shape is (nb_classes, nb_attributes), and it
         has been L2 normalized along side its attributes dimension.
         """
-        return None
+        return self._attributes
+
+    @attributes.setter
+    def attributes(self, attributes: np.ndarray):
+        self._attributes = attributes
 
 
 class PyTorchDataset(_ContinuumDataset):
@@ -217,8 +293,7 @@ class H5Dataset(_ContinuumDataset):
             train: bool = True,
             download: bool = True,
     ):
-        super().__init__(x, y, t, data_type=TaskType.H5, train=train, download=download)
-        self._data_type = TaskType.H5
+        super().__init__(data_path=None, train=train, download=download)
         self.data_path = data_path
 
         if len(x) != len(y):
@@ -227,12 +302,55 @@ class H5Dataset(_ContinuumDataset):
         self.no_task_index = False
         if t is None:
             self.no_task_index = True
-
         else:
             if len(t) != len(x):
                 raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
-        self.create_file(x, y, t, data_path)
+        self.create_file(x, y, t, self.data_path)
+
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.H5
+
+    def slice(
+        self,
+        new_h5_path: str,
+        keep_classes: Optional[List[int]] = None,
+        discard_classes: Optional[List[int]] = None,
+        keep_tasks: Optional[List[int]] = None,
+        discard_tasks: Optional[List[int]] = None
+    ):
+        """Slice dataset to keep/discard some classes/task-ids.
+
+        Note that keep_* and and discard_* are mutually exclusive.
+        Note also that if a selection (keep or discard) is being made on the classes
+        and on the task ids, the resulting intersection will be taken.
+
+        :param new_h5_path: A path where to store the sliced dataset as H5.
+        :param keep_classes: Only keep samples with these classes.
+        :param discard_classes: Discard samples with these classes.
+        :param keep_tasks: Only keep samples with these task ids.
+        :param discard_tasks: Discard samples with these task ids.
+        :return: A new Continuum dataset ready to be given to a scenario.
+        """
+        _, y, t = self.get_data()
+
+        indexes = utils._slice(
+            y, t,
+            keep_classes, discard_classes,
+            keep_tasks, discard_tasks
+        )
+
+        with h5py.File(self.data_path, 'r') as hf:
+            new_x = hf['x'][indexes]
+
+        new_y, new_t = y[indexes], t[indexes]
+        sliced_dataset = H5Dataset(
+            new_x, new_y, new_t,
+            data_path=new_h5_path
+        )
+
+        return sliced_dataset
 
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""
@@ -274,7 +392,6 @@ class H5Dataset(_ContinuumDataset):
 
     def add_data(self, x, y, t):
         """"This method is here to be able to build the h5 by part"""
-
         if not (self.no_task_index == (t is None)):
             raise AssertionError("You can not add data with task index to h5 without task index or the opposite")
 
@@ -290,11 +407,6 @@ class H5Dataset(_ContinuumDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data_path, self.get_classes(), self.get_task_indexes()
-
-
-    @property
-    def data_type(self) -> TaskType:
-        return self._data_type
 
 
 class ImageFolderDataset(_ContinuumDataset):

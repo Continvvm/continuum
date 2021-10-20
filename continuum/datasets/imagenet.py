@@ -1,11 +1,11 @@
 import os
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
-from torchvision import datasets as torchdata
 from torchvision import transforms
 import numpy as np
+from continuum.tasks import TaskType
 
-from continuum.datasets import ImageFolderDataset
+from continuum.datasets import ImageFolderDataset, _ContinuumDataset
 from continuum.download import download, unzip
 
 
@@ -21,7 +21,6 @@ class ImageNet1000(ImageFolderDataset):
         """Default transformations if nothing is provided to the scenario."""
         return [transforms.ToTensor(),
                 transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]
-
 
     def _download(self):
         if not os.path.exists(self.data_path):
@@ -47,7 +46,7 @@ class ImageNet100(ImageNet1000):
     test_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/val_100.txt"
 
     def __init__(
-        self, *args, data_subset: Union[Tuple[np.array, np.array], str, None] = None, **kwargs
+            self, *args, data_subset: Union[Tuple[np.array, np.array], str, None] = None, **kwargs
     ):
         self.data_subset = data_subset
         super().__init__(*args, **kwargs)
@@ -70,9 +69,9 @@ class ImageNet100(ImageNet1000):
         return (*data, None)
 
     def _parse_subset(
-        self,
-        subset: Union[Tuple[np.array, np.array], str, None],
-        train: bool = True
+            self,
+            subset: Union[Tuple[np.array, np.array], str, None],
+            train: bool = True
     ) -> Tuple[np.array, np.array]:
         if isinstance(subset, str):
             x, y = [], []
@@ -89,7 +88,7 @@ class ImageNet100(ImageNet1000):
         return subset  # type: ignore
 
 
-class TinyImageNet200(ImageFolderDataset):
+class TinyImageNet200(_ContinuumDataset):
     """Smaller version of ImageNet.
 
     - 200 classes
@@ -98,6 +97,7 @@ class TinyImageNet200(ImageFolderDataset):
     """
 
     url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
+    num_classes = 200
 
     def _download(self):
         path = os.path.join(self.data_path, "tiny-imagenet-200")
@@ -106,11 +106,53 @@ class TinyImageNet200(ImageFolderDataset):
         if not os.path.exists(path):
             unzip(f"{path}.zip")
 
-        print("TinyImagenet is downloaded.")
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
 
-    def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
-        return self._format(
-            torchdata.ImageFolder(
-                os.path.join(self.data_path, "tiny-imagenet-200", "train" if self.train else "val")
-            ).imgs
-        )
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
+        # First load wnids
+        wnids_file = os.path.join(self.data_path, "tiny-imagenet-200","wnids.txt")
+        with open(os.path.join(wnids_file), "r") as f:
+            wnids = [x.strip() for x in f]
+
+        # Map wnids to integer labels
+        wnid_to_label = {wnid: i for i, wnid in enumerate(wnids)}
+
+        if not self.train:
+            # Next load validation data
+            val_files = []
+            val_wnids = []
+            with open(os.path.join(self.data_path, "tiny-imagenet-200", "val", "val_annotations.txt"), "r") as f:
+                for line in f:
+                    # Select only validation images in chosen wnids set
+                    if line.split()[1] in wnids:
+                        img_file, wnid = line.split("\t")[:2]
+                        val_files.append(os.path.join(self.data_path, "tiny-imagenet-200", "val", "images", img_file))
+                        val_wnids.append(wnid)
+            x_val = np.array(val_files)
+            y_val = np.array([wnid_to_label[wnid] for wnid in val_wnids])
+            return x_val, y_val, None
+
+        # Next load training data.
+        x_train = []
+        y_train = []
+        for wnid in wnids:
+            # To figure out the filenames we need to open the boxes file
+            boxes_file = os.path.join(self.data_path, "tiny-imagenet-200", "train", wnid, "%s_boxes.txt" % wnid)
+            with open(boxes_file, "r") as f:
+                train_filenames = [
+                    os.path.join(self.data_path, "tiny-imagenet-200", "train", wnid, "images", x.split("\t")[0])
+                    for x in f
+                ]
+            num_images = len(train_filenames)
+
+            x_train.append(train_filenames)
+            y_train_block = wnid_to_label[wnid] * np.ones(num_images, dtype=np.int64)
+            y_train.append(y_train_block)
+
+        # We need to concatenate all training data
+        x_train = np.concatenate(x_train, axis=0)
+        y_train = np.concatenate(y_train, axis=0)
+
+        return x_train, y_train, None

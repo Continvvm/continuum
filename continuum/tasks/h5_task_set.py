@@ -1,9 +1,7 @@
-from typing import Tuple, Union, Optional, List
+from typing import Union, Optional, List
 
 import h5py
 import numpy as np
-from PIL import Image
-import torch
 from torchvision import transforms
 
 from continuum.tasks.base import TaskType
@@ -18,8 +16,9 @@ class H5TaskSet(PathTaskSet):
     :param t: The task id of each sample.
     :param trsf: The transformations to apply on the images.
     :param target_trsf: The transformations to apply on the labels.
-    :param data_index_index: data index of the current task (it makes possible to distinguish data of the current task
-    from data from other tasks that are in the same h5 file.)
+    :param data_indexes: data index of the current task (it makes possible to
+                         distinguish data of the current task from data from
+                         other tasks that are in the same h5 file.)
     """
 
     def __init__(
@@ -43,14 +42,19 @@ class H5TaskSet(PathTaskSet):
         if data_indexes is not None:
             self._size_task_set = len(data_indexes)
             assert len(data_indexes) == len(y)
+        else:
+            self.data_indexes = np.arange(len(y))
 
         super().__init__(self.h5_filename, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
 
     def get_sample(self, index):
+        # We need to remap index because the h5 contain data from all tasks
+        # and not only the current task.
+        remapped_index = self.data_indexes[index]
         with h5py.File(self.h5_filename, 'r') as hf:
-            x = hf['x'][index]
+            x = hf['x'][remapped_index]
         return x
 
-    def __getitem__(self, index):
-        remapped_index = self.data_indexes[index]
-        return super().__getitem__(remapped_index)
+    def __len__(self) -> int:
+        """The amount of images in the current task."""
+        return len(self.data_indexes)

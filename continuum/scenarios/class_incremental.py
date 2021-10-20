@@ -52,11 +52,15 @@ class ClassIncremental(_BaseScenario):
             if self.cl_dataset.class_order is not None:
                 self.class_order = self.cl_dataset.class_order
             else:
-                self.class_order = unique_classes
+                self.class_order = np.arange(np.max(y) + 1)
         self.class_order = list(self.class_order)
 
         if len(np.unique(self.class_order)) != len(self.class_order):
             raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
+
+        if len(self.class_order) > len(unique_classes):
+            missing_classes = set(self.class_order) - set(unique_classes)
+            warnings.warn(f"There are some missing classes: {missing_classes}!")
 
         # Map the classes ids to their new values according to class order.
         # Aka if the user wants that the first 2 classes are 2, 7; then all
@@ -121,7 +125,9 @@ class ClassIncremental(_BaseScenario):
             # Check if the total number of classes is compatible
             # with increment list and self.nb_classes
             if not sum(increment) == len(unique_classes):
-                raise Exception("The increment list is not compatible with the number of classes")
+                raise Exception(
+                    f"The increment list is not compatible with the number of classes ({len(unique_classes)})"
+                )
 
             increments = increment
         elif isinstance(increment, int) and increment > 0:
