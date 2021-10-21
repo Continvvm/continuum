@@ -1,6 +1,7 @@
 from typing import Union, Optional, List
 
 import h5py
+import torch
 import numpy as np
 from torchvision import transforms
 
@@ -26,7 +27,7 @@ class H5TaskSet(PathTaskSet):
             x: str,
             y: np.ndarray,
             t: np.ndarray,
-            trsf: Union[transforms.Compose, List[transforms.Compose]],
+            trsf: Union[transforms.Compose, List[transforms.Compose]] = None,
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             bounding_boxes: Optional[np.ndarray] = None,
             data_indexes: np.ndarray = None
@@ -54,6 +55,21 @@ class H5TaskSet(PathTaskSet):
         with h5py.File(self.h5_filename, 'r') as hf:
             x = hf['x'][remapped_index]
         return x
+
+    def _prepare_data(self, x, y, t):
+        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(x.shape) == 1:
+            x = torch.Tensor(x)
+        else:
+            x, y, t = super()._prepare_data(x, y, t)
+        return x, y, t
+
+    def concat(self, *task_sets):
+        raise NotImplementedError("taskset concatenation is not yet available for h5 task_sets")
+
+    def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
+        # TODO
+
+        raise NotImplementedError("add samples is not yet available for h5 task_sets")
 
     def __len__(self) -> int:
         """The amount of images in the current task."""

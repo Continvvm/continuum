@@ -14,12 +14,11 @@ from continuum.tasks.h5_task_set import H5TaskSet
 def TaskSet(x: np.ndarray,
             y: np.ndarray,
             t: np.ndarray,
-            trsf: Union[transforms.Compose, List[transforms.Compose]],
+            trsf: Union[transforms.Compose, List[transforms.Compose]] = None,
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             data_type: TaskType = TaskType.IMAGE_ARRAY,
             bounding_boxes: Optional[np.ndarray] = None,
-            data_indexes = None):
-
+            data_indexes=None):
     if data_type == TaskType.TEXT:
         assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.TEXT")
         task_set = TextTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)

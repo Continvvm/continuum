@@ -48,7 +48,7 @@ def test_concatenate_h5dataset(data, tmpdir):
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
     h5dataset.add_data(x_, y_, t_)
 
-    assert len(h5dataset.get_classes()) == 2 * len(y_)
+    assert len(h5dataset.get_class_vector()) == 2 * len(y_)
 
 
 def test_h5dataset_ContinualScenario(data, tmpdir):
@@ -142,7 +142,7 @@ def test_time(tmpdir):
     h5_filename = os.path.join(tmpdir, "test_time_h5.hdf5")
     h5dataset = H5Dataset(x, y, t, data_path=h5_filename)
 
-    task_set = H5TaskSet(h5_filename, y=h5dataset.get_classes(), t=h5dataset.get_task_indexes(), trsf=None)
+    task_set = H5TaskSet(h5_filename, y=h5dataset.get_class_vector(), t=h5dataset.get_task_indexes(), trsf=None)
 
     start = time.time()
     for i in range(10000):
