@@ -2,6 +2,7 @@ import os
 import pytest
 import numpy as np
 from torch.utils.data import DataLoader
+import torchvision.transforms as trsf
 
 from continuum.scenarios import ClassIncremental, InstanceIncremental, OnlineFellowship
 from continuum.datasets import (
@@ -10,6 +11,7 @@ from continuum.datasets import (
 )
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
+
 
 @pytest.fixture
 def dataset7c():
@@ -24,6 +26,7 @@ def dataset10c():
 @pytest.fixture
 def dataset20c():
     return InMemoryDataset(*gen_dataset(20, 2))
+
 
 @pytest.fixture
 def dataset20c_3channels():
@@ -40,6 +43,7 @@ def gen_dataset(nb_classes, pixel_value):
     y_train = np.concatenate(y_train)
 
     return (x_train, y_train)
+
 
 def gen_dataset_3channels(nb_classes, pixel_value):
     nb_items_per_class = 5
@@ -85,6 +89,7 @@ def test_Online_Fellowship(dataset7c, dataset10c, dataset20c):
     assert scenario[1].nb_classes == 10
     assert scenario[2].nb_classes == 20
 
+
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "list_datasets", [
@@ -113,6 +118,7 @@ def test_online_Fellowship_inMemory(list_datasets):
 
     assert tot_nb_classes == scenario.nb_classes
 
+
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "list_datasets", [
@@ -138,6 +144,41 @@ def test_online_Fellowship_mix_path_array(list_datasets):
 
     assert tot_nb_classes == scenario.nb_classes
 
+
+@pytest.mark.parametrize(
+    "transformations", [
+        ([trsf.Resize(size=(16, 16)), trsf.ToTensor()]), #single for all
+        ([[trsf.ToTensor()], [trsf.ToTensor()], [trsf.ToTensor()]]) # one each
+    ]
+)
+def test_online_Fellowship_transformation(dataset7c, dataset10c, dataset20c, transformations):
+    scenario = OnlineFellowship([dataset7c, dataset10c, dataset20c], transformations=transformations)
+
+    assert len(scenario) == 3
+    tot_nb_classes = 0
+
+    for task_id, taskset in enumerate(scenario):
+        tot_nb_classes += taskset.nb_classes
+        loader = DataLoader(taskset)
+        _, _, _ = next(iter(loader))
+
+    assert tot_nb_classes == scenario.nb_classes
+
+
+def test_online_Fellowship_transformation2(dataset7c, dataset10c, dataset20c):
+
+    sizes = [16, 24, 40]
+    transformations = [[trsf.Resize(size=(sizes[0], sizes[0])), trsf.ToTensor()],
+                       [trsf.Resize(size=(sizes[1], sizes[1])), trsf.ToTensor()],
+                       [trsf.Resize(size=(sizes[2], sizes[2])), trsf.ToTensor()]]
+    scenario = OnlineFellowship([dataset7c, dataset10c, dataset20c], transformations=transformations)
+
+    for task_id, taskset in enumerate(scenario):
+        loader = DataLoader(taskset)
+        x, _, _ = next(iter(loader))
+        assert x.shape[-1] == sizes[task_id]
+
+
 @pytest.mark.parametrize("increment", [1, [7, 10, 20]])
 def test_inMemory_keepLabels_Fellowship(increment, dataset7c, dataset10c, dataset20c):
     fellow = Fellowship([dataset7c, dataset10c, dataset20c], update_labels=False)
@@ -148,11 +189,11 @@ def test_inMemory_keepLabels_Fellowship(increment, dataset7c, dataset10c, datase
 
     if isinstance(increment, list):
         with pytest.raises(Exception):
-            continuum = ClassIncremental(fellow, increment=increment)
+            scenario = ClassIncremental(fellow, increment=increment)
     else:
-        continuum = ClassIncremental(fellow, increment=increment)
-        assert continuum.nb_classes == 20
-        assert continuum.nb_tasks == 20
+        scenario = ClassIncremental(fellow, increment=increment)
+        assert scenario.nb_classes == 20
+        assert scenario.nb_tasks == 20
 
 
 @pytest.mark.parametrize("update_labels,nb_tasks", [

@@ -32,9 +32,10 @@ class OnlineFellowship(_BaseScenario):
 
         # init with first task
         self.cl_dataset = cl_datasets[0]
-        if isinstance(self.trsf, list):
-            # if we have a list of transformations, it should be a transformation per cl_dataset
-            assert len(self.trsf) == self._nb_tasks
+        if isinstance(self.trsf[0], list):
+            # We have list of list of callable, where each sublist is dedicated to
+            # a task
+            assert len(self.trsf) == len(cl_datasets)
 
         trsf_0 = self._get_trsf(ind_task=0, transformations=transformations, compose=False)
 
