@@ -1,13 +1,9 @@
 from typing import Tuple, List
 
-
-import torch
 import numpy as np
 
 from continuum.tasks.base import BaseTaskSet
 from continuum.tasks.task_set import TaskSet
-
-
 
 
 def split_train_val(dataset: BaseTaskSet, val_split: float = 0.1) -> Tuple[BaseTaskSet, BaseTaskSet]:
