@@ -28,25 +28,29 @@ class OnlineFellowship(_BaseScenario):
     ) -> None:
         self.cl_datasets = cl_datasets
         self.update_labels = update_labels
-        self.trsf = transformations
 
         # init with first task
         self.cl_dataset = cl_datasets[0]
-        if isinstance(self.trsf[0], list):
-            # We have list of list of callable, where each sublist is dedicated to
-            # a task
-            assert len(self.trsf) == len(cl_datasets)
-
         trsf_0 = self._get_trsf(ind_task=0, transformations=transformations, compose=False)
-
         super().__init__(cl_dataset=self.cl_dataset, nb_tasks=1, transformations=trsf_0)
 
+        self.trsf = transformations
         self.transformations = transformations
         self._nb_tasks = len(cl_datasets)
         self._setup(nb_tasks=self._nb_tasks)
 
     def _setup(self, nb_tasks: int) -> int:
-        # we count classes and create label transform function if necessary.
+
+        # small check on self.trsf
+        if self.trsf is not None and isinstance(self.trsf[0], list):
+            # We have list of list of callable, where each sublist is dedicated to
+            # a task
+            assert len(self.trsf) == len(self.cl_datasets), \
+                print("The transformations is not set correctly. It should be: "
+                      "A list of transformations applied to all tasks. "
+                      "Or a list of list of size nb_task, with one transformation list per task.")
+
+        # we count classes and create label transform function if necessary (i.e. for update_labels=True).
         self.label_trsf = []
         self.list_unique_classes = np.zeros(0)
         for dataset in self.cl_datasets:
@@ -64,13 +68,17 @@ class OnlineFellowship(_BaseScenario):
             self.list_unique_classes = np.unique(np.concatenate([self.list_unique_classes, classes]))
 
     def _get_trsf(self, ind_task, transformations, compose=True):
+        """" Manage data transformation."""
 
         if transformations is None:
+            # then we set the default dataset transformations if any
             transformations = self.cl_datasets[ind_task].transformations
         if transformations is not None and isinstance(transformations[0], list):
+            # we take the transformations specific to the task ind_task
             transformations = transformations[ind_task]
 
         if compose:
+            # convert the list into a composer
             if self.cl_datasets[ind_task].data_type == TaskType.SEGMENTATION:
                 composer = SegmentationCompose
             else:
@@ -80,6 +88,7 @@ class OnlineFellowship(_BaseScenario):
         return transformations
 
     def _get_label_trsf(self, ind_task):
+        """" Manage data label transformation. Necessary especially if update_labels is True. """
         label_trsf = None
         if self.update_labels:
             label_trsf = self.label_trsf[ind_task]
@@ -125,4 +134,3 @@ class OnlineFellowship(_BaseScenario):
             data_type=self.cl_dataset.data_type,
             bounding_boxes=self.cl_dataset.bounding_boxes
         )
-
