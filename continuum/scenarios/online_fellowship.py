@@ -4,7 +4,8 @@ import numpy as np
 
 from continuum.datasets import _ContinuumDataset, InMemoryDataset
 from continuum.scenarios import _BaseScenario
-from continuum.tasks import TaskSet
+from continuum.tasks import TaskSet, TaskType
+from continuum.transforms.segmentation import Compose as SegmentationCompose
 
 
 class OnlineFellowship(_BaseScenario):
@@ -35,7 +36,7 @@ class OnlineFellowship(_BaseScenario):
             # if we have a list of transformations, it should be a transformation per cl_dataset
             assert len(self.trsf) == self._nb_tasks
 
-        trsf_0 = self._get_trsf(ind_task=0)
+        trsf_0 = self._get_trsf(ind_task=0, transformations=transformations, compose=False)
 
         super().__init__(cl_dataset=self.cl_dataset, nb_tasks=1, transformations=trsf_0)
 
@@ -61,15 +62,21 @@ class OnlineFellowship(_BaseScenario):
 
             self.list_unique_classes = np.unique(np.concatenate([self.list_unique_classes, classes]))
 
-    def _get_trsf(self, ind_task):
-        if isinstance(self.trsf, list):
-            trsf = self.trsf[ind_task]
-        else:
-            if self.trsf is None:
-                trsf = self.cl_datasets[ind_task].transformations
+    def _get_trsf(self, ind_task, transformations, compose=True):
+
+        if transformations is None:
+            transformations = self.cl_datasets[ind_task].transformations
+        if transformations is not None and isinstance(transformations[0], list):
+            transformations = transformations[ind_task]
+
+        if compose:
+            if self.cl_datasets[ind_task].data_type == TaskType.SEGMENTATION:
+                composer = SegmentationCompose
             else:
-                trsf = self.trsf
-        return trsf
+                composer = transforms.Compose
+            transformations = composer(transformations)
+
+        return transformations
 
     def _get_label_trsf(self, ind_task):
         label_trsf = None
@@ -112,7 +119,7 @@ class OnlineFellowship(_BaseScenario):
 
         return TaskSet(
             x, y, t,
-            trsf=self._get_trsf(task_index),
+            trsf=self._get_trsf(task_index, self.transformations),
             target_trsf=self._get_label_trsf(task_index),
             data_type=self.cl_dataset.data_type,
             bounding_boxes=self.cl_dataset.bounding_boxes
