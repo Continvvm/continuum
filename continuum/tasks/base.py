@@ -54,16 +54,25 @@ class BaseTaskSet(TorchDataset):
 
         self.trsf = trsf
         self.target_trsf = target_trsf
+        # transform targets
+        if self.target_trsf is not None:
+            self._y = self._transform_y(self._y, self._t)
         self.data_type = TaskType.TENSOR
         self.bounding_boxes = bounding_boxes
         self.bounding_boxes = bounding_boxes
 
         self._to_tensor = transforms.ToTensor()
 
+    def _transform_y(self, y, t):
+        """Array of all classes contained in the current task."""
+        for i, (y_, t_) in enumerate(zip(y, t)):
+            y[i] = self.get_task_target_trsf(t_)(y_)
+        return y
+
     @property
     def nb_classes(self):
         """The number of classes contained in the current task."""
-        return len(np.unique(self._y))
+        return len(self.get_classes())
 
     def get_classes(self):
         """Array of all classes contained in the current task."""
@@ -157,10 +166,6 @@ class BaseTaskSet(TorchDataset):
         x = self.get_sample(index)
         y = self._y[index]
         t = self._t[index]
-
-        if self.target_trsf is not None:
-            y = self.get_task_target_trsf(t)(y)
-
         return x, y, t
 
     def get_task_trsf(self, t: int):

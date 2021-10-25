@@ -1,9 +1,26 @@
 import numpy as np
 import pytest
+from torchvision import transforms
 from continuum.datasets import InMemoryDataset
 from continuum.tasks import TaskSet, concat, split_train_val
 from torch.utils.data import DataLoader
 
+
+@pytest.mark.parametrize("nb_classes", [2, 3, 5])
+def test_target_trsf(nb_classes):
+    x = np.random.rand(10, 2, 2, 3)
+    y = np.arange(10)
+    t = np.ones((10,))
+
+    target_trsf = transforms.Lambda(lambda x: x % nb_classes)
+    tasket = TaskSet(x, y, t, None, target_trsf=target_trsf)
+
+    assert tasket.nb_classes == nb_classes, print("target transform not applied in get_classes")
+
+
+    loader = DataLoader(tasket)
+    for x, y, t in loader:
+        pass
 
 @pytest.mark.parametrize("nb_others", [1, 2])
 def test_concat_function(nb_others):
