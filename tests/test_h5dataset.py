@@ -209,7 +209,8 @@ def test_on_array_dataset_incremental(tmpdir):
     assert scenario.nb_tasks == nb_tasks  # number of task of CIFAR100Lifelong
 
 
-def test_h5dataset_reloading_slow(data, tmpdir):
+@pytest.mark.slow
+def test_h5dataset_reloading_slow(tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
     nb_tasks = 5
