@@ -294,9 +294,6 @@ class H5Dataset(_ContinuumDataset):
 
         if x is not None:
             self.create_file(x, y, t, self.data_path)
-        else:
-            # the file was already created and checked by _check_existing_file
-            pass
 
     @property
     def data_type(self) -> TaskType:
@@ -306,8 +303,8 @@ class H5Dataset(_ContinuumDataset):
         return len(self.get_class_vector())
 
     def _check_existing_file(self, filename):
-
-        assert os.path.exists(filename), print(f"You can not load unexisting file : {filename}")
+        if not os.path.exists(filename):
+            raise IOError(f"You can not load unexisting file : {filename}")
 
         with h5py.File(filename, 'r') as hf:
             data_vector = hf['x'][:]
