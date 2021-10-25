@@ -35,6 +35,12 @@ class SegmentationTaskSet(PathTaskSet):
         self.data_type = TaskType.SEGMENTATION
         self.bounding_boxes = bounding_boxes
 
+    def _transform_y(self, y, t):
+        """Array of all classes contained in the current task."""
+        for i, (y_, t_) in enumerate(zip(y, t)):
+            y[i] = self.get_task_target_trsf(t_)(Image.open(y_))
+        return y
+
     def _prepare_data(self, x, y, t):
         y = Image.open(y)
         if self.trsf is not None:
