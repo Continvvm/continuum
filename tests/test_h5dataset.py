@@ -105,10 +105,32 @@ def test_h5dataset_loading(data, tmpdir):
 
     x_, y_, t_ = data
     h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
-    h5dataset.add_data(x_, y_, t_)
 
     nb_task = len(np.unique(t_))
     scenario = ContinualScenario(h5dataset)
+
+    for task_set in scenario:
+        loader = DataLoader(task_set)
+        for _ in loader:
+            pass
+
+    assert scenario.nb_tasks == nb_task
+
+
+def test_h5dataset_reloading(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
+
+    x_, y_, t_ = data
+    # create dataset
+    h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
+    # destroy object
+    del h5dataset
+
+    # reload data set
+    h5dataset_reloaded = H5Dataset(x=None, y=None, t=None, data_path=filename_h5)
+
+    nb_task = len(np.unique(t_))
+    scenario = ContinualScenario(h5dataset_reloaded)
 
     for task_set in scenario:
         loader = DataLoader(task_set)
@@ -185,6 +207,36 @@ def test_on_array_dataset_incremental(tmpdir):
             break
 
     assert scenario.nb_tasks == nb_tasks  # number of task of CIFAR100Lifelong
+
+
+def test_h5dataset_reloading_slow(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
+
+    nb_tasks = 5
+
+    cl_dataset = CIFAR100(data_path=DATA_PATH,
+                          download=False,
+                          train=True,
+                          labels_type="category",
+                          task_labels="lifelong")
+    x, y, t = cl_dataset.get_data()
+
+    # create dataset
+    h5dataset = H5Dataset(x, y, t, data_path=filename_h5)
+    # destroy object
+    del h5dataset
+
+    # reload data set
+    h5dataset_reloaded = H5Dataset(x=None, y=None, t=None, data_path=filename_h5)
+
+    scenario = ContinualScenario(h5dataset_reloaded)
+
+    for task_set in scenario:
+        loader = DataLoader(task_set)
+        for _ in loader:
+            pass
+
+    assert scenario.nb_tasks == nb_tasks
 
 
 @pytest.mark.slow

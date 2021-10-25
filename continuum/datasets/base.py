@@ -32,7 +32,6 @@ class _ContinuumDataset(abc.ABC):
                 " It must be a member of the enum TaskType."
             )
 
-
         # Initialization of the default properties
         if self.data_type == TaskType.SEGMENTATION:
             self._trsf = [transforms_seg.ToTensor()]
@@ -49,11 +48,11 @@ class _ContinuumDataset(abc.ABC):
         pass
 
     def slice(
-        self,
-        keep_classes: Optional[List[int]] = None,
-        discard_classes: Optional[List[int]] = None,
-        keep_tasks: Optional[List[int]] = None,
-        discard_tasks: Optional[List[int]] = None
+            self,
+            keep_classes: Optional[List[int]] = None,
+            discard_classes: Optional[List[int]] = None,
+            keep_tasks: Optional[List[int]] = None,
+            discard_tasks: Optional[List[int]] = None
     ):
         """Slice dataset to keep/discard some classes/task-ids.
 
@@ -258,6 +257,7 @@ class InMemoryDataset(_ContinuumDataset):
 
 class H5Dataset(_ContinuumDataset):
     """Continuum dataset for in-memory data with h5 file.
+    This class either creates a h5 dataset or reload an existing one.
 
     :param x_train: Numpy array of images or paths to images for the train set.
     :param y_train: Targets for the train set.
@@ -267,8 +267,8 @@ class H5Dataset(_ContinuumDataset):
 
     def __init__(
             self,
-            x: np.ndarray,
-            y: np.ndarray,
+            x: np.ndarray = None,
+            y: np.ndarray = None,
             t: Union[None, np.ndarray] = None,
             data_path: str = "h5_dataset.h5",
             train: bool = True,
@@ -276,19 +276,27 @@ class H5Dataset(_ContinuumDataset):
     ):
         self._data_type = TaskType.H5
         super().__init__(data_path=None, train=train, download=download)
+
+        if x is None:
+            # Load an existing h5_dataset
+            self._check_existing_file(data_path)
+        else:
+            if len(x) != len(y):
+                raise ValueError(f"Number of datapoints ({len(x)}) != number of labels ({len(y)})!")
+            self.no_task_index = False
+            if t is None:
+                self.no_task_index = True
+            else:
+                if len(t) != len(x):
+                    raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
+
         self.data_path = data_path
 
-        if len(x) != len(y):
-            raise ValueError(f"Number of datapoints ({len(x)}) != number of labels ({len(y)})!")
-
-        self.no_task_index = False
-        if t is None:
-            self.no_task_index = True
+        if x is not None:
+            self.create_file(x, y, t, self.data_path)
         else:
-            if len(t) != len(x):
-                raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
-
-        self.create_file(x, y, t, self.data_path)
+            # the file was already created and checked by _check_existing_file
+            pass
 
     @property
     def data_type(self) -> TaskType:
@@ -296,14 +304,35 @@ class H5Dataset(_ContinuumDataset):
 
     def __len__(self):
         return len(self.get_class_vector())
-    
+
+    def _check_existing_file(self, filename):
+
+        assert os.path.exists(filename), print(f"You can not load unexisting file : {filename}")
+
+        with h5py.File(filename, 'r') as hf:
+            data_vector = hf['x'][:]
+            classes_vector = hf['y'][:]
+            if 't' in hf.keys():
+                self.no_task_index = False
+                task_index_vector = hf['t'][:]
+                if task_index_vector is None:
+                    self.no_task_index = True
+            else:
+                self.no_task_index = True
+
+            assert len(classes_vector) == len(data_vector)
+            if not self.no_task_index:
+                assert len(classes_vector) == len(task_index_vector)
+
+        self.data_path = filename
+
     def slice(
-        self,
-        new_h5_path: str,
-        keep_classes: Optional[List[int]] = None,
-        discard_classes: Optional[List[int]] = None,
-        keep_tasks: Optional[List[int]] = None,
-        discard_tasks: Optional[List[int]] = None
+            self,
+            new_h5_path: str,
+            keep_classes: Optional[List[int]] = None,
+            discard_classes: Optional[List[int]] = None,
+            keep_tasks: Optional[List[int]] = None,
+            discard_tasks: Optional[List[int]] = None
     ):
         """Slice dataset to keep/discard some classes/task-ids.
 
@@ -339,6 +368,8 @@ class H5Dataset(_ContinuumDataset):
 
     def create_file(self, x, y, t, data_path):
         """"Create and initiate h5 file with data, labels and task index (if not none)"""
+
+        assert not os.path.exists(data_path), print(f"You can not replace file : {data_path}")
 
         with h5py.File(data_path, 'w') as hf:
             hf.create_dataset('x', data=x, chunks=True, maxshape=([None] + list(x[0].shape)))
