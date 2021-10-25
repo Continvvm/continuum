@@ -1,4 +1,5 @@
 import enum
+from functools import lru_cache
 from typing import Tuple, Union, Optional, List
 
 import numpy as np
@@ -68,7 +69,8 @@ class BaseTaskSet(TorchDataset):
         """The number of classes contained in the current task."""
         return len(self.get_classes())
 
-    def get_classes(self):
+    @lru_cache(maxsize=1)
+    def get_classes(self) -> List[int]:
         """Array of all classes contained in the current task."""
         if self.target_trsf is not None:
             y = self._transform_y(self._y, self._t)

@@ -1,4 +1,5 @@
 from typing import Union, Optional, List
+import warnings
 
 import numpy as np
 import torch
@@ -32,11 +33,12 @@ class SegmentationTaskSet(PathTaskSet):
         super().__init__(x, y, t, trsf, target_trsf, bounding_boxes)
         self.data_type = TaskType.SEGMENTATION
 
-    def _transform_y(self, y, t):
-        """Array of all classes contained in the current task."""
-        for i, (y_, t_) in enumerate(zip(y, t)):
-            y[i] = self.get_task_target_trsf(t_)(Image.open(y_))
-        return y
+    def get_classes(self) -> List[int]:
+        warnings.warn(
+            "This method is not available for Segmentation because it'll takes "
+            "a long time to open all images."
+        )
+        return None
 
     def _prepare_data(self, x, y, t):
         y = Image.open(y)

@@ -89,6 +89,10 @@ class _ContinuumDataset(abc.ABC):
         return sliced_dataset
 
     @property
+    def nb_classes(self) -> List[int]:
+        return None
+
+    @property
     def class_order(self) -> Union[None, List[int]]:
         return None
 
@@ -253,6 +257,7 @@ class InMemoryDataset(_ContinuumDataset):
     @data_type.setter
     def data_type(self, data_type: TaskType) -> None:
         self._data_type = data_type
+
 
 class H5Dataset(_ContinuumDataset):
     """Continuum dataset for in-memory data with h5 file.

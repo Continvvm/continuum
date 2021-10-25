@@ -33,13 +33,8 @@ class OnlineFellowship(_BaseScenario):
         self.cl_datasets = cl_datasets
         self.update_labels = update_labels
 
-        if any([dataset.data_type == TaskType.SEGMENTATION for dataset in self.cl_datasets]):
-            raise ValueError("OnlineFellowship doesn't support yet segmentation datasets.")
-
-        # init with first task
-        self.cl_dataset = cl_datasets[0]
         trsf_0 = self._get_trsf(ind_task=0, transformations=transformations, compose=False)
-        super().__init__(cl_dataset=self.cl_dataset, nb_tasks=1, transformations=trsf_0)
+        super().__init__(cl_dataset=cl_datasets[0], nb_tasks=1, transformations=trsf_0)
 
         self.trsf = transformations
         self.transformations = transformations
@@ -55,27 +50,41 @@ class OnlineFellowship(_BaseScenario):
                     "A list of transformations applied to all tasks. "
                     "Or a list of list of size nb_task, with one transformation list per task.")
 
+        if len(set([dataset.data_type for dataset in self.cl_datasets])) != 1:
+            raise ValueError(
+                "All datasets must have the same data type, but got "
+                f"{[dataset.data_type for dataset in self.cl_datasets]}"
+            )
+
         # we count classes and create label transform function if necessary
         # (i.e. for update_labels=True).
         self.label_trsf = []
         self._unique_classes = set()
         self._nb_samples = 0
-        for dataset in self.cl_datasets:
-            _, y, _ = dataset.get_data()
-            classes = np.unique(y)
-            self._nb_samples += len(y)
 
-            if np.all(classes != np.arange(len(classes))):
+        self._classes_per_task = []
+
+        for dataset in self.cl_datasets:
+            if dataset.nb_classes is None:
+                # Fetching data is necessary to know the number of classes
+                _, y, _ = dataset.get_data()
+                classes = np.unique(y)
+                self._nb_samples += len(y)
+            else:
+                classes = np.arange(dataset.nb_classes)
+
+            self._classes_per_task.append(len(classes))
+
+            if dataset.data_type != TaskType.SEGMENTATION and np.all(classes != np.arange(len(classes))):
                 raise Exception(
                     "Classes are not annotated correctly, they are"
                     "expected to be annotated continuously from 0 to N-1 but"
                     f"they are {classes}.")
 
+
             if self.update_labels:
                 # we just shift the label number by the nb of classes seen so far
-                self.label_trsf.append(transforms.Lambda(lambda x: x + len(self._unique_classes)))
-                # shift classes indexes for self._unique_classes
-                classes = classes + len(self._unique_classes)
+                classes += len(self._unique_classes)
 
             self._unique_classes |= set(classes)
 
@@ -100,16 +109,29 @@ class OnlineFellowship(_BaseScenario):
 
         return transformations
 
-    def _get_label_trsf(self, ind_task: int):
+    def _get_label_trsf(self, task_index: int):
         """"Manage data label transformation. Necessary if update_labels is True. """
         label_trsf = None
         if self.update_labels:
-            label_trsf = self.label_trsf[ind_task]
+            if self.cl_datasets[task_index].data_type == TaskType.SEGMENTATION:
+                # Background always stays 0, unknown always stays 255
+                def _trsf(x):
+                    if x == 0 or x == 255:
+                        return x
+                    return x + sum(self._classes_per_task[:task_index])
+                label_trsf = transforms.Lambda(lambda x: x.apply_(_trsf))
+            else:
+                label_trsf = transforms.Lambda(lambda x: x + sum(self._classes_per_task[:task_index]))
         return label_trsf
 
     @property
     def nb_samples(self) -> int:
         """Total number of samples in the whole continual setting."""
+        if self._nb_samples == 0:
+            warnings.warn(
+                "The exact number of samples is not available to avoid "
+                "opening all datasets all together."
+            )
         return self._nb_samples
 
     @property
@@ -125,10 +147,6 @@ class OnlineFellowship(_BaseScenario):
     @property
     def classes(self) -> List:
         """List of classes in the whole continual setting."""
-        warnings.warn(
-            "classes seen so far. You can not know "
-            "the total number of class before visiting all tasks.")
-
         return np.unique(self._unique_classes)
 
     def __getitem__(self, task_index: Union[int, slice]):
