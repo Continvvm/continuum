@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import numpy as np
 from torchvision import datasets as torchdata
@@ -59,3 +60,4 @@ class DTD(ImageFolderDataset):
         indexes = np.isin(x, valid_paths)
 
         return x[indexes], y[indexes], None
+

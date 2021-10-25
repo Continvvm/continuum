@@ -56,7 +56,6 @@ class Fellowship(_ContinuumDataset):
 
         return x, y, t
 
-
 class MNISTFellowship(Fellowship):
 
     def __init__(self,

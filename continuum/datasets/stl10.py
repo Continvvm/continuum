@@ -29,8 +29,7 @@ class STL10(_ContinuumDataset):
         self.dataset = torchdata.STL10(
             self.data_path,
             download=self.download,
-            split=self.train
-    )
+            split=self.train)
 
     @property
     def data_type(self) -> TaskType:

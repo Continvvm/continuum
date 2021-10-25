@@ -254,7 +254,6 @@ class InMemoryDataset(_ContinuumDataset):
     def data_type(self, data_type: TaskType) -> None:
         self._data_type = data_type
 
-
 class H5Dataset(_ContinuumDataset):
     """Continuum dataset for in-memory data with h5 file.
     This class either creates a h5 dataset or reload an existing one.
@@ -446,13 +445,16 @@ class ImageFolderDataset(_ContinuumDataset):
         if data_type not in allowed_data_types:
             raise ValueError(f"Invalid data_type={data_type}, allowed={allowed_data_types}.")
 
+
     @property
     def data_type(self) -> TaskType:
         return self._data_type
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[None, np.ndarray]]:
         self.dataset = torchdata.ImageFolder(self.data_path)
-        return self._format(self.dataset.imgs)
+        x, y, t = self._format(self.dataset.imgs)
+        self.list_classes = np.unique(y)
+        return x, y, t
 
     @staticmethod
     def _format(raw_data: List[Tuple[str, int]]) -> Tuple[np.ndarray, np.ndarray, None]:
