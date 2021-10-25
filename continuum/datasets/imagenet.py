@@ -101,9 +101,9 @@ class TinyImageNet200(_ContinuumDataset):
 
     def _download(self):
         path = os.path.join(self.data_path, "tiny-imagenet-200")
-        if not os.path.exists(f"{path}.zip"):
-            download(self.url, self.data_path)
         if not os.path.exists(path):
+            if not os.path.exists(f"{path}.zip"):
+                download(self.url, self.data_path)
             unzip(f"{path}.zip")
 
     @property
