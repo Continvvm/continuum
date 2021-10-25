@@ -1,4 +1,7 @@
+from posix import waitid_result
 from typing import Callable, List, Union
+import warnings
+
 from torchvision import transforms
 import numpy as np
 
@@ -17,7 +20,8 @@ class OnlineFellowship(_BaseScenario):
     :param transformations: A list of transformations applied to all tasks. If
                             it's a list of list, then the transformation will be
                             different per task.
-    :param update_labels: if true we update labels values such as not having same classes in different tasks.
+    :param update_labels: if true we update labels values such as not having same
+                          classes in different tasks.
     """
 
     def __init__(
@@ -29,6 +33,9 @@ class OnlineFellowship(_BaseScenario):
         self.cl_datasets = cl_datasets
         self.update_labels = update_labels
 
+        if any([dataset.data_type == TaskType.SEGMENTATION for dataset in self.cl_datasets]):
+            raise ValueError("OnlineFellowship doesn't support yet segmentation datasets.")
+
         # init with first task
         self.cl_dataset = cl_datasets[0]
         trsf_0 = self._get_trsf(ind_task=0, transformations=transformations, compose=False)
@@ -36,40 +43,46 @@ class OnlineFellowship(_BaseScenario):
 
         self.trsf = transformations
         self.transformations = transformations
-        self._nb_tasks = len(cl_datasets)
-        self._setup(nb_tasks=self._nb_tasks)
+        self._setup(nb_tasks=len(cl_datasets))
 
     def _setup(self, nb_tasks: int) -> int:
+        self._nb_tasks = nb_tasks
 
-        # small check on self.trsf
         if self.trsf is not None and isinstance(self.trsf[0], list):
-            # We have list of list of callable, where each sublist is dedicated to
-            # a task
-            assert len(self.trsf) == len(self.cl_datasets), \
-                print("The transformations is not set correctly. It should be: "
-                      "A list of transformations applied to all tasks. "
-                      "Or a list of list of size nb_task, with one transformation list per task.")
+            if len(self.trsf) != len(self.cl_datasets):
+                raise ValueError(
+                    "The transformations is not set correctly. It should be: "
+                    "A list of transformations applied to all tasks. "
+                    "Or a list of list of size nb_task, with one transformation list per task.")
 
-        # we count classes and create label transform function if necessary (i.e. for update_labels=True).
+        # we count classes and create label transform function if necessary
+        # (i.e. for update_labels=True).
         self.label_trsf = []
-        self.list_unique_classes = np.zeros(0)
+        self._unique_classes = set()
+        self._nb_samples = 0
         for dataset in self.cl_datasets:
-            x, y, _ = dataset.get_data()
+            _, y, _ = dataset.get_data()
             classes = np.unique(y)
-            assert np.all(classes == np.arange(len(classes))), print("Classes are not annotated correctly, they are"
-                                                                     "expected to be annotated continuously from 0 to N-1.")
+            self._nb_samples += len(y)
+
+            if np.all(classes != np.arange(len(classes))):
+                raise Exception(
+                    "Classes are not annotated correctly, they are"
+                    "expected to be annotated continuously from 0 to N-1 but"
+                    f"they are {classes}.")
 
             if self.update_labels:
                 # we just shift the label number by the nb of classes seen so far
-                self.label_trsf.append(transforms.Lambda(lambda x: x + len(self.list_unique_classes)))
-                # shift classes indexes for self.list_unique_classes
-                classes = classes + len(self.list_unique_classes)
+                self.label_trsf.append(transforms.Lambda(lambda x: x + len(self._unique_classes)))
+                # shift classes indexes for self._unique_classes
+                classes = classes + len(self._unique_classes)
 
-            self.list_unique_classes = np.unique(np.concatenate([self.list_unique_classes, classes]))
+            self._unique_classes |= set(classes)
 
-    def _get_trsf(self, ind_task, transformations, compose=True):
-        """" Manage data transformation."""
+        self._unique_classes = np.array(list(self._unique_classes))
 
+    def _get_trsf(self, ind_task: int, transformations: List[Callable], compose: bool = True):
+        """"Choose the right transformation for the right dataset/task."""
         if transformations is None:
             # then we set the default dataset transformations if any
             transformations = self.cl_datasets[ind_task].transformations
@@ -87,12 +100,17 @@ class OnlineFellowship(_BaseScenario):
 
         return transformations
 
-    def _get_label_trsf(self, ind_task):
-        """" Manage data label transformation. Necessary especially if update_labels is True. """
+    def _get_label_trsf(self, ind_task: int):
+        """"Manage data label transformation. Necessary if update_labels is True. """
         label_trsf = None
         if self.update_labels:
             label_trsf = self.label_trsf[ind_task]
         return label_trsf
+
+    @property
+    def nb_samples(self) -> int:
+        """Total number of samples in the whole continual setting."""
+        return self._nb_samples
 
     @property
     def nb_tasks(self) -> int:
@@ -107,8 +125,11 @@ class OnlineFellowship(_BaseScenario):
     @property
     def classes(self) -> List:
         """List of classes in the whole continual setting."""
-        print("classes seen so far. You can not know the total number of class before visiting all tasks.")
-        return np.unique(self.list_unique_classes)
+        warnings.warn(
+            "classes seen so far. You can not know "
+            "the total number of class before visiting all tasks.")
+
+        return np.unique(self._unique_classes)
 
     def __getitem__(self, task_index: Union[int, slice]):
         """Returns a task by its unique index.
