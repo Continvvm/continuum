@@ -35,7 +35,6 @@ class MultiNLI(_ContinuumDataset):
 
     def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
         super().__init__(data_path=data_path, train=train, download=download)
-        self.number_classes = 5
 
     def _download(self):
         if os.path.exists(os.path.join(self.data_path, "multinli_1.0")):
@@ -44,6 +43,10 @@ class MultiNLI(_ContinuumDataset):
             path = download.download(self.data_url, self.data_path)
             download.unzip(path)
             print("Dataset extracted.")
+
+    @property
+    def nb_classes(self):
+        return 20
 
     @property
     def data_type(self) -> TaskType:
