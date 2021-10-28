@@ -10,6 +10,7 @@ import torchvision.transforms as trsf
 from continuum.scenarios import ContinualScenario, ClassIncremental, Permutations
 from continuum.datasets import H5Dataset, CIFAR100, MNIST
 from continuum.tasks.h5_task_set import H5TaskSet
+from continuum.tasks import split_train_val
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
@@ -117,6 +118,45 @@ def test_h5dataset_loading(data, tmpdir):
     assert scenario.nb_tasks == nb_task
 
 
+def test_h5dataset_get_raw(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
+
+    x_, y_, t_ = data
+    h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
+
+    nb_task = len(np.unique(t_))
+    scenario = ContinualScenario(h5dataset)
+
+    for task_set in scenario:
+        indexes = np.random.randint(len(task_set), size=len(task_set) // 2)
+        _, _, _ = task_set.get_raw_samples(indexes.sort())
+        # test with no indexes
+        _, _, _ = task_set.get_raw_samples()
+
+    assert scenario.nb_tasks == nb_task
+
+
+def test_h5dataset_split_train_test(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
+
+    x_, y_, t_ = data
+    h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
+
+    nb_task = len(np.unique(t_))
+    scenario = ContinualScenario(h5dataset)
+
+    for task_set in scenario:
+        task_set_tr, task_set_val = split_train_val(task_set)
+        loader_tr = DataLoader(task_set_tr)
+        for _ in loader_tr:
+            pass
+        loader_val = DataLoader(task_set_val)
+        for _ in loader_val:
+            pass
+
+    assert scenario.nb_tasks == nb_task
+
+
 def test_h5dataset_reloading(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
@@ -209,6 +249,7 @@ def test_on_array_dataset_incremental(tmpdir):
     assert scenario.nb_tasks == nb_tasks  # number of task of CIFAR100Lifelong
 
 
+@pytest.mark.slow
 def test_h5dataset_reloading_slow(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
