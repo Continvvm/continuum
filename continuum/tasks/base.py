@@ -53,6 +53,7 @@ class BaseTaskSet(TorchDataset):
             self._t = -1 * np.ones_like(y, dtype=np.int64)
 
         self.trsf = trsf
+        self.data_type = TaskType.TENSOR
         self.target_trsf = target_trsf
         self.data_type = TaskType.TENSOR
         self.bounding_boxes = bounding_boxes
