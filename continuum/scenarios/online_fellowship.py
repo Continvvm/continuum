@@ -50,10 +50,17 @@ class OnlineFellowship(_BaseScenario):
                     "A list of transformations applied to all tasks. "
                     "Or a list of list of size nb_task, with one transformation list per task.")
 
-        if len(set([dataset.data_type for dataset in self.cl_datasets])) != 1:
+        unique_data_types = set([dataset.data_type for dataset in self.cl_datasets])
+        classif_data_types = [TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.IMAGE_PATH, TaskType.H5]
+        other_data_types = [TaskType.SEGMENTATION, TaskType.OBJ_DETECTION, TaskType.TEXT]
+
+        if any(data_type in unique_data_types for data_type in other_data_types) and \
+           (any(data_type in unique_data_types for data_type in classif_data_types) and \
+            len(unique_data_types) == 1):
             raise ValueError(
-                "All datasets must have the same data type, but got "
-                f"{[dataset.data_type for dataset in self.cl_datasets]}"
+                "You cannot combine SEGMENTATION, OBJ_DETECTION, or TEXT "
+                " with other data_types.\nYou provided the data types: "
+                f"{unique_data_types}"
             )
 
         # we count classes and create label transform function if necessary
