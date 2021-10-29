@@ -246,9 +246,14 @@ class InMemoryDataset(_ContinuumDataset):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.data = (x, y, t)
+        self._nb_classes = len(np.unique(y))
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data
+
+    @property
+    def nb_classes(self) -> List[int]:
+        return self._nb_classes
 
     @property
     def data_type(self) -> TaskType:

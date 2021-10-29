@@ -55,8 +55,8 @@ class OnlineFellowship(_BaseScenario):
         other_data_types = [TaskType.SEGMENTATION, TaskType.OBJ_DETECTION, TaskType.TEXT]
 
         if any(data_type in unique_data_types for data_type in other_data_types) and \
-           (any(data_type in unique_data_types for data_type in classif_data_types) and \
-            len(unique_data_types) == 1):
+           (any(data_type in unique_data_types for data_type in classif_data_types) or \
+            len(unique_data_types) > 1):
             raise ValueError(
                 "You cannot combine SEGMENTATION, OBJ_DETECTION, or TEXT "
                 " with other data_types.\nYou provided the data types: "
