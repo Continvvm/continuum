@@ -45,8 +45,11 @@ How to use the memory:
 
         features = my_function_to_extract_features(my_model, loader)
 
+        # Important! Draw the raw samples from `scenario[task_id]` to
+        # re-generate the taskset, otherwise you'd risk sampling from both new
+        # data and memory data which is probably not what you want to do.
         memory.add(
-            *taskset.get_raw_samples(), features
+            *scenario[task_id].get_raw_samples(), features
         )
 
 
