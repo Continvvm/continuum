@@ -79,6 +79,7 @@ class H5TaskSet(PathTaskSet):
         """Get samples without preprocessing, for split train/val for example."""
         if indexes is None:
             remapped_index = self.data_indexes
+            indexes = np.arange(len(self))
         else:
             remapped_index = self.data_indexes[indexes]
         with h5py.File(self.h5_filename, 'r') as hf:
