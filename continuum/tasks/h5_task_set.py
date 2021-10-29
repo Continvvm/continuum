@@ -35,7 +35,6 @@ class H5TaskSet(PathTaskSet):
 
         self.h5_filename = x
         self._size_task_set = None
-        self.data_type = TaskType.H5
         self.data_indexes = data_indexes
         self._y = y
         self._t = t
@@ -47,6 +46,7 @@ class H5TaskSet(PathTaskSet):
             self.data_indexes = np.arange(len(y))
 
         super().__init__(self.h5_filename, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
+        self.data_type = TaskType.H5
 
     def get_sample(self, index):
         # We need to remap index because the h5 contain data from all tasks
@@ -74,3 +74,18 @@ class H5TaskSet(PathTaskSet):
     def __len__(self) -> int:
         """The amount of images in the current task."""
         return len(self.data_indexes)
+
+    def get_raw_samples(self, indexes=None):
+        """Get samples without preprocessing, for split train/val for example."""
+        if indexes is None:
+            remapped_index = self.data_indexes
+            indexes = np.arange(len(self))
+        else:
+            remapped_index = self.data_indexes[indexes]
+        with h5py.File(self.h5_filename, 'r') as hf:
+            x = hf['x'][remapped_index]
+        # not remapped indexes for y and t
+        y = self._y[indexes]
+        t = self._t[indexes]
+
+        return x, y, t
