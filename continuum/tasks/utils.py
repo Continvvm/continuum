@@ -28,6 +28,7 @@ def get_balanced_sampler(taskset, log=False):
     weights_per_class = 1 / nb_per_class
     if log:
         weights_per_class = np.log(weights_per_class)
+        weights_per_class = 1 - (weights_per_class / np.sum(weights_per_class))
 
     weights = weights_per_class[y]
 
