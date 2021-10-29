@@ -1,10 +1,9 @@
 import enum
-from copy import copy
+from functools import lru_cache
 from typing import Tuple, Union, Optional, List
 
 import numpy as np
 import torch
-from PIL import Image
 from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
@@ -57,18 +56,28 @@ class BaseTaskSet(TorchDataset):
         self.target_trsf = target_trsf
         self.data_type = TaskType.TENSOR
         self.bounding_boxes = bounding_boxes
-        self.bounding_boxes = bounding_boxes
 
         self._to_tensor = transforms.ToTensor()
+
+    def _transform_y(self, y, t):
+        """Array of all classes contained in the current task."""
+        for i, (y_, t_) in enumerate(zip(y, t)):
+            y[i] = self.get_task_target_trsf(t_)(y_)
+        return y
 
     @property
     def nb_classes(self):
         """The number of classes contained in the current task."""
-        return len(np.unique(self._y))
+        return len(self.get_classes())
 
-    def get_classes(self):
+    @lru_cache(maxsize=1)
+    def get_classes(self) -> List[int]:
         """Array of all classes contained in the current task."""
-        return np.unique(self._y)
+        if self.target_trsf is not None:
+            y = self._transform_y(self._y, self._t)
+        else:
+            y = self._y
+        return np.unique(y)
 
     def concat(self, *task_sets):
         """Concat others task sets.

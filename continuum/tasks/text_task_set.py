@@ -1,14 +1,8 @@
-import enum
-from copy import copy
 from typing import Tuple, Union, Optional, List
 
 import numpy as np
-import torch
-from PIL import Image
-from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
 
-from continuum.viz import plot_samples
 from continuum.tasks.base import BaseTaskSet, _tensorize_list, TaskType
 
 

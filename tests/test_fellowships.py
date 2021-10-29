@@ -1,9 +1,12 @@
 import os
+import copy
+
 import pytest
 import numpy as np
 from torch.utils.data import DataLoader
 import torchvision.transforms as trsf
 
+from continuum.tasks import TaskType
 from continuum.scenarios import ClassIncremental, InstanceIncremental, OnlineFellowship
 from continuum.datasets import (
     CIFAR10, CIFAR100, KMNIST, MNIST, CIFARFellowship, FashionMNIST, Fellowship, MNISTFellowship,
@@ -88,6 +91,30 @@ def test_Online_Fellowship(dataset7c, dataset10c, dataset20c):
     assert scenario[0].nb_classes == 7
     assert scenario[1].nb_classes == 10
     assert scenario[2].nb_classes == 20
+
+
+@pytest.mark.parametrize("types,error", (
+    [[TaskType.IMAGE_PATH], False],
+    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR], False],
+    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.SEGMENTATION], True],
+    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.TEXT], True],
+    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.OBJ_DETECTION], True],
+    [[TaskType.SEGMENTATION, TaskType.OBJ_DETECTION], True],
+    [[TaskType.SEGMENTATION], False],
+))
+def test_online_Fellowship_mixeddatatype(dataset10c, types, error):
+    datasets = []
+    for typ in types:
+        d = copy.deepcopy(dataset10c)
+        d._data_type = typ
+        d._nb_classes = 10
+        datasets.append(d)
+
+    if error:
+        with pytest.raises(ValueError):
+            scenario = OnlineFellowship(datasets)
+    else:
+        scenario = OnlineFellowship(datasets)
 
 
 @pytest.mark.slow

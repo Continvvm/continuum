@@ -1,15 +1,14 @@
-import enum
-from copy import copy
-from typing import Tuple, Union, Optional, List
+from typing import Union, Optional, List
+import warnings
 
 import numpy as np
 import torch
 from PIL import Image
-from torch.utils.data import Dataset as TorchDataset
 from torchvision import transforms
-from continuum.viz import plot_samples
+
 from continuum.tasks.base import TaskType
 from continuum.tasks.image_path_task_set import PathTaskSet
+
 
 class SegmentationTaskSet(PathTaskSet):
     """A task dataset returned by the CLLoader specialized into segmentation data.
@@ -31,9 +30,15 @@ class SegmentationTaskSet(PathTaskSet):
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
             bounding_boxes: Optional[np.ndarray] = None
     ):
-        super().__init__(x, y, t, trsf, target_trsf)
+        super().__init__(x, y, t, trsf, target_trsf, bounding_boxes)
         self.data_type = TaskType.SEGMENTATION
-        self.bounding_boxes = bounding_boxes
+
+    def get_classes(self) -> List[int]:
+        warnings.warn(
+            "This method is not available for Segmentation because it'll takes "
+            "a long time to open all images."
+        )
+        return None
 
     def _prepare_data(self, x, y, t):
         y = Image.open(y)

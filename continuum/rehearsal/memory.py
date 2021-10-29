@@ -151,15 +151,13 @@ class RehearsalMemory:
         x, y, t = [], [], []
         for class_id in np.unique(self._y):
             indexes = np.where(self._y == class_id)[0]
-            if len(indexes) > self.memory_per_class:
-                x.append(self._x[indexes[:self.memory_per_class]])
-                y.append(self._y[indexes[:self.memory_per_class]])
-                t.append(self._t[indexes[:self.memory_per_class]])
+            x.append(self._x[indexes[:self.memory_per_class]])
+            y.append(self._y[indexes[:self.memory_per_class]])
+            t.append(self._t[indexes[:self.memory_per_class]])
 
-        if len(x) > 0:
-            self._x = np.concatenate(x)
-            self._y = np.concatenate(y)
-            self._t = np.concatenate(t)
+        self._x = np.concatenate(x)
+        self._y = np.concatenate(y)
+        self._t = np.concatenate(t)
 
     def add(
         self,
@@ -183,8 +181,8 @@ class RehearsalMemory:
         if self._x is None:
             self._x, self._y, self._t = mem_x, mem_y, mem_t
         else:
-            if not self.fixed_memory:
-                self._reduce()
             self._x = np.concatenate((self._x, mem_x))
             self._y = np.concatenate((self._y, mem_y))
             self._t = np.concatenate((self._t, mem_t))
+
+        self._reduce()

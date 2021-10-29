@@ -15,6 +15,12 @@ class ImageNet1000(ImageFolderDataset):
     Simple wrapper around ImageFolderDataset to provide a link to the download
     page.
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.train:
+            self.data_path = os.path.join(self.data_path, "train")
+        else:
+            self.data_path = os.path.join(self.data_path, "val")
 
     @property
     def transformations(self):
@@ -30,7 +36,6 @@ class ImageNet1000(ImageFolderDataset):
                 " download 'Training images (Task 1 & 2)' and 'Validation images (all tasks)'."
             )
         print("ImageNet already downloaded.")
-
 
 class ImageNet100(ImageNet1000):
     """Subset of ImageNet1000 made of only 100 classes.
