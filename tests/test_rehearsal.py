@@ -128,3 +128,25 @@ def test_memory_slice():
     _, sliced_y, _ = memory.slice(keep_classes=list(range(20)))
     assert (np.unique(sliced_y) == np.array(list(range(20)))).all()
 
+
+@pytest.mark.parametrize("fixed", [False, True])
+def test_memory_add_past_data(fixed):
+    memory = rehearsal.RehearsalMemory(
+        20, "random", fixed, 10
+    )
+
+    for i in range(10):
+        memory.add(
+            np.random.randn(20, 3, 4, 4),
+            np.ones(20) * i,
+            np.ones(20), None
+        )
+        assert len(memory) <= 20
+
+        if i > 0:
+            memory.add(
+                np.random.randn(20, 3, 4, 4),
+                np.ones(20) * (i - 1),  # past data
+                np.ones(20), None
+            )
+            assert len(memory) <= 20

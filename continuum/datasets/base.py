@@ -89,6 +89,10 @@ class _ContinuumDataset(abc.ABC):
         return sliced_dataset
 
     @property
+    def nb_classes(self) -> List[int]:
+        return None
+
+    @property
     def class_order(self) -> Union[None, List[int]]:
         return None
 
@@ -242,9 +246,14 @@ class InMemoryDataset(_ContinuumDataset):
             raise ValueError(f"Number of datapoints ({len(x)}) != number of task ids ({len(t)})!")
 
         self.data = (x, y, t)
+        self._nb_classes = len(np.unique(y))
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         return self.data
+
+    @property
+    def nb_classes(self) -> List[int]:
+        return self._nb_classes
 
     @property
     def data_type(self) -> TaskType:
@@ -253,6 +262,7 @@ class InMemoryDataset(_ContinuumDataset):
     @data_type.setter
     def data_type(self, data_type: TaskType) -> None:
         self._data_type = data_type
+
 
 class H5Dataset(_ContinuumDataset):
     """Continuum dataset for in-memory data with h5 file.

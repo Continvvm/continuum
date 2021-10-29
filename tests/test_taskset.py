@@ -1,9 +1,51 @@
 import numpy as np
 import pytest
+from torchvision import transforms
 from continuum.datasets import InMemoryDataset
 from continuum.tasks import TaskSet, concat, split_train_val
 from torch.utils.data import DataLoader
+import torch
 
+from continuum.datasets import InMemoryDataset
+from continuum.tasks import TaskSet, concat, split_train_val, get_balanced_sampler
+
+
+@pytest.mark.parametrize("log", [False, True])
+def test_sampler_function(log):
+    np.random.seed(1)
+    torch.manual_seed(1)
+
+    x = np.random.rand(100, 2, 2, 3)
+    y = np.ones((100,), dtype=np.int64)
+    y[0] = 0
+    t = np.ones((100,))
+
+    taskset = TaskSet(x, y, t, None)
+    sampler = get_balanced_sampler(taskset, log=log)
+
+    loader = DataLoader(taskset, sampler=sampler, batch_size=1)
+    nb_0 = 0
+    for x, y, t in loader:
+        if 0 in y:
+            nb_0 += 1
+    assert nb_0 > 1
+
+
+@pytest.mark.parametrize("nb_classes", [2, 3, 5])
+def test_target_trsf(nb_classes):
+    x = np.random.rand(10, 2, 2, 3)
+    y = np.arange(10)
+    t = np.ones((10,))
+
+    target_trsf = transforms.Lambda(lambda x: x % nb_classes)
+    tasket = TaskSet(x, y, t, None, target_trsf=target_trsf)
+
+    assert tasket.nb_classes == nb_classes, print("target transform not applied in get_classes")
+
+
+    loader = DataLoader(tasket)
+    for x, y, t in loader:
+        pass
 
 @pytest.mark.parametrize("nb_others", [1, 2])
 def test_concat_function(nb_others):
