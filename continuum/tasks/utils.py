@@ -1,5 +1,4 @@
 from typing import Tuple, List
-
 import torch
 import numpy as np
 

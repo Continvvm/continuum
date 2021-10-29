@@ -37,6 +37,6 @@ def TaskSet(x: np.ndarray,
                              bounding_boxes=bounding_boxes,
                              data_indexes=data_indexes)
     else:
-        raise AssertionError(f"No TaskSet for data_type {data_type}")
+        raise NotImplementedError(f"No TaskSet for data_type {data_type}")
 
     return task_set
