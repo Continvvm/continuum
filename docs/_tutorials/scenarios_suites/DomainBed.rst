@@ -17,7 +17,7 @@ but rather bring new domains as in `"InstanceIncremental" <https://continuum.rea
 and ContinualScenario.
 
 ColoredMNIST (CMNIST)
-----------------------
+##########
 
 The dataset is made of two labels: 0 & 1.
 All the original digits from 0 to 4 are now 0, and the leftover are now 1.
@@ -43,7 +43,7 @@ of the color, then it'll get super bad.
 
 
 RotatedMNIST (RMNIST)
-----------------------
+##########
 
 MNIST with the same good old 10 digits. Although for each domains, the digits
 are rotated by a certain amount.
@@ -59,7 +59,7 @@ are rotated by a certain amount.
 
 
 VLCS
-----------------------
+##########
 
 A dataset of large images, with 5 classes (bird, car, chair, dog, and person)
 distributed equally across 4 domains (Caltech101, LabelMe, SUN09, and VOC2007).
@@ -80,7 +80,7 @@ distributed equally across 4 domains (Caltech101, LabelMe, SUN09, and VOC2007).
 
 
 PACS
-----------------------
+##########
 
 A dataset of large images, with 7 classes distributed equally across 4 domains.
 Note that you need to download yourself this dataset
@@ -102,7 +102,7 @@ Note that you need to download yourself this dataset
 
 
 OfficeHome
-----------------------
+##########
 
 A dataset of large images, with 65 classes distributed equally across 4 domains.
 Note that you need to download yourself this dataset
@@ -125,7 +125,7 @@ Note that you need to download yourself this dataset
 
 
 TerraIncognita
-----------------------
+##########
 
 
 A dataset of large images, with 10 classes distributed equally across 4 domains.
@@ -147,7 +147,7 @@ A dataset of large images, with 10 classes distributed equally across 4 domains.
 
 
 DomainNet
-----------------------
+##########
 
 A dataset of large images, with 345 classes distributed equally across 6 domains.
 
