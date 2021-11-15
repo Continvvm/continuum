@@ -61,6 +61,8 @@ We predefine three methods to herd new samples:
 - `cluster`: samples whose features are closest to their class mean feature
 - `barycenter`: samples whose features are closest to a moving barycenter as iCaRL did
 
+Note that all these predefined herding methods are done *per class*.
+
 If you want to define your own herding method and provide it to `RehearsalMemory`
 (instead of the string 'barycenter' as in the previous example), you should:
 
