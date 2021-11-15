@@ -190,6 +190,6 @@ class _BaseScenario(abc.ABC):
 
 
 def _handle_negative_indexes(index: int, total_len: int) -> int:
-    while index < 0:
-        index += total_len
+    if index < 0:
+        index = index % total_len
     return index
