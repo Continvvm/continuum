@@ -96,3 +96,18 @@ def test_nb_classes(fake_data):
 
     assert scenario.nb_classes == NB_CLASSES
     assert (scenario.classes == np.arange(NB_CLASSES)).all()
+
+
+def test_list_transforms(fake_data):
+    nb_tasks = 5
+    list_trsfs = []
+    for _ in range(nb_tasks-1):
+        list_trsfs.append([transforms.RandomAffine(degrees=[0, 90])])
+
+    # should fail since nb_task != len(list_trsfs)
+    with pytest.raises(ValueError) as e:
+        scenario = ClassIncremental(
+            cl_dataset=fake_data,
+            increment=2,
+            transformations=list_trsfs
+        )
