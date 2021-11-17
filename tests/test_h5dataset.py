@@ -11,6 +11,7 @@ from continuum.scenarios import ContinualScenario, ClassIncremental, Permutation
 from continuum.datasets import H5Dataset, CIFAR100, MNIST
 from continuum.tasks.h5_task_set import H5TaskSet
 from continuum.tasks import split_train_val
+from continuum.scenarios import create_subscenario
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
@@ -41,7 +42,6 @@ def test_creation_h5dataset(data, tmpdir):
     assert len(y_0) == len(y_)
     assert len(t_0) == len(t_)
 
-
 def test_concatenate_h5dataset(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
 
@@ -50,6 +50,48 @@ def test_concatenate_h5dataset(data, tmpdir):
     h5dataset.add_data(x_, y_, t_)
 
     assert len(h5dataset.get_class_vector()) == 2 * len(y_)
+
+def test_create_subscenario_h5dataset(data, tmpdir):
+    from continuum.scenarios import create_subscenario
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
+
+    x_, y_, t_ = data
+    h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
+
+    nb_task = len(np.unique(t_))
+    scenario = ContinualScenario(h5dataset)
+
+    sub_scenario = create_subscenario(scenario, np.arange(nb_task-1))
+
+    for task_set in sub_scenario:
+        loader = DataLoader(task_set)
+        for _ in loader:
+            pass
+
+    assert sub_scenario.nb_tasks == nb_task-1
+
+def test_create_subscenario_suffle_h5dataset(data, tmpdir):
+    filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")
+
+    x_, y_, t_ = data
+    h5dataset = H5Dataset(x_, y_, t_, data_path=filename_h5)
+
+
+    nb_task = len(np.unique(t_))
+    scenario = ContinualScenario(h5dataset)
+
+    task_order = np.arange(nb_task)
+    np.random.shuffle(task_order)
+
+
+    sub_scenario = create_subscenario(scenario, task_order)
+
+    for task_set in sub_scenario:
+        loader = DataLoader(task_set)
+        for _ in loader:
+            pass
+
+    assert sub_scenario.nb_tasks == nb_task
 
 
 def test_h5dataset_ContinualScenario(data, tmpdir):
@@ -278,6 +320,19 @@ def test_h5dataset_reloading_slow(tmpdir):
             pass
 
     assert scenario.nb_tasks == nb_tasks
+
+    task_order = np.arange(nb_tasks)
+
+    sub_scenario = create_subscenario(scenario, task_order[:-1])
+
+    assert sub_scenario.nb_tasks == nb_tasks-1
+
+
+    np.random.shuffle(task_order)
+    sub_scenario = create_subscenario(scenario, task_order)
+    assert sub_scenario.nb_tasks == nb_tasks
+
+
 
 
 @pytest.mark.slow
