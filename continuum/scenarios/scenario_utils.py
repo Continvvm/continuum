@@ -65,10 +65,10 @@ def remap_class_vector(class_vector, remapping=None):
     unique_classes = np.unique(class_vector)
     if remapping is None or len(np.setdiff1d(unique_classes, remapping)) > 0:
         # here we have some new classes in the vector
-        remapping = _get_remapping_classes_ascending_order(new_classes=class_vector, current_mapping=remapping)
+        remapping = _get_remapping_classes_ascending_order(new_classes=unique_classes, current_mapping=remapping)
 
     new_class_vector = _remap_class_vector(class_vector, remapping)
-    return new_class_vector, remapping
+    return new_class_vector.astype(int), remapping
 
 def create_subscenario(base_scenario, task_indexes):
     """

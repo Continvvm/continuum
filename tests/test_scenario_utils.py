@@ -8,7 +8,7 @@ import torch.nn as nn
 
 from continuum.datasets import InMemoryDataset, MNIST
 from torchvision import transforms
-from continuum.scenarios import ClassIncremental, create_subscenario, encode_scenario
+from continuum.scenarios import ClassIncremental, create_subscenario, encode_scenario, remap_class_vector
 from continuum.tasks import TaskType
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
@@ -40,6 +40,26 @@ def gen_string():
         y_train.append(np.ones(2) * i)
     y_train = np.concatenate(y_train)
     return x_train, y_train
+
+
+def test_classes_remapping():
+    mapping = None
+    y_0 = np.random.randint(low=0, high=10, size=100)
+    remap_y_0, mapping = remap_class_vector(y_0, mapping)
+    print(remap_y_0)
+    assert len(np.unique(y_0)) == max(remap_y_0) + 1
+    y_1 = np.random.randint(low=15, high=20, size=100)
+    remap_y_1, mapping = remap_class_vector(y_1, mapping)
+    y_2 = np.random.randint(low=90, high=100, size=100)
+    remap_y_2, mapping = remap_class_vector(y_2, mapping)
+    y_3 = np.random.randint(low=0, high=10, size=100)
+    remap_y_3, mapping = remap_class_vector(y_3, mapping)
+    y_4 = np.random.randint(low=0, high=45, size=100)
+    remap_y_4, mapping = remap_class_vector(y_4, mapping)
+
+    full_vector = np.concatenate([y_0, y_1, y_2, y_3, y_4], axis=0)
+    assert np.equal(np.unique(remap_class_vector(full_vector)[0]), np.arange(len(mapping))).all()
+    assert len(np.unique(full_vector)) <= len(mapping)
 
 
 @pytest.mark.parametrize("list_tasks", [
@@ -80,6 +100,7 @@ def test_sequence_transforms(list_tasks):
     scenario = ClassIncremental(dummy, increment=1, transformations=list_trsfs)
     subscenario = create_subscenario(scenario, list_tasks)
     assert subscenario.nb_tasks == len(list_tasks), print(f"{len(subscenario)} - vs - {len(list_tasks)}")
+
 
 @pytest.mark.parametrize("list_tasks", [
     np.arange(10),
