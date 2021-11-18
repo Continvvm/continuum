@@ -11,7 +11,7 @@ from continuum.scenarios.segmentation import SegmentationClassIncremental
 from continuum.scenarios.hashed import HashedScenario
 from continuum.scenarios.online_fellowship import OnlineFellowship
 
-from continuum.scenarios.scenario_utils import create_subscenario, encode_scenario
+from continuum.scenarios.scenario_utils import create_subscenario, encode_scenario, remap_class_vector
 
 __all__ = [
     "ContinualScenario",
