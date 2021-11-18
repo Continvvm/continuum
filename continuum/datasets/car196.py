@@ -72,4 +72,4 @@ class Car196(_ContinuumDataset):
             x.append(os.path.join(self.data_path, folder, image_id))
             y.append(class_id)
 
-        return np.array(x), np.array(y), None
+        return np.array(x), np.array(y) - 1, None
