@@ -15,7 +15,7 @@ class OnlineFellowship(_BaseScenario):
     The advantage toward using a Fellowship dataset is that the datasets might have different data_type. It is recommanded
     to not use inMemoryDataset in OnlineFellowship to not make the scenario to heavy in memory.
 
-    :param cl_datasets: A list of continual dataset already instanciate.
+    :param cl_datasets: A list of continual dataset already instantiate, may also contains BaseTaskSet objects.
     :param transformations: A list of transformations applied to all tasks. If
                             it's a list of list, then the transformation will be
                             different per task.
@@ -25,7 +25,7 @@ class OnlineFellowship(_BaseScenario):
 
     def __init__(
             self,
-            cl_datasets: List[Union[_ContinuumDataset, TaskSet]],
+            cl_datasets: List[Union[_ContinuumDataset, BaseTaskSet]],
             transformations: Union[List[Callable], List[List[Callable]]] = None,
             update_labels=True
     ) -> None:
