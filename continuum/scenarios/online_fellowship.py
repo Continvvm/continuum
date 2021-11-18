@@ -6,7 +6,7 @@ import numpy as np
 
 from continuum.datasets import _ContinuumDataset, InMemoryDataset
 from continuum.scenarios import _BaseScenario
-from continuum.tasks import TaskSet, TaskType
+from continuum.tasks import BaseTaskSet, TaskSet, TaskType
 from continuum.transforms.segmentation import Compose as SegmentationCompose
 
 
@@ -25,7 +25,7 @@ class OnlineFellowship(_BaseScenario):
 
     def __init__(
             self,
-            cl_datasets: List[_ContinuumDataset],
+            cl_datasets: List[Union[_ContinuumDataset, TaskSet]],
             transformations: Union[List[Callable], List[List[Callable]]] = None,
             update_labels=True
     ) -> None:
@@ -169,13 +169,20 @@ class OnlineFellowship(_BaseScenario):
             )
 
         self.cl_dataset = self.cl_datasets[task_index]
-        x, y, _ = self.cl_dataset.get_data()
-        t = np.ones(len(y)) * task_index
 
-        return TaskSet(
-            x, y, t,
-            trsf=self._get_trsf(task_index, self.transformations),
-            target_trsf=self._get_label_trsf(task_index),
-            data_type=self.cl_dataset.data_type,
-            bounding_boxes=self.cl_dataset.bounding_boxes
-        )
+        if isinstance(self.cl_dataset, _ContinuumDataset):
+            x, y, _ = self.cl_dataset.get_data()
+            t = np.ones(len(y)) * task_index
+
+            taskset = TaskSet(
+                x, y, t,
+                trsf=self._get_trsf(task_index, self.transformations),
+                target_trsf=self._get_label_trsf(task_index),
+                data_type=self.cl_dataset.data_type,
+                bounding_boxes=self.cl_dataset.bounding_boxes
+            )
+        else:
+            if not isinstance(self.cl_dataset, BaseTaskSet):
+                raise ValueError("self.cl_datasets can only contain _ContinuumDataset or TaskSet")
+            taskset = self.cl_dataset
+        return taskset
