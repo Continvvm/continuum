@@ -21,18 +21,17 @@ class InstanceIncremental(_BaseScenario):
     """
 
     def __init__(
-        self,
-        cl_dataset: _ContinuumDataset,
-        nb_tasks: Optional[int] = None,
-        transformations: Union[List[Callable], List[List[Callable]]] = None,
-        random_seed: int = 1
+            self,
+            cl_dataset: _ContinuumDataset,
+            nb_tasks: Optional[int] = None,
+            transformations: Union[List[Callable], List[List[Callable]]] = None,
+            random_seed: int = 1
     ):
         self.cl_dataset = cl_dataset
         self._nb_tasks = self._setup(nb_tasks)
         super().__init__(cl_dataset=cl_dataset, nb_tasks=self._nb_tasks, transformations=transformations)
 
         self._random_state = np.random.RandomState(seed=random_seed)
-
 
     def _setup(self, nb_tasks: Optional[int]) -> int:
         x, y, t = self.cl_dataset.get_data()

@@ -117,13 +117,13 @@ def test_Online_Fellowship_subscenarios(dataset7c, dataset10c, dataset20c):
 
 
 @pytest.mark.parametrize("types,error", (
-    [[TaskType.IMAGE_PATH], False],
-    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR], False],
-    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.SEGMENTATION], True],
-    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.TEXT], True],
-    [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.OBJ_DETECTION], True],
-    [[TaskType.SEGMENTATION, TaskType.OBJ_DETECTION], True],
-    [[TaskType.SEGMENTATION], False],
+        [[TaskType.IMAGE_PATH], False],
+        [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR], False],
+        [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.SEGMENTATION], True],
+        [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.TEXT], True],
+        [[TaskType.H5, TaskType.IMAGE_PATH, TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.OBJ_DETECTION], True],
+        [[TaskType.SEGMENTATION, TaskType.OBJ_DETECTION], True],
+        [[TaskType.SEGMENTATION], False],
 ))
 def test_online_Fellowship_mixeddatatype(dataset10c, types, error):
     datasets = []
@@ -197,8 +197,8 @@ def test_online_Fellowship_mix_path_array(list_datasets):
 
 @pytest.mark.parametrize(
     "transformations", [
-        ([trsf.Resize(size=(16, 16)), trsf.ToTensor()]), #single for all
-        ([[trsf.ToTensor()], [trsf.ToTensor()], [trsf.ToTensor()]]) # one each
+        ([trsf.Resize(size=(16, 16)), trsf.ToTensor()]),  # single for all
+        ([[trsf.ToTensor()], [trsf.ToTensor()], [trsf.ToTensor()]])  # one each
     ]
 )
 def test_online_Fellowship_transformation(dataset7c, dataset10c, dataset20c, transformations):
@@ -216,7 +216,6 @@ def test_online_Fellowship_transformation(dataset7c, dataset10c, dataset20c, tra
 
 
 def test_online_Fellowship_transformation2(dataset7c, dataset10c, dataset20c):
-
     sizes = [16, 24, 40]
     transformations = [[trsf.Resize(size=(sizes[0], sizes[0])), trsf.ToTensor()],
                        [trsf.Resize(size=(sizes[1], sizes[1])), trsf.ToTensor()],

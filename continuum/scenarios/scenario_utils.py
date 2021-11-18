@@ -20,7 +20,7 @@ def create_subscenario(base_scenario, task_indexes):
     if base_scenario.transformations is not None and isinstance(base_scenario.transformations[0], list):
         transformations = [base_scenario.transformations[i] for i in task_indexes]
     else:
-        transformations=base_scenario.transformations
+        transformations = base_scenario.transformations
     sub_scenario = None
     if isinstance(base_scenario, OnlineFellowship):
         # We just want to changes base_scenario.cl_datasets order
@@ -53,7 +53,6 @@ def create_subscenario(base_scenario, task_indexes):
                 new_t = np.concatenate([new_t, t], axis=0)
         dataset = InMemoryDataset(new_x, new_y, new_t, data_type=base_scenario.cl_dataset.data_type)
         sub_scenario = ContinualScenario(dataset, transformations=transformations)
-
 
     return sub_scenario
 
