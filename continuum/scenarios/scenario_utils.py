@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from continuum.datasets import InMemoryDataset, H5Dataset
-from continuum.scenarios import ContinualScenario
+from continuum.scenarios import ContinualScenario, OnlineFellowship
 from continuum.tasks import TaskType
 
 
@@ -17,31 +17,45 @@ def create_subscenario(base_scenario, task_indexes):
     if torch.is_tensor(task_indexes):
         task_indexes = task_indexes.numpy()
 
-    new_x, new_y, new_t = None, None, None
-    if base_scenario.cl_dataset.bounding_boxes is not None:
-        raise ValueError("the function create_subscenario is not compatible with scenario with bounding_boxes yet.")
-
-    for i, index in enumerate(task_indexes):
-        taskset = base_scenario[index]
-        all_task_indexes = np.arange(len(taskset))
-        x, y, t = taskset.get_raw_samples(all_task_indexes)
-        t = np.ones(len(y)) * i
-        if new_x is None:
-            new_x = x
-            new_y = y
-            new_t = t
-        else:
-            new_x = np.concatenate([new_x, x], axis=0)
-            new_y = np.concatenate([new_y, y], axis=0)
-            new_t = np.concatenate([new_t, t], axis=0)
-    dataset = InMemoryDataset(new_x, new_y, new_t, data_type=base_scenario.cl_dataset.data_type)
-
     if base_scenario.transformations is not None and isinstance(base_scenario.transformations[0], list):
         transformations = [base_scenario.transformations[i] for i in task_indexes]
     else:
         transformations=base_scenario.transformations
+    sub_scenario = None
+    if isinstance(base_scenario, OnlineFellowship):
+        # We just want to changes base_scenario.cl_datasets order
+        new_cl_datasets = [base_scenario.cl_datasets[i] for i in task_indexes]
+        sub_scenario = OnlineFellowship(new_cl_datasets,
+                                        transformations=transformations,
+                                        update_labels=base_scenario.update_labels)
+    elif base_scenario.cl_dataset.data_type == TaskType.H5:
+        list_taskset = [base_scenario[i] for i in task_indexes]
+        sub_scenario = OnlineFellowship(list_taskset,
+                                        transformations=transformations,
+                                        update_labels=False)
+    else:
+        new_x, new_y, new_t = None, None, None
+        if base_scenario.cl_dataset.bounding_boxes is not None:
+            raise ValueError("the function create_subscenario is not compatible with scenario with bounding_boxes yet.")
 
-    return ContinualScenario(dataset, transformations=transformations)
+        for i, index in enumerate(task_indexes):
+            taskset = base_scenario[index]
+            all_task_indexes = np.arange(len(taskset))
+            x, y, t = taskset.get_raw_samples(all_task_indexes)
+            t = np.ones(len(y)) * i
+            if new_x is None:
+                new_x = x
+                new_y = y
+                new_t = t
+            else:
+                new_x = np.concatenate([new_x, x], axis=0)
+                new_y = np.concatenate([new_y, y], axis=0)
+                new_t = np.concatenate([new_t, t], axis=0)
+        dataset = InMemoryDataset(new_x, new_y, new_t, data_type=base_scenario.cl_dataset.data_type)
+        sub_scenario = ContinualScenario(dataset, transformations=transformations)
+
+
+    return sub_scenario
 
 
 @torch.no_grad()
