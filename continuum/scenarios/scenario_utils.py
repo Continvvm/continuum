@@ -70,6 +70,13 @@ def remap_class_vector(class_vector, remapping=None):
     new_class_vector = _remap_class_vector(class_vector, remapping)
     return new_class_vector.astype(int), remapping
 
+def get_scenario_remapping(scenario):
+    mapping = None
+    for taskset in scenario:
+        unique_classes = taskset.get_classes()
+        _, mapping = remap_class_vector(unique_classes, mapping)
+    return mapping
+
 def create_subscenario(base_scenario, task_indexes):
     """
     In this function we want to create a subscenario from the different tasks, either by subsampling tasks or reodering
