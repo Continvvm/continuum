@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from torch.utils.data import DataLoader
 
-
 from continuum.scenarios import ClassIncremental
 from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, InMemoryDataset
 from torchvision.transforms import transforms
@@ -55,7 +54,8 @@ def test_with_dataset_composed_increment(tmpdir, dataset, increment):
         assert len(classes) == (classes.max() - classes.min() + 1)
 
 
-NB_CLASSES=10
+NB_CLASSES = 10
+
 
 @pytest.fixture
 def fake_data():
@@ -87,6 +87,7 @@ def test_taskid(fake_data, class_order):
             assert t[0].item() == task_id
             assert (t == task_id).all()
 
+
 def test_nb_classes(fake_data):
     scenario = ClassIncremental(
         cl_dataset=fake_data,
@@ -101,7 +102,7 @@ def test_nb_classes(fake_data):
 def test_list_transforms(fake_data):
     nb_tasks = 5
     list_trsfs = []
-    for _ in range(nb_tasks-1):
+    for _ in range(nb_tasks - 1):
         list_trsfs.append([transforms.RandomAffine(degrees=[0, 90])])
 
     # should fail since nb_task != len(list_trsfs)

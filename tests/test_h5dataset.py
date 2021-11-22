@@ -61,14 +61,14 @@ def test_create_subscenario_h5dataset(data, tmpdir):
     nb_task = len(np.unique(t_))
     scenario = ContinualScenario(h5dataset)
 
-    sub_scenario = create_subscenario(scenario, np.arange(nb_task-1))
+    sub_scenario = create_subscenario(scenario, np.arange(nb_task - 1))
 
     for task_set in sub_scenario:
         loader = DataLoader(task_set)
         for _ in loader:
             pass
 
-    assert sub_scenario.nb_tasks == nb_task-1
+    assert sub_scenario.nb_tasks == nb_task - 1
 
 def test_create_subscenario_suffle_h5dataset(data, tmpdir):
     filename_h5 = os.path.join(tmpdir, "test_h5.hdf5")

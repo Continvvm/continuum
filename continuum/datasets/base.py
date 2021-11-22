@@ -455,7 +455,6 @@ class ImageFolderDataset(_ContinuumDataset):
         if data_type not in allowed_data_types:
             raise ValueError(f"Invalid data_type={data_type}, allowed={allowed_data_types}.")
 
-
     @property
     def data_type(self) -> TaskType:
         return self._data_type
