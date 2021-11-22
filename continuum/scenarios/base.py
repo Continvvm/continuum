@@ -42,6 +42,12 @@ class _BaseScenario(abc.ABC):
         if self.transformations is not None and isinstance(self.transformations[0], list):
             # We have list of list of callable, where each sublist is dedicated to
             # a task.
+            if len(self.transformations) != nb_tasks:
+                raise ValueError(
+                    f"When using different transformations per task, there must be as as much transformations"
+                    f" ({len(transformations)}) than there are tasks ({nb_tasks})"
+                    f", which is not currently the case."
+                )
             self.trsf = [composer(trsf) for trsf in self.transformations]
         else:
             self.trsf = composer(self.transformations)

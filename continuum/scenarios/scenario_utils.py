@@ -36,7 +36,12 @@ def create_subscenario(base_scenario, task_indexes):
             new_t = np.concatenate([new_t, t], axis=0)
     dataset = InMemoryDataset(new_x, new_y, new_t, data_type=base_scenario.cl_dataset.data_type)
 
-    return ContinualScenario(dataset, transformations=base_scenario.transformations)
+    if base_scenario.transformations is not None and isinstance(base_scenario.transformations[0], list):
+        transformations = [base_scenario.transformations[i] for i in task_indexes]
+    else:
+        transformations=base_scenario.transformations
+
+    return ContinualScenario(dataset, transformations=transformations)
 
 
 @torch.no_grad()

@@ -7,6 +7,7 @@ import string
 import torch.nn as nn
 
 from continuum.datasets import InMemoryDataset, MNIST
+from torchvision import transforms
 from continuum.scenarios import ClassIncremental, create_subscenario, encode_scenario
 from continuum.tasks import TaskType
 
@@ -57,6 +58,28 @@ def test_slicing_list(list_tasks):
     subscenario = create_subscenario(scenario, list_tasks)
     assert subscenario.nb_tasks == len(list_tasks), print(f"{len(subscenario)} - vs - {len(list_tasks)}")
 
+
+@pytest.mark.parametrize("list_tasks", [
+    np.arange(10),
+    np.arange(5, 10),
+    np.arange(3, 10, 2),
+    np.arange(9, 0, -2),
+    np.arange(0, 10, 2),
+    list(np.arange(0, 10, 2)),
+    list(np.arange(5, 10))
+])
+def test_sequence_transforms(list_tasks):
+    x_train, y_train, t_train = gen_data()
+    dummy = InMemoryDataset(x_train, y_train, t_train, data_type=TaskType.IMAGE_PATH)
+
+    nb_task = len(np.unique(y_train))
+    list_trsfs = []
+    for _ in range(nb_task):
+        list_trsfs.append([transforms.RandomAffine(degrees=[0, 90])])
+
+    scenario = ClassIncremental(dummy, increment=1, transformations=list_trsfs)
+    subscenario = create_subscenario(scenario, list_tasks)
+    assert subscenario.nb_tasks == len(list_tasks), print(f"{len(subscenario)} - vs - {len(list_tasks)}")
 
 @pytest.mark.parametrize("list_tasks", [
     np.arange(10),

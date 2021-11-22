@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as trsf
 
 from continuum.tasks import TaskType
-from continuum.scenarios import ClassIncremental, InstanceIncremental, OnlineFellowship
+from continuum.scenarios import ClassIncremental, InstanceIncremental, OnlineFellowship, create_subscenario
 from continuum.datasets import (
     CIFAR10, CIFAR100, KMNIST, MNIST, CIFARFellowship, FashionMNIST, Fellowship, MNISTFellowship,
     InMemoryDataset, Fellowship, Core50
@@ -91,6 +91,29 @@ def test_Online_Fellowship(dataset7c, dataset10c, dataset20c):
     assert scenario[0].nb_classes == 7
     assert scenario[1].nb_classes == 10
     assert scenario[2].nb_classes == 20
+
+
+def test_Online_Fellowship_subscenarios(dataset7c, dataset10c, dataset20c):
+    scenario = OnlineFellowship([dataset7c, dataset10c, dataset20c])
+    sub_scenario = create_subscenario(scenario, np.arange(scenario.nb_tasks - 1))
+
+    for task_set in sub_scenario:
+        loader = DataLoader(task_set)
+        for _ in loader:
+            pass
+
+    assert sub_scenario.nb_tasks == scenario.nb_tasks - 1
+
+    task_order = np.arange(scenario.nb_tasks)
+    np.random.shuffle(task_order)
+    sub_scenario = create_subscenario(scenario, task_order)
+
+    for task_set in sub_scenario:
+        loader = DataLoader(task_set)
+        for _ in loader:
+            pass
+
+    assert sub_scenario.nb_tasks == scenario.nb_tasks
 
 
 @pytest.mark.parametrize("types,error", (

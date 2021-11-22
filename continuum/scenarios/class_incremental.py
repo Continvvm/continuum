@@ -36,13 +36,14 @@ class ClassIncremental(_BaseScenario):
         transformations: Union[List[Callable], List[List[Callable]]] = None,
         class_order: Union[List[int], None]=None
     ) -> None:
-        super().__init__(cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=transformations)
 
+        self.cl_dataset = cl_dataset
         self.increment = increment
         self.initial_increment = initial_increment
         self.class_order = class_order
 
         self._nb_tasks = self._setup(nb_tasks)
+        super().__init__(cl_dataset=cl_dataset, nb_tasks=self._nb_tasks, transformations=transformations)
 
     def _setup(self, nb_tasks: int) -> int:
         x, y, _ = self.cl_dataset.get_data()
