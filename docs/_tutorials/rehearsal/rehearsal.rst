@@ -86,3 +86,35 @@ provide a save and load methods:
 
     memory.save("/my/path/memory.npz")
     memory.load("/my/path/memory.npz")
+
+
+Fixed memory or flexible memory
+--------------------------------
+
+There are currently to way to handle the memory growth, either fixed or flexible.
+
+- **flexible**: Usually in settings where all class increments are of the same size,
+  including the first one, like in `iCaRL <https://arxiv.org/abs/1611.07725>`__,
+  all the memory is used: if I have a memory size of 10, and I saw 2 classes over 5,
+  each class can store 5 images. Then, when I see all 5 classes, each class can
+  only store 2 images.
+
+- **fixed**: On the other hand, in settings where the initial class increment is bigger,
+  like in `UCIR <https://openaccess.thecvf.com/content_CVPR_2019/html/Hou_Learning_a_Unified_Classifier_Incrementally_via_Rebalancing_CVPR_2019_paper.html>`__,
+  each class can store an amout of images that stay fixed for the whole continual training.
+  e.g. if I have a memory size of 10, and I saw 2 classes over 5, each class can store
+  2 images. Likewise, when I see all 5 classes, each class can still only store 2 images.
+
+
+The option is `fixed_memory=True/False` in the initialization of the `RehearsalMemory`:
+
+.. code-block:: python
+
+    from continuum import rehearsal
+
+
+    memory = rehearsal.RehearsalMemory(
+        memory_size=2000,
+        herding_method="barycenter",
+        fixed_memory=True
+    )
