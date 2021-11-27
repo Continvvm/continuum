@@ -1,5 +1,6 @@
 import os
-from typing import Tuple, List
+from typing import Tuple
+import tarfile
 
 import pandas as pd
 import numpy as np
@@ -48,7 +49,20 @@ class CUB200(_ContinuumDataset):
                 print('Done!')
 
             print('Extracting archive...', end=' ')
-            untar(tgz_path)
+            try:
+                untar(tgz_path)
+            except tarfile.ReadError:
+                print()
+                try: os.remove(tgz_path)
+                except: pass
+
+                raise IOError(
+                    "The file wasn't downloaded properly, probably because it "
+                    "has hit the limit of download from Google Drive. "
+                    "Try downloading the .tgz archive manually at "
+                    "http://www.vision.caltech.edu/visipedia-data/CUB-200/images.tgz"
+                )
+
             print('Done!')
 
     def _load_metadata(self):
