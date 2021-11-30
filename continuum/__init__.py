@@ -13,5 +13,7 @@ from continuum.tasks import *
 from continuum.metrics import *
 from continuum.viz import plot_samples
 from continuum import generators
+from continuum import rehearsal
+from continuum import transforms
 
-__version__ = "1.1.7"
+__version__ = "1.1.8"

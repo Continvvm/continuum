@@ -44,10 +44,9 @@ class _BaseScenario(abc.ABC):
             # a task.
             if len(self.transformations) != nb_tasks:
                 raise ValueError(
-                    f"If transformation is a list of list of transformation, len(transformation) "
-                    f"Should match nb_tasks. We have here {nb_tasks} tasks and {len(self.transformations)}"
-                    f" as len(transformation)"
-
+                    f"When using different transformations per task, there must be as as much transformations"
+                    f" ({len(transformations)}) than there are tasks ({nb_tasks})"
+                    f", which is not currently the case."
                 )
             self.trsf = [composer(trsf) for trsf in self.transformations]
         else:

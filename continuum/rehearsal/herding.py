@@ -53,7 +53,7 @@ def herd_closest_to_cluster(
     for class_id in np.unique(y):
         class_indexes = np.where(y == class_id)[0]
         class_features = features[class_indexes]
-        class_mean = np.mean(class_features, axis=1, keepdims=True)
+        class_mean = np.mean(class_features, axis=0, keepdims=True)
 
         dist_to_mean = np.linalg.norm(class_mean - class_features, axis=1)
         tmp_indexes = dist_to_mean.argsort()[:nb_per_class]
