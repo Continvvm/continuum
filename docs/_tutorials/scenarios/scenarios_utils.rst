@@ -20,6 +20,70 @@ to reorder classes with a new order of task indexes.
     subscenario = create_subscenario(base_scenario=scenario, task_indexes=[4,3,2,1,0])
 
 
+- ``get_scenario_remapping(scenario)->``
+This function provided a remapping of class that ensure that labels comes in a continuous increasing order.
+It is particularly useful if order of tasks has been changed (for example with ``create_subscenario``).
+This function is often use with the function ``remap_class_vector`` which will apply the remapping.
+
+.. code-block:: python
+    from continuum.scenarios import create_subscenario, get_scenario_remapping, get_original_targets
+    # let say you have a continuum scenario with 5 tasks.
+    from continuum.datasets import MNIST
+
+    scenario = ClassIncremental(
+        MNIST(data_path="my/data/path", download=True, train=True),
+        increment=2
+     )
+
+    # this create a new scenario with a different order of task
+    # Here the order of tasks is reversed.
+    subscenario = create_subscenario(base_scenario=scenario, task_indexes=[4,3,2,1,0])
+
+    # here the class order of subscenario will be:
+    # [task 0: (8,9)] -> [task 1: (6,7)] -> ...
+
+    # get the remapping for the whole classes of the scenario
+    remapping = get_scenario_remapping(subscenario)
+
+    for taskset  in subscenario:
+        loader = DataLoader(taskset)
+        for x, y, t in loader:
+            # remap the class vector here
+            # (the made the process explicit on purpose in order to see where the classes are remapped)
+            remap_y = remap_class_vector(y, mapping=remapping)
+
+            #inverse remapping can be achieved with
+            original_y = get_original_targets(remap_y, mapping=remapping)
+
+            assert np.all(y==original_y) # should be true
+
+The mapping can also be build online with `update_remapping(class_vector, mapping)` (it is more rigorous but it is also more computationnaly costly
+and it does not change the final results).
+
+.. code-block:: python
+    from continuum.scenarios import create_subscenario, update_remapping, remap_class_vector
+
+    scenario = some_scenario()
+
+    # this create a new scenario with a different order of task
+    # Here the order of tasks is reversed.
+    subscenario = create_subscenario(base_scenario=scenario, task_indexes=[4,3,2,1,0])
+    remapping = None
+
+    for taskset  in subscenario:
+        loader = DataLoader(taskset)
+        for x, y, t in loader:
+            # update online and automatically the mapping while receiving class vector
+            remapping = update_remapping(y, remapping)
+            # apply remapping after
+            remap_y = remap_class_vector(y, mapping=remapping)
+
+            #inverse remapping can be achieved with
+            original_y = get_original_targets(remap_y, mapping=remapping)
+
+            assert np.all(y==original_y) # should be true
+
+
 - ``encode_scenario(scenario, model, batch_size, file_name, inference_fct=None)``
 
 This function makes it possible to create a scenario with latent representation of a given model.
