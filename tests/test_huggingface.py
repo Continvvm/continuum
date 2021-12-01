@@ -4,7 +4,7 @@
 import pytest
 import datasets
 
-from continuum import HuggingFaceFellowship, HuggingFaceIncremental
+from continuum.scenarios.hf import HuggingFaceFellowship, HuggingFaceContinual
 
 
 class _Dataset:
@@ -44,7 +44,7 @@ def mock_incremental_dataset(*args, **kwargs):
 def test_hf_incremental(mocker, increment):
     mocker.patch.object(datasets, "load_dataset", new=mock_incremental_dataset)
 
-    scenario = HuggingFaceIncremental(
+    scenario = HuggingFaceContinual(
         "foo", split_field="genre", increment=increment
     )
 

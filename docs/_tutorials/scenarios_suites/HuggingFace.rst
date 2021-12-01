@@ -10,7 +10,7 @@ continual scenarios.
 
 In all cases, you won't work with `TaskSet` but instead directly with HuggingFace's Dataset.
 
-HuggingFace Incremental
+HuggingFace Continual
 =========================
 
 `HuggingFaceIncremental` can allow you to split a HuggingFace dataset according
@@ -22,11 +22,11 @@ with HuggingFace. Then, I'm asking to split this dataset according to the
 
 
     import datasets  # from HuggingFace, do pip install datasets
-    from continuum import HuggingFaceIncremental
+    from continuum.scenarios.hf import HuggingFaceContinual
 
     multi_nli = datasets.load_dataset("multi_nli", split="train")
 
-    scenario = HuggingFaceIncremental(multi_nli, split_field="genre", increment=1)
+    scenario = HuggingFaceContinual(multi_nli, split_field="genre", increment=1)
     print(len(scenario), scenario.nb_classes)
 
     for dataset in scenario:
@@ -42,7 +42,7 @@ after the other. Look at the following example where three datasets have been ch
 
 .. code-block:: python
 
-    from continuum import HuggingFaceIncremental
+    from continuum.scenarios.hf import HuggingFaceFellowship
 
     scenario = HuggingFaceFellowship(
         ["squad", "iwslt2017", "cnn_dailymail"],
