@@ -12,7 +12,7 @@ from continuum.tasks.base import BaseTaskSet, TaskType
 from continuum.tasks.task_set import TaskSet
 
 
-def get_balanced_sampler(taskset, log=False):
+def get_balanced_sampler(taskset, log=False, num_samples=None, replacement=True, generator=None):
     """Create a sampler that will balance the dataset.
 
     You should give the returned sampler to the dataloader with the argument `sampler`.
@@ -20,6 +20,9 @@ def get_balanced_sampler(taskset, log=False):
     :param taskset: A pytorch dataset that implement the TaskSet interface.
     :param log: Use a log weights. If enabled, there will still be imbalance but
                 on the other hand, the oversampling/downsampling won't be as violent.
+    :param num_samples: Nb of samples per epoch, if unspecified, equal to the amount of samples.
+    :param replacement: draw samples with replacement or not. Should be True if you want to oversample.
+    :param generator: Optional pytorch generator to control the pseudo-randomness.
     :return: A PyTorch sampler.
     """
     if taskset.data_type in (TaskType.SEGMENTATION, TaskType.OBJ_DETECTION, TaskType.TEXT):
@@ -33,11 +36,16 @@ def get_balanced_sampler(taskset, log=False):
     weights_per_class = 1 / nb_per_class
     if log:
         weights_per_class = np.log(weights_per_class)
-        weights_per_class = 1 - (weights_per_class / np.sum(weights_per_class))
+        weights_per_class = np.clip(1 - (weights_per_class / np.sum(weights_per_class)), a_min=0.1, a_max=None)
 
     weights = weights_per_class[y]
 
-    return torch.utils.data.sampler.WeightedRandomSampler(weights, len(taskset))
+    return torch.utils.data.sampler.WeightedRandomSampler(
+        weights,
+        num_samples=num_samples or len(taskset),
+        replacement=replacement,
+        generator=generator
+    )
 
 
 def split_train_val(dataset: BaseTaskSet, val_split: float = 0.1) -> Tuple[BaseTaskSet, BaseTaskSet]:
