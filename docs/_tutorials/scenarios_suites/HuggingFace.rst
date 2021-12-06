@@ -29,8 +29,12 @@ with HuggingFace. Then, I'm asking to split this dataset according to the
     scenario = HuggingFaceContinual(multi_nli, split_field="genre", increment=1)
     print(len(scenario), scenario.nb_classes)
 
-    for dataset in scenario:
-        print(dataset)
+    for task_dataset in scenario:
+        print(task_dataset)
+
+
+Note that all `task_dataset`s are also HuggingFace's datasets. So any functions you
+used to apply one those (filtering, tokenization, etc.) you can still do it.
 
 
 HuggingFace Fellowship
