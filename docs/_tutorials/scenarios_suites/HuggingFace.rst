@@ -8,7 +8,9 @@ can be found `here <https://huggingface.co/docs/datasets/>__`.
 Naturally, Continuum can work with those NLP datasets and convert them in
 continual scenarios.
 
-In all cases, you won't work with `TaskSet` but instead directly with HuggingFace's Dataset.
+A Continuum scenario can be iterated to produce task's dataset. For image-based datasets, those
+tasks are implemented as `Taskset` that can be loaded with pytorch with a
+`DataLoader`. For text-based datasets, the task's dataset is instead directly a HuggingFace's dataset.
 
 HuggingFace Continual
 =========================
@@ -35,6 +37,16 @@ with HuggingFace. Then, I'm asking to split this dataset according to the
 
 Note that all `task_dataset`s are also HuggingFace's datasets. So any functions you
 used to apply one those (filtering, tokenization, etc.) you can still do it.
+
+See below an example of what the "fields" could be in a HuggingFace dataset:
+
+.. code-block:: bash
+
+    >>> multi_nli
+    Dataset({
+        features: ['promptID', 'pairID', 'premise', 'premise_binary_parse', 'premise_parse', 'hypothesis', 'hypothesis_binary_parse', 'hypothesis_parse', 'genre', 'label'],
+        num_rows: 392702
+    })
 
 
 HuggingFace Fellowship
