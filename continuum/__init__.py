@@ -16,4 +16,4 @@ from continuum import generators
 from continuum import rehearsal
 from continuum import transforms
 
-__version__ = "1.1.8"
+__version__ = "1.2.0"
