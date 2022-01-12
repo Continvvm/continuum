@@ -62,9 +62,6 @@ def split_train_val(dataset: BaseTaskSet, val_split: float = 0.1) -> Tuple[BaseT
     train_indexes = indexes[int(val_split * len(indexes)):]
     val_indexes = indexes[:int(val_split * len(indexes))]
 
-    print(train_indexes)
-    print(val_indexes)
-
     if dataset.data_type != TaskType.H5:
         x_train, y_train, t_train = dataset.get_raw_samples(train_indexes)
         x_val, y_val, t_val = dataset.get_raw_samples(val_indexes)
