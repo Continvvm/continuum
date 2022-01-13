@@ -119,7 +119,7 @@ tasks, each with new classes. See there some example arguments:
 .. code-block:: python
 
     from torchvision.transforms import transforms
-
+    from continuum.datasets import MNIST
     from continuum import ClassIncremental
 
     continual_dataset = MNIST(data_path="my/data/path", download=True, train=True)
