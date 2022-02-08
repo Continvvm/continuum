@@ -625,3 +625,28 @@ class ColorJitter:
         format_string += ', saturation={0}'.format(self.saturation)
         format_string += ', hue={0})'.format(self.hue)
         return format_string
+
+
+class BackgroundSwap:
+
+    def __init__(self, bg_images, fg_criterion=None):
+        """
+        :param bg_images: background image set.
+        :param fg_criterion: a boolean function that decides the foreground of the input image.
+        """
+        self.bg_images = bg_images
+        self.fg_criterion = fg_criterion
+
+    def __call__(self, img, mask=None):
+        """
+        :param img: input image
+        :param mask: boolean mask for the foreground of img
+        """
+        if mask is None and self.fg_criterion is None:
+            raise Exception('No foreground mask or masking criterion')
+
+        # TODO: sample from the background set (randomly with replacement?)
+        # TODO: get boolean mask using criterion if mask == None
+        # TODO: apply random augmentations and crop sampled bg image to dimension of img
+        # TODO: splice img fg with sampled bg image and return
+        pass
