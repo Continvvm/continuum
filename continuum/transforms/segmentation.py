@@ -644,10 +644,11 @@ class BackgroundSwap:
 
         NOTE: a mask passed in manually takes precedent over criterion
         """
+
         if mask is None and self.fg_criterion is None:
             raise Exception('No foreground mask or masking criterion')
         elif mask is None:
-            mask = img[self.fg_criterion(img)]  # pseudocode
+            mask = img[self.fg_criterion(img)]  # pseudocode, convert to numpy first
 
         # TODO: sample from the background set (randomly with replacement?)
         # TODO: get boolean mask using criterion if mask == None
