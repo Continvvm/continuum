@@ -1,7 +1,6 @@
 from continuum.datasets import _ContinuumDataset
 from typing import Tuple
 import numpy as np
-from matplotlib import pyplot as plt
 
 class BackgroundSwap:
 
