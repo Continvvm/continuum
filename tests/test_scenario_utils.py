@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 import random
 import string
+import torch
 
 import torch.nn as nn
 
@@ -143,11 +144,16 @@ def test_slicing_list_path_array(list_tasks):
     subscenario = create_subscenario(scenario, list_tasks)
     assert subscenario.nb_tasks == len(list_tasks), print(f"{len(subscenario)} - vs - {len(list_tasks)}")
 
-
-def test_encode_scenario():
+@pytest.mark.parametrize("nb_test", np.arange(100))
+def test_encode_scenario(nb_test):
     filename_h5 = "test_encode_scenario.hdf5"
     if os.path.exists(filename_h5):
         os.remove(filename_h5)
+
+    if torch.cuda.is_available():
+        inference_fct = (lambda model, x: model.to(torch.device('cuda:0'))(x.to(torch.device('cuda:0'))))
+    else:
+        inference_fct = (lambda model, x: model(x))
 
     train = gen_data()
     x, y, t = train
@@ -160,7 +166,8 @@ def test_encode_scenario():
     encoded_scenario = encode_scenario(model=model,
                                        scenario=scenario,
                                        batch_size=64,
-                                       filename=filename_h5)
+                                       filename=filename_h5,
+                                       inference_fct=inference_fct)
 
     assert scenario.nb_tasks == encoded_scenario.nb_tasks
     assert len(scenario[0]) == len(encoded_scenario[0])
