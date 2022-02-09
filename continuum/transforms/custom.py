@@ -2,6 +2,7 @@ from continuum.datasets import _ContinuumDataset
 from typing import Tuple
 import numpy as np
 
+
 class BackgroundSwap:
 
     def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28)) -> None:
