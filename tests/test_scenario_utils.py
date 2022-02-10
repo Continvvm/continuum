@@ -144,8 +144,7 @@ def test_slicing_list_path_array(list_tasks):
     subscenario = create_subscenario(scenario, list_tasks)
     assert subscenario.nb_tasks == len(list_tasks), print(f"{len(subscenario)} - vs - {len(list_tasks)}")
 
-@pytest.mark.parametrize("nb_test", np.arange(100))
-def test_encode_scenario(nb_test):
+def test_encode_scenario():
     filename_h5 = "test_encode_scenario.hdf5"
     if os.path.exists(filename_h5):
         os.remove(filename_h5)
