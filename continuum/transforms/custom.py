@@ -1,6 +1,7 @@
 from typing import Tuple, Union
 import numpy as np
 import torch
+from PIL.Image import Image
 from torch.utils.data import DataLoader
 from continuum.datasets import _ContinuumDataset
 
@@ -62,9 +63,12 @@ class BackgroundSwap:
             img = img.repeat(3, 1, 1)
             img = img.permute(1, 2, 0)
 
-        else:
+        elif isinstance(img, np.ndarray):
             img = np.expand_dims(img, 2)
             img = np.concatenate([img, img, img], axis=2)
+
+        else:
+            raise NotImplementedError("Input type not implemented")
 
         new_background = self.bg_images[np.random.randint(0, len(self.bg_images))]
 
