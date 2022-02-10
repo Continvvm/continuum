@@ -17,6 +17,9 @@ def test_background_swap_numpy():
     im = mnist.get_data()[0][0]
     im = bg_swap(im)
 
+    # Uncomment for debugging
+    # plt.imshow(im, interpolation='nearest')
+    # plt.show()
 
 @pytest.mark.slow
 def test_background_swap_torch():
@@ -24,16 +27,16 @@ def test_background_swap_torch():
 
     mnist = torchvision.datasets.MNIST('./TorchMnist/', train=True, download=True,
                                        transform=torchvision.transforms.Compose([
-                                           torchvision.transforms.ToTensor(),
-                                           torchvision.transforms.Normalize(
-                                               (0.5,), (0.5,))
+                                           torchvision.transforms.ToTensor()
                                        ]))
 
-    bg_swap = BackgroundSwap(cifar, input_dim=(28, 28), normalize_input=False)
+    bg_swap = BackgroundSwap(cifar, input_dim=(28, 28))
     im = mnist[0][0]
-
     im = bg_swap(im)
 
+    # Uncomment for debugging
+    # plt.imshow(im.permute(1, 2, 0), interpolation='nearest')
+    # plt.show()
 
 
 def test_transform_incremental_bg_swap():

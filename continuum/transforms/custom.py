@@ -11,16 +11,12 @@ class BackgroundSwap:
 
     :param bg_images: background image dataset, must be normalized.
     :param input_dim: input dimension of transform, excluding channels
-    :param normalize_input: normalize input images, if false it's assumed they are already normalized
-    :param normalize_bg: normalize bg images, if false it's assumed they are already normalized
     :param crop_bg: crop background images to correct size, if false it's assumed they are cropped
     """
 
     def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28),
-                 normalize_input: bool = True,
                  normalize_bg: bool = True,
                  crop_bg: bool = True):
-        self.normalize_input = normalize_input
         self.normalize_bg = normalize_bg
         self.crop_bg = crop_bg
         self.input_dim = input_dim
@@ -53,9 +49,9 @@ class BackgroundSwap:
     def __call__(self, img: Union[np.ndarray, torch.Tensor],
                  mask: Union[np.ndarray, torch.BoolTensor] = None) -> Union[np.ndarray, torch.Tensor]:
         """
-        Splice input image foreground with randomly sampled background
+        Splice input image foreground with randomly sampled background.
 
-        NOTE: inputting a torch.Tensor assumes the channel dim comes first,
+        Inputting a torch.Tensor assumes the channel dim comes first,
         while inputting a np.ndarray requires the channel dim to come second
 
         :param img: input image, must be normalized
@@ -63,7 +59,6 @@ class BackgroundSwap:
         """
 
         if isinstance(img, torch.Tensor):
-            # img.unsqueeze_(0)
             img = img.repeat(3, 1, 1)
             img = img.permute(1, 2, 0)
 
@@ -73,10 +68,8 @@ class BackgroundSwap:
 
         new_background = self.bg_images[np.random.randint(0, len(self.bg_images))]
 
-        if self.normalize_input:
-            img = img / 255.0
-
         if self.normalize_bg:
+            # TODO: don't hardcode normalization
             new_background = new_background / 255.0
 
         if self.crop_bg:
