@@ -3,7 +3,6 @@ from continuum.datasets import CIFAR10
 from continuum.datasets import MNIST
 import torchvision
 from continuum.scenarios import TransformationIncremental
-from matplotlib import pyplot as plt
 import pytest
 
 
@@ -20,6 +19,7 @@ def test_background_swap_numpy():
     # Uncomment for debugging
     # plt.imshow(im, interpolation='nearest')
     # plt.show()
+
 
 @pytest.mark.slow
 def test_background_swap_torch():
@@ -39,5 +39,13 @@ def test_background_swap_torch():
     # plt.show()
 
 
+@pytest.mark.slow
 def test_transform_incremental_bg_swap():
-    pass
+    cifar = CIFAR10("CIFAR10_DATA", download=True, train=True)
+    mnist = MNIST("MNIST_DATA", download=True, train=True)
+
+    scenario = TransformationIncremental(cifar,
+                                         base_transformations=[torchvision.transforms.ToTensor()],
+                                         incremental_transformations=[[BackgroundSwap(cifar, input_dim=(28, 28))]])
+    for task_id, task_data in enumerate(scenario):
+        pass
