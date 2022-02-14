@@ -1,8 +1,6 @@
 from typing import Tuple, Union
 import numpy as np
 import torch
-from PIL.Image import Image
-from torch.utils.data import DataLoader
 from continuum.datasets import _ContinuumDataset
 
 

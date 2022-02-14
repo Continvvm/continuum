@@ -4,11 +4,10 @@ from continuum.datasets import MNIST
 import torchvision
 from continuum.scenarios import TransformationIncremental
 import pytest
-import numpy as np
+
 
 # Uncomment for debugging via image output
 # import matplotlib.pyplot as plt
-
 
 
 @pytest.mark.slow
@@ -52,43 +51,6 @@ def test_background_swap_torch():
 
 
 @pytest.mark.slow
-def test_tranform_incremental_order():
-    """
-    Test order of transformations
-
-    For each task transforms should be applied in the following order:
-    base, incremental
-
-    """
-    x = np.zeros((20, 2, 2, 3), dtype=np.uint8)
-    y = np.ones((20,), dtype=np.int32)
-    dummy_dataset = InMemoryDataset(x, y)
-
-    call_order = []
-
-    class DummyTransform:
-        def __init__(self, idx):
-            self.idx = idx
-
-        def __call__(self, x_in):
-            call_order.append(self.idx)
-            return x_in
-
-    scenario = TransformationIncremental(dummy_dataset,
-                                         base_transformations=[DummyTransform(0)],
-                                         incremental_transformations=
-                                         [[],
-                                          [DummyTransform(1)]])
-
-    for t in scenario[1]:
-        call_order.append(-1)
-
-    assert call_order[-1] == -1
-    assert call_order[-2] == 1
-    assert call_order[-3] == 0
-
-
-@pytest.mark.slow
 def test_transform_incremental_bg_swap():
     """
     Test Background swap transform on a full mnist dataset with cifar as background
@@ -97,12 +59,10 @@ def test_transform_incremental_bg_swap():
     mnist = MNIST("MNIST_DATA", download=True, train=True)
 
     scenario = TransformationIncremental(mnist,
-                                         base_transformations=[torchvision.transforms.ToTensor()],
-                                         incremental_transformations=
-                                         [[],
-                                          [BackgroundSwap(cifar, input_dim=(28, 28))]])
+                                         base_transformations=None,
+                                         incremental_transformations=[[torchvision.transforms.ToTensor()],
+                                                                      [BackgroundSwap(cifar, input_dim=(28, 28))]])
 
     for task_id, task_data in enumerate(scenario):
         for t in task_data:
             pass
-
