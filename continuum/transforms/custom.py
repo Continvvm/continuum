@@ -68,7 +68,7 @@ class BackgroundSwap:
             img = np.concatenate([img, img, img], axis=2)
 
         else:
-            raise NotImplementedError("Input type not implemented")
+            raise NotImplementedError(f"Input type {type(img)} not implemented")
 
         new_background = self.bg_images[np.random.randint(0, len(self.bg_images))]
 
