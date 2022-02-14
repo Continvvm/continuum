@@ -13,6 +13,9 @@ import numpy as np
 
 @pytest.mark.slow
 def test_background_swap_numpy():
+    """
+    Test background swap on a single ndarray input
+    """
     mnist = MNIST("MNIST_DATA", download=True, train=True)
     cifar = CIFAR10("CIFAR10_DATA", download=True, train=True)
 
@@ -28,6 +31,9 @@ def test_background_swap_numpy():
 
 @pytest.mark.slow
 def test_background_swap_torch():
+    """
+    Test background swap on a single tensor input
+    """
     cifar = CIFAR10("CIFAR10_DATA", download=True, train=True)
 
     mnist = torchvision.datasets.MNIST('./TorchMnist/', train=True, download=True,
@@ -47,7 +53,13 @@ def test_background_swap_torch():
 
 @pytest.mark.slow
 def test_tranform_incremental_order():
+    """
+    Test order of transformations
 
+    For each task transforms should be applied in the following order:
+    base, incremental
+
+    """
     x = np.zeros((20, 2, 2, 3), dtype=np.uint8)
     y = np.ones((20,), dtype=np.int32)
     dummy_dataset = InMemoryDataset(x, y)
@@ -68,15 +80,6 @@ def test_tranform_incremental_order():
                                          [[],
                                           [DummyTransform(1)]])
 
-    assert len(scenario) == 2
-
-    for t in scenario[0]:
-        pass
-
-    assert (1 not in call_order) and (0 in call_order)
-
-    call_order = []
-
     for t in scenario[1]:
         call_order.append(-1)
 
@@ -87,6 +90,9 @@ def test_tranform_incremental_order():
 
 @pytest.mark.slow
 def test_transform_incremental_bg_swap():
+    """
+    Test Background swap transform on a full mnist dataset with cifar as background
+    """
     cifar = CIFAR10("CIFAR10_DATA", download=True, train=True)
     mnist = MNIST("MNIST_DATA", download=True, train=True)
 
