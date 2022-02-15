@@ -10,7 +10,6 @@ class BackgroundSwap:
     :param bg_images: background image dataset, must be normalized.
     :param bg_label: label class from background image set
     :param input_dim: input dimension of transform, excluding channels
-    :param crop_bg: crop background images to correct size, if false it's assumed they are cropped
     """
 
     def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28),
