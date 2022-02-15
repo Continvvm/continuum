@@ -1,3 +1,7 @@
+import os
+
+from torch.utils.data import DataLoader
+
 from continuum.transforms.custom import BackgroundSwap
 from continuum.datasets import CIFAR10, InMemoryDataset
 from continuum.datasets import MNIST
@@ -51,18 +55,20 @@ def test_background_swap_torch():
 
 
 @pytest.mark.slow
-def test_transform_incremental_bg_swap():
-    """
-    Test Background swap transform on a full mnist dataset with cifar as background
-    """
-    cifar = CIFAR10("CIFAR10_DATA", download=True, train=True)
-    mnist = MNIST("MNIST_DATA", download=True, train=True)
-
-    scenario = TransformationIncremental(mnist,
-                                         base_transformations=None,
-                                         incremental_transformations=[[torchvision.transforms.ToTensor()],
-                                                                      [BackgroundSwap(cifar, input_dim=(28, 28))]])
-
+def test_background_tranformation():
+    cifar = CIFAR10("CIFAR10_DATA", train=True)
+    mnist = MNIST("MNIST_DATA", download=False, train=True)
+    nb_task = 3
+    list_trsf = []
+    for i in range(nb_task):
+        list_trsf.append([torchvision.transforms.ToTensor(), BackgroundSwap(cifar, bg_label=i, input_dim=(28, 28)),
+                          torchvision.transforms.ToPILImage()])
+    scenario = TransformationIncremental(mnist, base_transformations=[torchvision.transforms.ToTensor()],
+                                         incremental_transformations=list_trsf)
+    folder = "tests/samples/background_trsf/"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     for task_id, task_data in enumerate(scenario):
-        for t in task_data:
-            pass
+        task_data.plot(path=folder, title=f"background_{task_id}.jpg", nb_samples=100, shape=[28, 28, 3])
+        loader = DataLoader(task_data)
+        _, _, _ = next(iter(loader))

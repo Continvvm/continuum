@@ -9,17 +9,26 @@ class BackgroundSwap:
     Swap input image background with a randomly selected image from bg_images dataset
 
     :param bg_images: background image dataset, must be normalized.
+    :param bg_label: label class from background image set
     :param input_dim: input dimension of transform, excluding channels
     :param crop_bg: crop background images to correct size, if false it's assumed they are cropped
     """
 
     def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28),
+                 bg_label: int = None,
                  normalize_bg: bool = True,
                  crop_bg: bool = True):
+        self.bg_label = bg_label
         self.normalize_bg = normalize_bg
         self.crop_bg = crop_bg
         self.input_dim = input_dim
-        self.bg_images = bg_images.get_data()[0]
+
+        full = bg_images.get_data()
+
+        if bg_label is not None:
+            self.bg_images = full[0][np.where(full[1] == bg_label)]
+        else:
+            self.bg_images = full[0]
 
     def _randcrop(self, img: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
         """
