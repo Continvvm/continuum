@@ -5,8 +5,7 @@ from continuum.datasets import _ContinuumDataset
 
 
 class BackgroundSwap:
-    """
-    Swap input image background with a randomly selected image from bg_images dataset
+    """Swap input image background with a randomly selected image from bg_images dataset
 
     :param bg_images: background image dataset, must be normalized.
     :param bg_label: label class from background image set
@@ -16,11 +15,9 @@ class BackgroundSwap:
 
     def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28),
                  bg_label: int = None,
-                 normalize_bg: bool = True,
-                 crop_bg: bool = True):
+                 normalize_bg: bool = True):
         self.bg_label = bg_label
         self.normalize_bg = normalize_bg
-        self.crop_bg = crop_bg
         self.input_dim = input_dim
 
         full = bg_images.get_data()
@@ -31,8 +28,7 @@ class BackgroundSwap:
             self.bg_images = full[0]
 
     def _randcrop(self, img: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
-        """
-        Crop input image to self.input_dim shape
+        """Crop input image to self.input_dim shape
         :param img: input image
         """
 
@@ -45,25 +41,24 @@ class BackgroundSwap:
         if crop_width and crop_height:
             return img[x_crop:x_crop + self.input_dim[0], y_crop: y_crop + self.input_dim[1], :]
 
-        elif crop_width:
+        if crop_width:
             return img[:, y_crop: y_crop + self.input_dim[1], :]
 
-        elif crop_height:
+        if crop_height:
             return img[x_crop:x_crop + self.input_dim[0], :, :]
 
-        else:
-            raise Exception("Background image is smaller than foreground image")
+        raise Exception("Background image is smaller than foreground image")
 
     def __call__(self, img: Union[np.ndarray, torch.Tensor],
-                 mask: Union[np.ndarray, torch.BoolTensor] = None) -> Union[np.ndarray, torch.Tensor]:
-        """
-        Splice input image foreground with randomly sampled background.
+                 mask: Union[np.ndarray, torch.BoolTensor] = None
+                 ) -> Union[np.ndarray, torch.Tensor]:
+        """Splice input image foreground with randomly sampled background.
 
         Inputting a torch.Tensor assumes the channel dim comes first,
         while inputting a np.ndarray requires the channel dim to come second
 
         :param img: input image, must be normalized
-        :param mask: boolean mask for the foreground of img, if None then a .5 threshold is used
+        :param mask: boolean mask for the foreground of img, .5 threshold used by default
         """
 
         if isinstance(img, torch.Tensor):
@@ -83,17 +78,12 @@ class BackgroundSwap:
             # TODO: don't hardcode normalization
             new_background = new_background / 255.0
 
-        if self.crop_bg:
-            new_background = self._randcrop(new_background)
+        new_background = self._randcrop(new_background)
 
-        if mask is None:
-            mask = (img > .5)
-
+        mask = (img > .5) if mask is None else mask
         out = mask * img + ~mask * new_background
 
         if isinstance(out, torch.Tensor):
             out = out.permute(2, 0, 1)
 
         return out
-
-
