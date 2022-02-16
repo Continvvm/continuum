@@ -9,6 +9,7 @@ import torchvision
 from continuum.scenarios import TransformationIncremental
 import pytest
 
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 # Uncomment for debugging via image output
 # import matplotlib.pyplot as plt
@@ -19,8 +20,8 @@ def test_background_swap_numpy():
     """
     Test background swap on a single ndarray input
     """
-    mnist = MNIST("MNIST_DATA", download=True, train=True)
-    cifar = CIFAR10("CIFAR10_DATA", download=True, train=True)
+    mnist = MNIST(DATA_PATH, download=True, train=True)
+    cifar = CIFAR10(DATA_PATH, download=True, train=True)
 
     bg_swap = BackgroundSwap(cifar, input_dim=(28, 28))
 
@@ -37,9 +38,9 @@ def test_background_swap_torch():
     """
     Test background swap on a single tensor input
     """
-    cifar = CIFAR10("CIFAR10_DATA", download=True, train=True)
+    cifar = CIFAR10(DATA_PATH, download=True, train=True)
 
-    mnist = torchvision.datasets.MNIST('./TorchMnist/', train=True, download=True,
+    mnist = torchvision.datasets.MNIST(DATA_PATH, train=True, download=True,
                                        transform=torchvision.transforms.Compose([
                                            torchvision.transforms.ToTensor()
                                        ]))
@@ -56,8 +57,8 @@ def test_background_swap_torch():
 
 @pytest.mark.slow
 def test_background_tranformation():
-    cifar = CIFAR10("CIFAR10_DATA", train=True)
-    mnist = MNIST("MNIST_DATA", download=False, train=True)
+    cifar = CIFAR10(DATA_PATH, train=True)
+    mnist = MNIST(DATA_PATH, download=False, train=True)
     nb_task = 3
     list_trsf = []
     for i in range(nb_task):
