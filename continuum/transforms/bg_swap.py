@@ -34,19 +34,21 @@ class BackgroundSwap:
         crop_height = img.shape[0] >= self.input_dim[0]
         crop_width = img.shape[1] >= self.input_dim[1]
 
+        if not crop_width and not crop_height:
+            # Resize
+            pass
+
         x_crop = np.random.randint(0, img.shape[0] - self.input_dim[0])
         y_crop = np.random.randint(0, img.shape[1] - self.input_dim[1])
 
         if crop_width and crop_height:
             return img[x_crop:x_crop + self.input_dim[0], y_crop: y_crop + self.input_dim[1], :]
 
-        if crop_width:
+        elif crop_width:
             return img[:, y_crop: y_crop + self.input_dim[1], :]
 
-        if crop_height:
+        else:
             return img[x_crop:x_crop + self.input_dim[0], :, :]
-
-        raise Exception("Background image is smaller than foreground image")
 
     def __call__(self, img: Union[np.ndarray, torch.Tensor],
                  mask: Union[np.ndarray, torch.BoolTensor] = None
