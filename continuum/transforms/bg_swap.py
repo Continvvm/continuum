@@ -7,6 +7,7 @@ from skimage.transform import resize
 
 class BackgroundSwap:
     """Swap input image background with a randomly selected image from bg_images dataset.
+
     :param bg_images: background image dataset, must be normalized.
     :param input_dim: input dimension of transform, excluding channels.
     :param bg_label: label class from background image set.
@@ -36,7 +37,6 @@ class BackgroundSwap:
         :param img: input image, must be normalized.
         :param mask: boolean mask for the foreground of img, .5 threshold used by default.
         """
-
         if isinstance(img, torch.Tensor):
             img = img.repeat(3, 1, 1)
             img = img.permute(1, 2, 0)
