@@ -1,18 +1,36 @@
 import os
 
 from torch.utils.data import DataLoader
-
-from continuum.transforms.custom import BackgroundSwap
 from continuum.datasets import CIFAR10, InMemoryDataset
 from continuum.datasets import MNIST
 import torchvision
 from continuum.scenarios import TransformationIncremental
 import pytest
+import numpy as np
+
+from continuum.transforms.bg_swap import BackgroundSwap
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 # Uncomment for debugging via image output
 # import matplotlib.pyplot as plt
+
+
+def test_bg_swap_fast():
+    """
+    Fast test for background swap
+    """
+    bg_x = np.ones(shape=[2, 5, 5, 3]) * -1
+    bg_y = np.random.rand(2)
+
+    fg = np.random.normal(loc=.5, scale=.1, size=[5, 5])
+    bg = InMemoryDataset(bg_x, bg_y)
+
+    bg_swap = BackgroundSwap(bg, input_dim=(5, 5), normalize_bg=None)
+
+    spliced_1_channel = bg_swap(fg)[:, :, 0]
+
+    assert np.array_equal((spliced_1_channel <= -1), (fg <= .5))
 
 
 @pytest.mark.slow

@@ -1,20 +1,22 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Callable, Optional
 import numpy as np
 import torch
 from continuum.datasets import _ContinuumDataset
+from skimage.transform import resize
 
 
 class BackgroundSwap:
     """Swap input image background with a randomly selected image from bg_images dataset
 
     :param bg_images: background image dataset, must be normalized.
-    :param bg_label: label class from background image set
     :param input_dim: input dimension of transform, excluding channels
+    :param bg_label: label class from background image set
+    :param normalize_bg: an optional normalization function
     """
 
     def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28),
-                 bg_label: int = None,
-                 normalize_bg: bool = True):
+                 bg_label: Optional[int] = None,
+                 normalize_bg: Optional[Callable] = lambda x: x / 255.0):
         self.bg_label = bg_label
         self.normalize_bg = normalize_bg
         self.input_dim = input_dim
@@ -26,32 +28,8 @@ class BackgroundSwap:
         else:
             self.bg_images = full[0]
 
-    def _randcrop(self, img: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
-        """Crop input image to self.input_dim shape
-        :param img: input image
-        """
-
-        crop_height = img.shape[0] >= self.input_dim[0]
-        crop_width = img.shape[1] >= self.input_dim[1]
-
-        if not crop_width and not crop_height:
-            # Resize
-            pass
-
-        x_crop = np.random.randint(0, img.shape[0] - self.input_dim[0])
-        y_crop = np.random.randint(0, img.shape[1] - self.input_dim[1])
-
-        if crop_width and crop_height:
-            return img[x_crop:x_crop + self.input_dim[0], y_crop: y_crop + self.input_dim[1], :]
-
-        elif crop_width:
-            return img[:, y_crop: y_crop + self.input_dim[1], :]
-
-        else:
-            return img[x_crop:x_crop + self.input_dim[0], :, :]
-
     def __call__(self, img: Union[np.ndarray, torch.Tensor],
-                 mask: Union[np.ndarray, torch.BoolTensor] = None
+                 mask: Optional[Union[np.ndarray, torch.BoolTensor]] = None
                  ) -> Union[np.ndarray, torch.Tensor]:
         """Splice input image foreground with randomly sampled background.
 
@@ -73,13 +51,12 @@ class BackgroundSwap:
         else:
             raise NotImplementedError(f"Input type {type(img)} not implemented")
 
-        new_background = self.bg_images[np.random.randint(0, len(self.bg_images))]
+        new_background: np.ndarray = self.bg_images[np.random.randint(0, len(self.bg_images))]
 
         if self.normalize_bg:
-            # TODO: don't hardcode normalization
-            new_background = new_background / 255.0
+            new_background = self.normalize_bg(new_background)
 
-        new_background = self._randcrop(new_background)
+        new_background = resize(new_background, self.input_dim)
 
         mask = (img > .5) if mask is None else mask
         out = mask * img + ~mask * new_background
