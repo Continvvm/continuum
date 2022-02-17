@@ -18,7 +18,7 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 
 def test_bg_swap_fast():
     """
-    Fast test for background swap
+    Fast test for background swap.
     """
     bg_x = np.ones(shape=[2, 5, 5, 3]) * -1
     bg_y = np.random.rand(2)
@@ -36,7 +36,7 @@ def test_bg_swap_fast():
 @pytest.mark.slow
 def test_background_swap_numpy():
     """
-    Test background swap on a single ndarray input
+    Test background swap on a single ndarray input.
     """
     mnist = MNIST(DATA_PATH, download=True, train=True)
     cifar = CIFAR10(DATA_PATH, download=True, train=True)
@@ -54,7 +54,7 @@ def test_background_swap_numpy():
 @pytest.mark.slow
 def test_background_swap_torch():
     """
-    Test background swap on a single tensor input
+    Test background swap on a single tensor input.
     """
     cifar = CIFAR10(DATA_PATH, download=True, train=True)
 
@@ -75,6 +75,9 @@ def test_background_swap_torch():
 
 @pytest.mark.slow
 def test_background_tranformation():
+    """
+    Example code using TransformationIncremental to create a setting with 3 tasks.
+    """
     cifar = CIFAR10(DATA_PATH, train=True)
     mnist = MNIST(DATA_PATH, download=False, train=True)
     nb_task = 3

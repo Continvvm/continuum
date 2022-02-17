@@ -6,12 +6,11 @@ from skimage.transform import resize
 
 
 class BackgroundSwap:
-    """Swap input image background with a randomly selected image from bg_images dataset
-
+    """Swap input image background with a randomly selected image from bg_images dataset.
     :param bg_images: background image dataset, must be normalized.
-    :param input_dim: input dimension of transform, excluding channels
-    :param bg_label: label class from background image set
-    :param normalize_bg: an optional normalization function
+    :param input_dim: input dimension of transform, excluding channels.
+    :param bg_label: label class from background image set.
+    :param normalize_bg: an optional normalization function.
     """
 
     def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28),
@@ -32,12 +31,10 @@ class BackgroundSwap:
                  mask: Optional[Union[np.ndarray, torch.BoolTensor]] = None
                  ) -> Union[np.ndarray, torch.Tensor]:
         """Splice input image foreground with randomly sampled background.
-
         Inputting a torch.Tensor assumes the channel dim comes first,
-        while inputting a np.ndarray requires the channel dim to come second
-
-        :param img: input image, must be normalized
-        :param mask: boolean mask for the foreground of img, .5 threshold used by default
+        while inputting a np.ndarray requires the channel dim to come second.
+        :param img: input image, must be normalized.
+        :param mask: boolean mask for the foreground of img, .5 threshold used by default.
         """
 
         if isinstance(img, torch.Tensor):
