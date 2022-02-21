@@ -102,7 +102,7 @@ if you want to evaluate after each task, on all seen tasks do `clloader_test[:n]
 
 **TransformIncremental + BackgroundSwap**:
 
-|<img src="images/background_0.jpg" width="150">|<img src="images/background_1.jpg" width="150">|<img src="images/background_2.jpg" width="150">|
+|<img src="images/background_0.jpg" width="250">|<img src="images/background_1.jpg" width="250">|<img src="images/background_2.jpg" width="250">|
 |:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 |
 
