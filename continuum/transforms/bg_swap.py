@@ -32,6 +32,7 @@ class BackgroundSwap:
                  mask: Optional[Union[np.ndarray, torch.BoolTensor]] = None
                  ) -> Union[np.ndarray, torch.Tensor]:
         """
+
         :param img: input image, must be normalized.
         :param mask: boolean mask for the foreground of img, .5 threshold used by default.
         """
