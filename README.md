@@ -100,6 +100,12 @@ if you want to evaluate after each task, on all seen tasks do `clloader_test[:n]
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
 
+**TransformIncremental + BackgroundSwap**:
+
+|<img src="images/background_0.jpg" width="150">|<img src="images/background_1.jpg" width="150">|<img src="images/background_2.jpg" width="150">|
+|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
+|Task 0 | Task 1 | Task 2 | Task 3 |
+
 ### Citation
 
 If you find this library useful in your work, please consider citing it:
