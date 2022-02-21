@@ -31,7 +31,7 @@ class BackgroundSwap:
     def __call__(self, img: Union[np.ndarray, torch.Tensor],
                  mask: Optional[Union[np.ndarray, torch.BoolTensor]] = None
                  ) -> Union[np.ndarray, torch.Tensor]:
-        """
+        """Call transform on img input and return swapped bg
 
         :param img: input image, must be normalized.
         :param mask: boolean mask for the foreground of img, .5 threshold used by default.
