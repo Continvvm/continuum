@@ -289,6 +289,12 @@ This is inspired by the Mnist meta-sets from the following `paper <https://arxiv
 
 .. code-block:: python
 
+    from continuum import TransformationIncremental
+    from continuum.datasets import CIFAR10, MNIST
+    from continuum.transforms.bg_swap import BackgroundSwap
+    import torchvision
+
+
     cifar = CIFAR10(DATA_PATH, train=True)
     mnist = MNIST(DATA_PATH, download=False, train=True)
     nb_task = 3
