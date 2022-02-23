@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from continuum.datasets import _ContinuumDataset
 from skimage.transform import resize
-
+# pylint: disable=invalid-unary-operand-type
 
 class BackgroundSwap:
     """Swap input image background with a randomly selected image from bg_images dataset.
