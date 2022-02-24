@@ -283,6 +283,32 @@ NB: the transformation used are `pytorch.transforms classes <https://pytorch.org
 
 
 
+
+You can use TransformationIncremental along with the BackgroundSwap transform to create a domain incremental setting with changing backgrounds
+This is inspired by the Mnist meta-sets from the following `paper <https://arxiv.org/abs/2007.02915>`__.
+
+.. code-block:: python
+
+    from continuum import TransformationIncremental
+    from continuum.datasets import CIFAR10, MNIST
+    from continuum.transforms.bg_swap import BackgroundSwap
+    import torchvision
+
+
+    cifar = CIFAR10(DATA_PATH, train=True)
+    mnist = MNIST(DATA_PATH, download=False, train=True)
+    nb_task = 3
+    list_trsf = []
+    for i in range(nb_task):
+        list_trsf.append([torchvision.transforms.ToTensor(), BackgroundSwap(cifar, bg_label=i, input_dim=(28, 28)),
+                          torchvision.transforms.ToPILImage()])
+    scenario = TransformationIncremental(mnist, base_transformations=[torchvision.transforms.ToTensor()],
+                                         incremental_transformations=list_trsf)
+    for task_id, task_data in enumerate(scenario):
+        # Do magic here
+
+
+
 - Permutations Incremental `source <https://github.com/Continvvm/continuum/blob/master/continuum/scenarios/permutations.py>`__
 is a famous case of TransformationIncremental class, in this case the transformation is a fixed pixel permutation. Each task has a specific permutation.
 The scenarios is then to learn a same task in various permutation spaces.
