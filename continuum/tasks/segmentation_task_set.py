@@ -1,4 +1,4 @@
-from typing import Union, Optional, List
+from typing import Callable, Union, Optional, List, Callable
 import warnings
 
 import numpy as np
@@ -28,20 +28,21 @@ class SegmentationTaskSet(PathTaskSet):
             t: np.ndarray,
             trsf: Union[transforms.Compose, List[transforms.Compose]],
             target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
-            bounding_boxes: Optional[np.ndarray] = None
+            bounding_boxes: Optional[np.ndarray] = None,
     ):
         super().__init__(x, y, t, trsf, target_trsf, bounding_boxes)
         self.data_type = TaskType.SEGMENTATION
 
     def get_classes(self) -> List[int]:
         warnings.warn(
-            "This method is not available for Segmentation because it'll takes "
+            "This method is not available for Segmentation because it'll take "
             "a long time to open all images."
         )
         return None
 
     def _prepare_data(self, x, y, t):
         y = Image.open(y)
+
         if self.trsf is not None:
             x, y = self.get_task_trsf(t)(x, y)
 

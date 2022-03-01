@@ -1,8 +1,7 @@
-import warnings
-from copy import copy
-from typing import Callable, List, Union, Optional
+from typing import Callable, List, Union, Optional, Callable
 import os
 import multiprocessing
+from functools import partial
 
 import numpy as np
 from PIL import Image
@@ -37,7 +36,9 @@ class SegmentationClassIncremental(ClassIncremental):
                               Desactivated if `increment` is a list.
     :param transformations: A list of transformations applied to all tasks.
     :param class_order: An optional custom class order, used for NC.
-                        e.g. [0,1,2,3,4,5,6,7,8,9] or [5,2,4,1,8,6,7,9,0,3]
+                        e.g. [1,2,3,4,5,6,7,8,9] or [5,2,4,1,8,6,7,9,3]. The
+                        background special class (0) must be excluded as it's
+                        always present from the first task.
     :param mode: The mode of incremental segmentation. In both "sequential" and
                  "disjoint", images only contain pixels of old or current classes,
                  while in "overlap", future classes can also be present.
@@ -86,6 +87,8 @@ class SegmentationClassIncremental(ClassIncremental):
                 raise ValueError(
                     f"Number of classes ({nb_classes}) != class ordering size ({len(class_order)}."
                 )
+
+        self.class_map = self.cl_dataset.class_map
 
         super().__init__(
             cl_dataset=cl_dataset,
@@ -161,7 +164,7 @@ class SegmentationClassIncremental(ClassIncremental):
                 masking_value = 255
 
         return torchvision.transforms.Lambda(
-            lambda seg_map: seg_map.apply_(
+            lambda seg_map: self.cl_dataset.prepare(seg_map).apply_(
                 lambda v: inverted_order.get(v, masking_value)
             )
         )
@@ -224,8 +227,10 @@ class SegmentationClassIncremental(ClassIncremental):
             t = np.load(self.save_indexes)
         else:
             print("Computing indexes, it may be slow!")
+
             t = _filter_images(
-                y, self._increments, self.class_order, self.mode
+                y, self._increments, self.class_order, self.mode,
+                class_map=self.class_map
             )
             if self.save_indexes is not None:
                 np.save(self.save_indexes, t)
@@ -241,7 +246,8 @@ def _filter_images(
     paths: Union[np.ndarray, List[str]],
     increments: List[int],
     class_order: List[int],
-    mode: str = "overlap"
+    mode: str = "overlap",
+    class_map: Optional[Callable] = None
 ) -> np.ndarray:
     """Select images corresponding to the labels.
 
@@ -254,19 +260,29 @@ def _filter_images(
                         background class (0) and unknown class (255) aren't
                         in this class order.
     :param mode: Mode of the segmentation (see scenario doc).
+    :param class_map: Optional function to remap the class ids.
     :return: A binary matrix representing the task ids of shape (nb_samples, nb_tasks).
     """
+    find_classes = _find_classes
+    if class_map is not None:
+         # Create class re-mapping array once
+        # from https://stackoverflow.com/questions/55949809/efficiently-replace-elements-in-array-based-on-dictionary-numpy-python
+        k = np.array(list(class_map.keys()))
+        v = np.array(list(class_map.values()))
+        mapping = np.zeros(k.max() + 1, dtype=v.dtype)
+        mapping[k] = v
+        find_classes = partial(_find_classes, class_map=mapping)
+
     indexes_to_classes = []
     pb = ProgressBar()
-
     with multiprocessing.Pool(min(8, multiprocessing.cpu_count())) as pool:
-        for i, classes in enumerate(pool.imap(_find_classes, paths), start=1):
+        for i, classes in enumerate(pool.imap(find_classes, paths), start=1):
             indexes_to_classes.append(classes)
             if i % 100 == 0:
                 pb.update(None, 100, len(paths))
         pb.end(len(paths))
 
-    t = np.zeros((len(paths), len(increments)))
+    t = np.zeros((len(paths), len(increments)))  # TODO: cast as byte?
     accumulated_inc = 0
 
     for task_id, inc in enumerate(increments):
@@ -289,11 +305,20 @@ def _filter_images(
     return t
 
 
-def _find_classes(path: str) -> np.ndarray:
+def _find_classes(path: str, class_map: Optional[Callable] = None) -> np.ndarray:
     """Open a ground-truth segmentation map image and returns all unique classes
     contained.
 
     :param path: Path to the image.
+    :param class_map: Optional function to remap the class ids.
     :return: Unique classes.
     """
-    return np.unique(np.array(Image.open(path)).reshape(-1))
+    class_ids = np.unique(np.array(Image.open(path)).reshape(-1))
+
+    # instance_id is encoded as class_id * 1000 in Cityscapes
+    not_instance_ids = class_ids < 1000
+    class_ids = class_ids[not_instance_ids]
+
+    if class_map is not None:
+        class_ids = class_map[class_ids]
+    return class_ids

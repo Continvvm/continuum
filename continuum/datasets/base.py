@@ -1,7 +1,7 @@
 import abc
 import os
 import warnings
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import h5py
@@ -96,21 +96,6 @@ class _ContinuumDataset(abc.ABC):
     def class_order(self) -> Union[None, List[int]]:
         return None
 
-    @property
-    def need_class_remapping(self) -> bool:
-        """Flag for method `class_remapping`."""
-        return False
-
-    def class_remapping(self, class_ids: np.ndarray) -> np.ndarray:
-        """Optional class remapping.
-
-        Used for example in PermutedMNIST, cf transformed.py;
-
-        :param class_ids: Original class_ids.
-        :return: A remapping of the class ids.
-        """
-        return class_ids
-
     def to_taskset(
             self,
             trsf: Optional[List[Callable]] = None,
@@ -141,11 +126,6 @@ class _ContinuumDataset(abc.ABC):
     @property
     def class_order(self) -> Union[None, List[int]]:
         return None
-
-    @property
-    def need_class_remapping(self) -> bool:
-        """Flag for method `class_remapping`."""
-        return False
 
     @property
     def data_type(self) -> TaskType:
@@ -182,6 +162,23 @@ class _ContinuumDataset(abc.ABC):
     @attributes.setter
     def attributes(self, attributes: np.ndarray):
         self._attributes = attributes
+
+
+class _SegmentationDataset(_ContinuumDataset):
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.SEGMENTATION
+
+    @property
+    def class_map(self) -> Optional[Dict[int, int]]:
+        return None
+
+    @property
+    def panoptic(self) -> bool:
+        return False
+
+    def prepare(self, seg_map: torch.Tensor) -> torch.Tensor:
+        return seg_map
 
 
 class PyTorchDataset(_ContinuumDataset):

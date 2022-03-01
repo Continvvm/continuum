@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Callable
 
 import numpy as np
 from torchvision import transforms
@@ -27,7 +27,9 @@ def TaskSet(x: np.ndarray,
     elif data_type == TaskType.IMAGE_PATH:
         task_set = PathTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes)
     elif data_type == TaskType.SEGMENTATION:
-        task_set = SegmentationTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes)
+        task_set = SegmentationTaskSet(
+            x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf, bounding_boxes=bounding_boxes
+        )
     elif data_type == TaskType.TENSOR:
         assert bounding_boxes is None, print("bounding_boxes are not compatible with TaskType.TENSOR")
         task_set = BaseTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
