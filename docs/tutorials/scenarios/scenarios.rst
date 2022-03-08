@@ -495,7 +495,7 @@ You can also create a new class to create your own scenario with your own rules 
 
 You can add it in the scenarios folder in the continuum project and make a pull request!
 
-Scenarios can be seen as a list of `tasks <https://continuum.readthedocs.io/en/latest/_tutorials/datasets/tasks.html>`__ , the main thing to define is to define the content of each task to create a meaningful scenario.
+Scenarios can be seen as a list of `tasks <https://continuum.readthedocs.io/en/latest/tutorials/datasets/tasks.html>`__ , the main thing to define is to define the content of each task to create a meaningful scenario.
 
 You can also create personal scenarios simply by creating your own task label vector `t` with the
 `ContinualScenario` Class. This class is made to just convert a cl_dataset into a scenario without any other processing.

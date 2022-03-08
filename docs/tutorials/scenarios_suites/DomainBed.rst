@@ -12,8 +12,8 @@ Continuum. Although in the following examples, we instead share the same domains
 where each domain is a new task that we cannot review once learned.
 
 We also assume that all classes are shared across domains. A new task doesn't bring new
-classes as it does in `"ClassIncremental" <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html#classes-incremental>`__
-but rather bring new domains as in `"InstanceIncremental" <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html#classes-incremental>`__
+classes as it does in `"ClassIncremental" <https://continuum.readthedocs.io/en/latest/tutorials/scenarios/scenarios.html#classes-incremental>`__
+but rather bring new domains as in `"InstanceIncremental" <https://continuum.readthedocs.io/en/latest/tutorials/scenarios/scenarios.html#classes-incremental>`__
 and ContinualScenario.
 
 ColoredMNIST (CMNIST)

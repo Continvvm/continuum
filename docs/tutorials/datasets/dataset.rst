@@ -111,7 +111,7 @@ Existing Datasets
 
 
 All datasets have for arguments `train` and `download`, like a
-`torchvision.dataset <https://pytorch.org/docs/stable/torchvision/datasets.html>`__. Those datasets are then modified to create `continuum scenarios <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html>`__.
+`torchvision.dataset <https://pytorch.org/docs/stable/torchvision/datasets.html>`__. Those datasets are then modified to create `continuum scenarios <https://continuum.readthedocs.io/en/latest/tutorials/scenarios/scenarios.html>`__.
 
 Once a dataset is created, it is fed to a scenario that will split it in multiple tasks.
 
@@ -159,7 +159,7 @@ be downloaded:
 
 If you wish to learn CORe50 in the class-incremental scenario (NC), `Core50` suffices. Although,
 for instance-incremental scenario (NI and NIC), you need to use `Core50v2_79`,
-`Core50v2_196`, or `Core50v2_391` (see `our doc about it <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios_suites/1_Introduction.html#CORe50>`_).
+`Core50v2_196`, or `Core50v2_391` (see `our doc about it <https://continuum.readthedocs.io/en/latest/tutorials/scenarios_suites/1_Introduction.html#CORe50>`_).
 Refer to the datatset `official webpage <https://vlomonaco.github.io/core50/>`_ for
 more information about the different versions.
 
@@ -240,7 +240,7 @@ Note that Continuum already provide pre-made Fellowship:
 You may want datasets that have a different transformation for each new task, e.g.
 MNIST with different rotations or pixel permutations. Continuum also handles it!
 However it's a scenario's speficic, not dataset, thus look over the
-`Scenario doc <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html#transformed-incremental>`__.
+`Scenario doc <https://continuum.readthedocs.io/en/latest/tutorials/scenarios/scenarios.html#transformed-incremental>`__.
 
 Supervised setting without Continual
 -------------------------------------

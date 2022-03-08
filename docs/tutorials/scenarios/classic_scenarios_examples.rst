@@ -1,7 +1,7 @@
 Classic Scenarios
 -----------------
 
-We propose here a list of classic continual learning scenarios used in the literature. For each, scenarios we show how to create it. For using it, you may look at `scenarios documentation <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html>`_
+We propose here a list of classic continual learning scenarios used in the literature. For each, scenarios we show how to create it. For using it, you may look at `scenarios documentation <https://continuum.readthedocs.io/en/latest/tutorials/scenarios/scenarios.html>`_
 
 - split MNIST: 5 tasks, number of classes per tasks: 2
 
@@ -70,4 +70,4 @@ We propose here a list of classic continual learning scenarios used in the liter
     )
 
 
-For more info `scenarios documentation <https://continuum.readthedocs.io/en/latest/_tutorials/scenarios/scenarios.html>`__.
+For more info `scenarios documentation <https://continuum.readthedocs.io/en/latest/tutorials/scenarios/scenarios.html>`__.

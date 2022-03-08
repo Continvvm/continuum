@@ -104,7 +104,7 @@ hard to solve but give it a try :)
 What are the available customizations?
 
 - **datasets**: you can choose any dataset you want, as a long as it's a
-  `Continuum dataset <https://continuum.readthedocs.io/en/latest/_tutorials/datasets/dataset.html>`__.
+  `Continuum dataset <https://continuum.readthedocs.io/en/latest/tutorials/datasets/dataset.html>`__.
   Beware that they will be loaded in memory (so avoid ImageNet datasets), and all resized to
   the **target_size**.
 - **proportions**: it restricts the amount of data for train/val/test that will be used. Each class is

@@ -13,7 +13,7 @@ The latter is about the different setting you may encounter in Continual Learnin
    :maxdepth: 2
    :caption: Scenarios:
 
-   _tutorials/scenarios/*
+   tutorials/scenarios/*
 
 
 .. toctree::
@@ -21,28 +21,28 @@ The latter is about the different setting you may encounter in Continual Learnin
    :maxdepth: 2
    :caption: Tasks:
 
-   _tutorials/tasks/*
+   tutorials/tasks/*
 
 .. toctree::
    :glob:
    :maxdepth: 2
    :caption: Datasets:
 
-   _tutorials/datasets/*
+   tutorials/datasets/*
 
 .. toctree::
    :glob:
    :maxdepth: 2
    :caption: Rehearsal Learning:
 
-   _tutorials/rehearsal/*
+   tutorials/rehearsal/*
 
 .. toctree::
    :glob:
    :maxdepth: 2
    :caption: Metrics:
 
-   _tutorials/metrics/*
+   tutorials/metrics/*
 
 
 .. toctree::
@@ -50,7 +50,7 @@ The latter is about the different setting you may encounter in Continual Learnin
    :maxdepth: 2
    :caption: Senario Suites:
 
-   _tutorials/scenarios_suites/*
+   tutorials/scenarios_suites/*
 
 Quick Example
 -------------
