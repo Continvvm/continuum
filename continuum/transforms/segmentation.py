@@ -11,6 +11,7 @@ import collections
 
 import torch
 import torchvision.transforms.functional as Fv
+from torchvision.transforms import InterpolationMode
 import numpy as np
 from PIL import Image
 
@@ -64,7 +65,7 @@ class Resize:
                           ``PIL.Image.BILINEAR``
     """
 
-    def __init__(self, size, interpolation=Image.BILINEAR):
+    def __init__(self, size, interpolation=InterpolationMode.BILINEAR):
         assert isinstance(size, int) or (isinstance(size, collections.Iterable) and len(size) == 2)
         self.size = size
         self.interpolation = interpolation
@@ -75,7 +76,7 @@ class Resize:
         :return: PIL Image: Rescaled image.
         """
         if lbl is not None:
-            return Fv.resize(img, self.size, self.interpolation), Fv.resize(lbl, self.size, Image.NEAREST)
+            return Fv.resize(img, self.size, self.interpolation), Fv.resize(lbl, self.size, InterpolationMode.NEAREST)
         else:
             return Fv.resize(img, self.size, self.interpolation)
 
@@ -459,7 +460,7 @@ class RandomResizedCrop:
     :param interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __init__(self, size, scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.), interpolation=Image.BILINEAR):
+    def __init__(self, size, scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.), interpolation=InterpolationMode.BILINEAR):
         if isinstance(size, tuple):
             self.size = size
         else:
