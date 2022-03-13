@@ -129,7 +129,9 @@ class CityScapes(_SegmentationDataset):
                     " at the URL: https://www.cityscapes-dataset.com/downloads/."
                     " Note that you may need to create an account."
                 )
+            print("Extracting ground-truth labels...", end=" ")
             download.unzip(path)
+            print("Done!")
 
         # Downloading images
         if not os.path.exists(os.path.join(self.data_path, "leftImg8bit")):
@@ -140,6 +142,9 @@ class CityScapes(_SegmentationDataset):
                     " at the URL: https://www.cityscapes-dataset.com/downloads/."
                     " Note that you may need to create an account."
                 )
+            print("Extracting images...", end=" ")
+            download.unzip(path)
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.train and self.test_split is None:

@@ -5,6 +5,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import h5py
+import torch
 from torchvision import datasets as torchdata
 from torchvision import transforms
 

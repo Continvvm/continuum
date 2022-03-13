@@ -88,7 +88,7 @@ class SegmentationClassIncremental(ClassIncremental):
                     f"Number of classes ({nb_classes}) != class ordering size ({len(class_order)}."
                 )
 
-        self.class_map = self.cl_dataset.class_map
+        self.class_map = cl_dataset.class_map
 
         super().__init__(
             cl_dataset=cl_dataset,
@@ -223,6 +223,7 @@ class SegmentationClassIncremental(ClassIncremental):
         # The filtering can take multiple minutes, thus saving/loading them can
         # be useful.
         if self.save_indexes is not None and os.path.exists(self.save_indexes):
+            # TODO handle auto extension npy
             print(f"Loading previously saved indexes ({self.save_indexes}).")
             t = np.load(self.save_indexes)
         else:
@@ -265,13 +266,7 @@ def _filter_images(
     """
     find_classes = _find_classes
     if class_map is not None:
-         # Create class re-mapping array once
-        # from https://stackoverflow.com/questions/55949809/efficiently-replace-elements-in-array-based-on-dictionary-numpy-python
-        k = np.array(list(class_map.keys()))
-        v = np.array(list(class_map.values()))
-        mapping = np.zeros(k.max() + 1, dtype=v.dtype)
-        mapping[k] = v
-        find_classes = partial(_find_classes, class_map=mapping)
+        find_classes = partial(_find_classes, class_map=class_map)
 
     indexes_to_classes = []
     pb = ProgressBar()
@@ -320,5 +315,6 @@ def _find_classes(path: str, class_map: Optional[Callable] = None) -> np.ndarray
     class_ids = class_ids[not_instance_ids]
 
     if class_map is not None:
-        class_ids = class_map[class_ids]
+        class_ids = [class_map[c] for c in class_ids]
+
     return class_ids

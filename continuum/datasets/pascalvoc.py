@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 
 from continuum import download
-from continuum.datasets.base import _SegmentationDataset
+from continuum.datasets.base import _SegmentationDataset, _ContinuumDataset
 from continuum.tasks import TaskType
 
 
