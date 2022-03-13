@@ -311,8 +311,8 @@ def _find_classes(path: str, class_map: Optional[Callable] = None) -> np.ndarray
     class_ids = np.unique(np.array(Image.open(path)).reshape(-1))
 
     # instance_id is encoded as class_id * 1000 in Cityscapes
-    not_instance_ids = class_ids < 1000
-    class_ids = class_ids[not_instance_ids]
+    instance_ids = class_ids >= 1000
+    class_ids[instance_ids] = class_ids[instance_ids] // 1000
 
     if class_map is not None:
         class_ids = [class_map[c] for c in class_ids]

@@ -112,10 +112,9 @@ class CityScapes(_SegmentationDataset):
         new_seg_map = torch.ones((2, seg_map.shape[0], seg_map.shape[1]), dtype=seg_map.dtype) * 255
 
         things = (seg_map >= 1000).bool()
-        new_seg_map[0][things] = seg_map[things]
-        new_seg_map[0][~things] = seg_map[~things] // 1000
-
-        new_seg_map[1][~things] = seg_map[~things] % 1000
+        new_seg_map[0][things] = torch.div(seg_map[things], 1000, rounding_mode="trunc")
+        new_seg_map[0][~things] = seg_map[~things]
+        new_seg_map[1][things] = seg_map[things] % 1000
 
         return new_seg_map
 

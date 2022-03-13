@@ -327,7 +327,7 @@ class ToTensor:
         :return: Tensor: Converted image and label
         """
         if lbl is not None:
-            return Fv.to_tensor(pic), torch.from_numpy(np.array(lbl, dtype=np.uint8))
+            return Fv.to_tensor(pic), lbl #torch.from_numpy(np.array(lbl, dtype=np.uint8))
         else:
             return Fv.to_tensor(pic)
 

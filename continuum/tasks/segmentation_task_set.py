@@ -1,4 +1,4 @@
-from typing import Callable, Union, Optional, List, Callable
+from typing import Union, Optional, List, Callable
 import warnings
 
 import numpy as np
@@ -49,6 +49,6 @@ class SegmentationTaskSet(PathTaskSet):
         if not isinstance(x, torch.Tensor):
             x = self._to_tensor(x)
         if not isinstance(y, torch.Tensor):
-            y = self._to_tensor(y)
+            y = torch.tensor(np.array(y))
 
         return x, y, t
