@@ -82,15 +82,10 @@ def test_instance_default_nb_tasks(numpy_data_per_task, nb_tasks, nb_tasks_gt):
             assert len(unique_pixels) == 1 and unique_pixels[0] == float(task_id)
 
 
-@pytest.mark.parametrize("nb_tasks,error", [(301, "error"), (300, None), (300, "warning")])
+@pytest.mark.parametrize("nb_tasks,error", [(2000, "error"), (300, None)])
 def test_too_many_tasks(numpy_data_per_task, nb_tasks, error):
     train, test = numpy_data_per_task
     x_train, y_train, t_train = train
-
-    if error == "warning":
-        x_train = x_train[:-50]
-        y_train = y_train[:-50]
-        t_train = t_train[:-50]
 
     dummy = InMemoryDataset(x_train, y_train, t=t_train)
 
@@ -168,6 +163,7 @@ def test_instance_data_split_not_equally(unequal_data):
     (2, 2),
     (6, 6),
 ])
+
 def test_data_is_shuffled(numpy_data_per_task, nb_tasks, nb_tasks_gt):
     """Make sure the data is shuffled before splitting into tasks"""
     train, test = numpy_data_per_task
@@ -187,5 +183,6 @@ def test_data_is_shuffled(numpy_data_per_task, nb_tasks, nb_tasks_gt):
         task_x = train_dataset._x
         unshuffled_task_x = x_train[task_id*items_per_task:(task_id+1)*items_per_task]
 
+        assert task_x.shape == unshuffled_task_x.shape
         assert not np.allclose(task_x, unshuffled_task_x)
 

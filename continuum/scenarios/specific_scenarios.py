@@ -3,14 +3,15 @@ from typing import Callable, List, Optional, Union
 
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import InstanceIncremental
-from continuum.scenarios.instance_incremental import _split_dataset
 
 import numpy as np
 
 class ALMA(InstanceIncremental):
-    """ALMA Loader, generating tasks by randomly partioning a fixed dataset.
-    NOTE: this is analogous to InstanceIncremental, but reformatted with the
-    language of the paper https://arxiv.org/abs/2106.09563
+    """ALMA Scenario, generating tasks by randomly partioning a fixed dataset.
+    NOTE: this is similar to InstanceIncremental, but reformatted with the
+    language of the paper https://arxiv.org/abs/2106.09563. The main difference is
+    that per class samples are not equally split across tasks, but rather selected
+    randomly from the full subset.
 
     Scenario: Classes are always the same but instances change (NI scenario)
 
@@ -39,18 +40,24 @@ class ALMA(InstanceIncremental):
     def _setup(self, nb_tasks: Optional[int]) -> int:
         x, y, t = self.cl_dataset.get_data()
 
+        if len(y) <= nb_tasks:
+            raise Exception('Cannot have more tasks than available samples in the dataset')
+
         if t is not None:
             warnings.warn(
                 f"The chosen dataset provides a task-id for each sample. This is ignored by ALMA."
             )
 
         if nb_tasks is not None and nb_tasks > 0:  # If the user wants a particular nb of tasks
-            task_ids = _split_dataset(y, nb_tasks)
 
             # unlike as in `InstanceIncremental`, we shuffle how samples are assigned to tasks.
             np.random.seed(self.alma_random_seed)
-            permutation = np.random.permutation(np.arange(task_ids.shape[0]))
-            task_ids = task_ids[permutation]
+            idx = np.arange(len(y))
+            idx = np.random.permutation(idx)
+            chunks = np.array_split(idx, nb_tasks)
+            task_ids = np.zeros_like(idx)
+            for task, chunk in enumerate(chunks):
+                task_ids[chunk] = task
 
             self.dataset = (x, y, task_ids)
         else:
