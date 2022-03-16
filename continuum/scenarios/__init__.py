@@ -4,6 +4,7 @@ from continuum.scenarios.base import _BaseScenario
 from continuum.scenarios.continual_scenario import ContinualScenario
 from continuum.scenarios.class_incremental import ClassIncremental
 from continuum.scenarios.instance_incremental import InstanceIncremental
+from continuum.scenarios.specific_scenarios import ALMA
 from continuum.scenarios.transformation_incremental import TransformationIncremental
 from continuum.scenarios.rotations import Rotations
 from continuum.scenarios.permutations import Permutations
@@ -24,5 +25,6 @@ __all__ = [
     "SegmentationClassIncremental",
     "HashedScenario",
     "OnlineFellowship",
-    "hf"
+    "hf",
+    "ALMA"
 ]
