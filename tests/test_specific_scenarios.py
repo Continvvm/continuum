@@ -137,28 +137,6 @@ def unequal_data():
     return x, y
 
 
-def test_instance_data_split_not_equally(unequal_data):
-    x, y = unequal_data
-    dataset = InMemoryDataset(x, y)
-    scenario = ALMA(dataset, nb_megabatches=5)
-
-    c_0, c_1, c_2, c_3 = 0, 0, 0, 0
-
-    for taskset in scenario:
-        bincount = np.bincount(taskset._y, minlength=4)
-        c_0 += bincount[0]
-        c_1 += bincount[1]
-        c_2 += bincount[2]
-        c_3 += bincount[3]
-
-    bincount = np.bincount(y)
-    assert c_0 == bincount[0]
-    assert c_1 == bincount[1]
-    assert c_2 == bincount[2]
-    assert c_3 == bincount[3]
-    assert c_0 + c_1 + c_2 + c_3 == len(x)
-
-
 @pytest.mark.parametrize("nb_tasks,nb_tasks_gt", [
     (2, 2),
     (6, 6),

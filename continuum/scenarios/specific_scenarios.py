@@ -40,7 +40,7 @@ class ALMA(InstanceIncremental):
     def _setup(self, nb_tasks: Optional[int]) -> int:
         x, y, t = self.cl_dataset.get_data()
 
-        if len(y) <= nb_tasks:
+        if len(y) < nb_tasks:
             raise Exception('Cannot have more tasks than available samples in the dataset')
 
         if t is not None:
@@ -48,7 +48,7 @@ class ALMA(InstanceIncremental):
                 f"The chosen dataset provides a task-id for each sample. This is ignored by ALMA."
             )
 
-        if nb_tasks is not None and nb_tasks > 0:  # If the user wants a particular nb of tasks
+        if nb_tasks > 0:
 
             # unlike as in `InstanceIncremental`, we shuffle how samples are assigned to tasks.
             np.random.seed(self.alma_random_seed)
@@ -61,7 +61,6 @@ class ALMA(InstanceIncremental):
 
             self.dataset = (x, y, task_ids)
         else:
-            raise Exception(f"The dataset ({self.cl_dataset}) doesn't provide task ids, "
-                            f"you must then specify a number of tasks, not ({nb_tasks}.")
+            raise Exception(f"You must then specify a positive number of tasks, not {nb_tasks}.")
 
         return nb_tasks
