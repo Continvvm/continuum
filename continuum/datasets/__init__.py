@@ -1,7 +1,7 @@
 # pylint: disable=C0401
 # flake8: noqa
 from continuum.datasets.base import (
-    ImageFolderDataset, InMemoryDataset, PyTorchDataset, _ContinuumDataset, H5Dataset
+    ImageFolderDataset, InMemoryDataset, PyTorchDataset, _ContinuumDataset, H5Dataset, _AudioDataset
 )
 from continuum.datasets.cifar100 import CIFAR100
 from continuum.datasets.core50 import (Core50, Core50v2_79, Core50v2_196, Core50v2_391)
@@ -41,3 +41,4 @@ from continuum.datasets.gtsrb import GTSRB
 from continuum.datasets.sun397 import SUN397
 from continuum.datasets.fer2013 import FER2013
 from continuum.datasets.eurosat import EuroSAT
+from continuum.datasets.fluentspeech import FluentSpeech

@@ -9,6 +9,7 @@ from continuum.tasks.image_path_task_set import PathTaskSet
 from continuum.tasks.segmentation_task_set import SegmentationTaskSet
 from continuum.tasks.text_task_set import TextTaskSet
 from continuum.tasks.h5_task_set import H5TaskSet
+from continuum.tasks.audio_task_set import AudioTaskSet
 
 
 def TaskSet(x: np.ndarray,
@@ -36,6 +37,8 @@ def TaskSet(x: np.ndarray,
                              target_trsf=target_trsf,
                              bounding_boxes=bounding_boxes,
                              data_indexes=data_indexes)
+    elif data_type == TaskType.AUDIO:
+        task_set = AudioTaskSet(x=x, y=y, t=t, trsf=trsf, target_trsf=target_trsf)
     else:
         raise NotImplementedError(f"No TaskSet for data_type {data_type}")
 
