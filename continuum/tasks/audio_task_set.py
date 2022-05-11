@@ -57,7 +57,7 @@ class AudioTaskSet(BaseTaskSet):
         :param index: Index to query the image.
         :return: the sample data.
         """
-        return torch.Long(soundfile.read(self.x[index]))
+        return torch.FloatTensor(soundfile.read(self._x[index]))
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
