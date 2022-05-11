@@ -13,7 +13,7 @@ class FluentSpeech(_AudioDataset):
 
     def __init__(self, data_path, train: Union[bool, str] = True, download: bool = True):
         if not isinstance(train, bool) and train not in ("train", "valid", "test"):
-            raise ValueError(f"`train` arg must be a bool or train/valid/test.")
+            raise ValueError(f"`train` arg ({train}) must be a bool or train/valid/test.")
         if isinstance(train, bool):
             if train:
                 train = "train"
@@ -46,8 +46,8 @@ class FluentSpeech(_AudioDataset):
         with open(os.path.join(base_path, "data", f"{self.train}_data.csv"), encoding="utf-8") as fcsv:
             lines = fcsv.readlines()
 
-        for l in lines[1:]:
-            items = l[:-1].split(",")
+        for line in lines[1:]:
+            items = line[:-1].split(",")
             audioid.append(os.path.join(base_path, items[1]))
             if (len(items)) == 7:
                 transcriptions.append(items[3])

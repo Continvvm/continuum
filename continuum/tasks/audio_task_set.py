@@ -11,6 +11,7 @@ try:
 except:
     soundfile = None
 
+
 class AudioTaskSet(BaseTaskSet):
     """A task dataset specific to  text returned by the CLLoader.
 
@@ -57,7 +58,7 @@ class AudioTaskSet(BaseTaskSet):
         :param index: Index to query the image.
         :return: the sample data.
         """
-        return torch.FloatTensor(soundfile.read(self._x[index]))
+        return torch.FloatTensor(soundfile.read(self._x[index])[0])
 
     def __getitem__(self, index: int) -> Tuple[np.ndarray, int, int]:
         """Method used by PyTorch's DataLoaders to query a sample and its target."""
