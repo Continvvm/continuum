@@ -7,10 +7,15 @@ import numpy as np
 
 from continuum.datasets.base import _AudioDataset
 from continuum.download import download, untar
-from continuum.tasks import TaskType
 
 
 class FluentSpeech(_AudioDataset):
+    """FluentSpeechCommand dataset.
+
+    Made of short audio with different speakers asking something.
+
+    https://fluent.ai/fluent-speech-commands-a-dataset-for-spoken-language-understanding-research/
+    """
     URL = "http://fluent.ai:2052/jf8398hf30f0381738rucj3828chfdnchs.tar.gz"
 
     def __init__(self, data_path, train: Union[bool, str] = True, download: bool = True):
