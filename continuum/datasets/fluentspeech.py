@@ -1,4 +1,6 @@
 import os
+import collections
+import itertools
 from typing import Tuple, Union, Optional
 
 import numpy as np
@@ -40,31 +42,31 @@ class FluentSpeech(_AudioDataset):
             print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
-        audioid, transcriptions, intents, subintent = [], [], [], [[] for i in range(3)]
         base_path = os.path.join(self.data_path, "fluent_speech_commands_dataset")
 
-        with open(os.path.join(base_path, "data", f"{self.train}_data.csv"), encoding="utf-8") as fcsv:
-            lines = fcsv.readlines()
+        self.class_ids = collections.defaultdict(itertools.count().__next__)
+        self.actions = collections.defaultdict(itertools.count().__next__)
+        self.objs = collections.defaultdict(itertools.count().__next__)
+        self.locations = collections.defaultdict(itertools.count().__next__)
+        self.speakerids = collections.defaultdict(itertools.count().__next__)
 
-        for line in lines[1:]:
-            items = line[:-1].split(",")
-            audioid.append(os.path.join(base_path, items[1]))
-            if (len(items)) == 7:
-                transcriptions.append(items[3])
-            else:
-                transcriptions.append((" ").join(items[3:5]))
-            intents.append(tuple(items[-3:]))
-            for i in range(3):
-                subintent[i].append(intents[-1][i])
+        x, y, t = [], [], []
 
-        subintent_sets = [sorted(list(set(subintent[i]))) for i in range(3)]
-        subintent_labels = []
-        for i in range(3):
-            subintent_labels.append([subintent_sets[i].index(t) for t in subintent[i]])
+        with open(os.path.join(base_path, "data", f"{self.train}_data.csv")) as f:
+            lines = f.readlines()[1:]
 
-        concat_labels = [str([subintent_labels[i][j] for i in range(3)]) for j in range(len(subintent_labels[0]))]
-        unique_labels = sorted(list((set([concat_labels[i] for i in range(len(concat_labels))]))))
+        for line in lines:
+            items = line[:-1].split(',')
 
-        y = [unique_labels.index(l) for l in concat_labels]
+            action, obj, location = items[-3:]
 
-        return np.array(audioid), np.array(y), None
+            x.append(os.path.join(base_path, items[1]))
+            y.append([
+                self.class_ids[action+obj+location],
+                self.actions[action],
+                self.objs[obj],
+                self.locations[location]
+            ])
+            t.append(self.speakerids[items[2]])
+
+        return np.array(x), np.array(y), np.array(t)
