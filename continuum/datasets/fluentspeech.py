@@ -49,6 +49,7 @@ class FluentSpeech(_AudioDataset):
         self.objs = collections.defaultdict(itertools.count().__next__)
         self.locations = collections.defaultdict(itertools.count().__next__)
         self.speakerids = collections.defaultdict(itertools.count().__next__)
+        self.transcriptions = []
 
         x, y, t = [], [], []
 
@@ -68,5 +69,7 @@ class FluentSpeech(_AudioDataset):
                 self.locations[location]
             ])
             t.append(self.speakerids[items[2]])
+
+            self.transcriptions.append(items[3])
 
         return np.array(x), np.array(y), np.array(t)
