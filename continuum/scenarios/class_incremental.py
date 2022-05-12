@@ -47,7 +47,11 @@ class ClassIncremental(_BaseScenario):
 
     def _setup(self, nb_tasks: int) -> int:
         x, y, _ = self.cl_dataset.get_data()
-        unique_classes = np.unique(y)
+
+        if len(y.shape) > 1:
+            unique_classes = np.unique(y[:, 0])
+        else:
+            unique_classes = np.unique(y)
 
         if self.class_order is None:
             if self.cl_dataset.class_order is not None:
@@ -108,14 +112,18 @@ class ClassIncremental(_BaseScenario):
         :param increments: increments contains information about classes per tasks
         :return: tensor of task label
         """
-        t = copy(y)  # task label as same size as y
+        t = np.zeros(len(y))
 
         for task_index, _ in enumerate(self.increments):
             max_class = sum(self.increments[:task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
-            indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
+            if len(y.shape) > 1:
+                indexes = np.where(np.logical_and(y[:, 0] >= min_class, y[:, 0] < max_class))[0]
+            else:
+                indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
             t[indexes] = task_index
+
         return t
 
     def _define_increments(
