@@ -25,8 +25,11 @@ class ImageNet1000(ImageFolderDataset):
     @property
     def transformations(self):
         """Default transformations if nothing is provided to the scenario."""
-        return [transforms.ToTensor(),
-                transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]
+        return [
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+        ]
 
     def _download(self):
         if not os.path.exists(self.data_path):
@@ -37,7 +40,8 @@ class ImageNet1000(ImageFolderDataset):
             )
         print("ImageNet already downloaded.")
 
-class ImageNet100(ImageNet1000):
+
+class ImageNet100(_ContinuumDataset):
     """Subset of ImageNet1000 made of only 100 classes.
 
     You must download the ImageNet1000 dataset then provide the images subset.
@@ -56,8 +60,27 @@ class ImageNet100(ImageNet1000):
         self.data_subset = data_subset
         super().__init__(*args, **kwargs)
 
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
+
+    @property
+    def transformations(self):
+        """Default transformations if nothing is provided to the scenario."""
+        return [
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+        ]
+
     def _download(self):
-        super()._download()
+        if not os.path.exists(self.data_path):
+            raise IOError(
+                "You must download yourself the ImageNet dataset."
+                " Please go to http://www.image-net.org/challenges/LSVRC/2012/downloads and"
+                " download 'Training images (Task 1 & 2)' and 'Validation images (all tasks)'."
+            )
+        print("ImageNet already downloaded.")
 
         filename = "val_100.txt"
         self.subset_url = self.test_subset_url
@@ -67,7 +90,10 @@ class ImageNet100(ImageNet1000):
 
         if self.data_subset is None:
             self.data_subset = os.path.join(self.data_path, filename)
-            download(self.subset_url, self.data_path)
+            if not os.path.exists(self.data_subset):
+                print("Downloading subset indexes...", end=" ")
+                download(self.subset_url, self.data_path)
+                print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
         data = self._parse_subset(self.data_subset, train=self.train)  # type: ignore
