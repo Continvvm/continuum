@@ -96,6 +96,15 @@ class _BaseLogger(abc.ABC):
         for keyword in self.list_keywords:
             for subset in self.list_subsets:
                 if update_task:
+                    if self.current_task != 0:
+                        # end_epoch add empty vector. If end_epoch was called just before end task, we remove this vector
+                        if keyword == "performance":
+                            if len(self.logger_dict[subset][keyword][self.current_task-1][-1]["predictions"]) == 0:
+                                del self.logger_dict[subset][keyword][self.current_task-1][-1]
+                        else:
+                            if len(self.logger_dict[subset][keyword][self.current_task - 1]) == 0:
+                                self.logger_dict[subset][keyword][self.current_task - 1].pop()
+
                     self.logger_dict[subset][keyword].append([])
                 if keyword == "performance":
                     self.logger_dict[subset][keyword][self.current_task].append({})
