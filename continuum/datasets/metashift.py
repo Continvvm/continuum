@@ -11,7 +11,7 @@ from continuum.tasks import TaskType
 
 class MetaShift(_ContinuumDataset):
     # NOTE : using random_contexts can cause some contexts to contain few examples.
-    """Continuum version of the Core50 dataset.
+    """Continuum version of the MetaShift dataset.
 
     References:
         * MetaShift: A Dataset of Datasets for Evaluating Contextual 
