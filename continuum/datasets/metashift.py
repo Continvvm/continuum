@@ -26,8 +26,9 @@ class MetaShift(_ContinuumDataset):
            containing classes and contexts if not already in data_path folder.
     :param train_image_ids: Images ids to use.
     :param class_names : classes to consider (default = None --> all classes)
-    :param random_context : if true ; only one occurence of each image in a 
-           random choosen class&context combination.
+    :param random_context : If true ; only one occurence of each image in a 
+           random choosen class&context combination. If false, all valid contexts are considered, 
+           duplicates of ids will be found in x.
     :param random_seed : set seed (relevant ponly if random context is True)
     :param nb_task : set the number of distict tasks.
     """
