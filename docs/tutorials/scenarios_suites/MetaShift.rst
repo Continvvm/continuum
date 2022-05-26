@@ -4,7 +4,7 @@ MetaShift
 MetaShift can be described as a dataset of dataset. It divides the original Visual Genome dataset into classes and contexts in order to capture distribution shifts.
 See paper : https://arxiv.org/abs/2202.06523
 
-The MetaShift class is built with ContinualScenario in mind. But it also lets the user select specific classes or training ids to select. 
+The MetaShift class is built with ContinualScenario in mind. But it also lets the user select specific classes or training ids. 
 As many images can be found in more than one class(context) configuration, the user can specify that all images should aprear in exactly one configuration.
 
 Visual Genome:
