@@ -17,6 +17,7 @@ class TaskType(enum.Enum):
     SEGMENTATION = 5
     OBJ_DETECTION = 6
     H5 = 7
+    AUDIO = 8
 
 
 def _tensorize_list(x):
