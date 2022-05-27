@@ -61,6 +61,27 @@ class _BaseLogger(abc.ABC):
     def _get_current_task_ids(self, subset="train"):
         return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"]
 
+    def _get_last_predictions(self, subset="train"):
+        return self._get_last("predictions", subset)
+
+    def _get_last_targets(self, subset="train"):
+        return self._get_last("targets", subset)
+
+    def _get_last_task_ids(self, subset="train"):
+        return self._get_last("task_ids", subset)
+
+    def _get_last(self, keyword, subset):
+        if len(self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][keyword]) == 0:
+            if self.current_epoch != 0:
+                last = self.logger_dict[subset]["performance"][self.current_task][self.current_epoch-1][
+                    keyword]
+            elif self.current_epoch == 0 and self.current_task != 0:
+                # we have finished a task but not started a new one yet, so we take last pred from last task
+                last = self.logger_dict[subset]["performance"][self.current_task-1][self.current_epoch][keyword]
+        else:
+            last = self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][keyword]
+        return last
+
     def _add_value(self, tensor, keyword, subset="train"):
         """Add a tensor in the list of the current epoch (tensor can also be a single value) """
 
