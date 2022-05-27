@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pytest
 from torch import nn
@@ -7,7 +8,7 @@ from continuum.metrics import Logger
 
 from continuum.metrics import get_model_size
 
-
+DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 # yapf: disable
 
 @pytest.fixture
@@ -105,6 +106,47 @@ def test_logger_add_tensor(numpy_data):
             logger.end_epoch()
         logger.end_task()
 
+def test_logger_add_tensor_after_end_epoch_end_task(numpy_data):
+    """
+    test to check if we can use the logger to log random tensor with random keword
+    """
+    logger = Logger(list_subsets=['train', 'test'])
+    all_targets, all_tasks = numpy_data
+    nb_tasks = 3
+    nb_epochs = 5
+    for task in range(nb_tasks):
+        for epoch in range(nb_epochs):
+            for targets, task_ids in zip(all_targets, all_tasks):
+                preds_te = np.random.randint(0, 10 + 1, 64)
+                targets_te = np.random.randint(0, 10 + 1, 64)
+                logger.add(value=[preds_te, targets_te, task_ids], subset='test')
+            logger.end_epoch()
+            assert 0. <= logger.accuracy <= 1.
+        logger.end_task()
+
+def test_logger_add_tensor_minibatch(numpy_data):
+    """
+    test to check if we can use the logger to log random tensor with random keword
+    """
+    logger = Logger(list_subsets=['train', 'test'])
+    nb_tasks = 3
+    nb_epochs = 5
+    nb_iteration = 6
+    for task in range(nb_tasks):
+        for epoch in range(nb_epochs):
+            for iteration in range(nb_iteration):
+                preds = np.random.randint(0, 10 + 1, 64)
+                targets = np.random.randint(0, 10 + 1, 64)
+                task_ids = np.ones(64) * task
+                logger.add(value=[preds, targets, task_ids], subset='train')
+                preds_te = np.random.randint(0, 10 + 1, 64)
+                targets_te = np.random.randint(0, 10 + 1, 64)
+                logger.add(value=[preds_te, targets_te, task_ids], subset='test')
+                assert 0. <= logger.accuracy <= 1.
+            assert 0. <= logger.average_incremental_accuracy <= 1.
+            logger.end_epoch()
+        logger.end_task()
+
 
 @pytest.mark.parametrize("mode,expected", [
     ("best", 1.), ("worst", 0.), ("random", None)
@@ -141,6 +183,10 @@ def test_metrics(numpy_data, mode, expected):
         assert 0. <= logger.forgetting <= 1.0
 
     assert 0. <= logger.average_incremental_accuracy <= 1.
+
+
+
+
 
 
 @pytest.mark.parametrize("mode,expected", [
@@ -259,21 +305,21 @@ def test_example_doc():
     from continuum.metrics import Logger
 
     train_scenario = ClassIncremental(
-        MNIST(data_path="my/data/path", download=True, train=True),
+        MNIST(data_path=DATA_PATH, download=True, train=True),
         increment=2
     )
     test_scenario = ClassIncremental(
-        MNIST(data_path="my/data/path", download=True, train=False),
+        MNIST(data_path=DATA_PATH, download=True, train=False),
         increment=2
     )
 
     # model = ...
 
+    test_loader = DataLoader(test_scenario[:])
     logger = Logger(list_subsets=['train', 'test'])
 
-    for task_id, (train_taskset, test_taskset) in enumerate(zip(train_scenario, test_scenario)):
+    for task_id, train_taskset in enumerate(train_scenario):
         train_loader = DataLoader(train_taskset)
-        test_loader = DataLoader(test_taskset)
 
         for x, y, t in train_loader:
             predictions = y  # model(x)
@@ -287,7 +333,8 @@ def test_example_doc():
             logger.add([preds_test, y_test, t_test], subset="test")
 
         _ = (f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
-        _ = (f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
+        if task_id > 0:
+            _ = (f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
 
         logger.end_task()
 

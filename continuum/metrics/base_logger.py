@@ -61,6 +61,27 @@ class _BaseLogger(abc.ABC):
     def _get_current_task_ids(self, subset="train"):
         return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"]
 
+    def _get_last_predictions(self, subset="train"):
+        return self._get_last("predictions", subset)
+
+    def _get_last_targets(self, subset="train"):
+        return self._get_last("targets", subset)
+
+    def _get_last_task_ids(self, subset="train"):
+        return self._get_last("task_ids", subset)
+
+    def _get_last(self, keyword, subset):
+        if len(self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][keyword]) == 0:
+            if self.current_epoch != 0:
+                last = self.logger_dict[subset]["performance"][self.current_task][self.current_epoch-1][
+                    keyword]
+            elif self.current_epoch == 0 and self.current_task != 0:
+                # we have finished a task but not started a new one yet, so we take last pred from last task
+                last = self.logger_dict[subset]["performance"][self.current_task-1][self.current_epoch][keyword]
+        else:
+            last = self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][keyword]
+        return last
+
     def _add_value(self, tensor, keyword, subset="train"):
         """Add a tensor in the list of the current epoch (tensor can also be a single value) """
 
@@ -96,6 +117,15 @@ class _BaseLogger(abc.ABC):
         for keyword in self.list_keywords:
             for subset in self.list_subsets:
                 if update_task:
+                    if self.current_task != 0:
+                        # end_epoch add empty vector. If end_epoch was called just before end task, we remove this vector
+                        if keyword == "performance":
+                            if len(self.logger_dict[subset][keyword][self.current_task-1][-1]["predictions"]) == 0:
+                                del self.logger_dict[subset][keyword][self.current_task-1][-1]
+                        else:
+                            if len(self.logger_dict[subset][keyword][self.current_task - 1]) == 0:
+                                self.logger_dict[subset][keyword][self.current_task - 1].pop()
+
                     self.logger_dict[subset][keyword].append([])
                 if keyword == "performance":
                     self.logger_dict[subset][keyword][self.current_task].append({})

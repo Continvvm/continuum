@@ -119,45 +119,43 @@ Detailed Example
 .. code-block:: python
 
     from torch.utils.data import DataLoader
-    import numpy as np
 
     from continuum import ClassIncremental
     from continuum.datasets import MNIST
     from continuum.metrics import Logger
 
     train_scenario = ClassIncremental(
-        MNIST(data_path='my/data/path', download=True, train=True),
+        MNIST(data_path=DATA_PATH, download=True, train=True),
         increment=2
-     )
-
+    )
     test_scenario = ClassIncremental(
-        MNIST(data_path='my/data/path', download=True, train=False),
+        MNIST(data_path=DATA_PATH, download=True, train=False),
         increment=2
-     )
+    )
 
-    model = a_model() #... Initialize your model here ...
+    # model = ...
 
+    test_loader = DataLoader(test_scenario[:])
     logger = Logger(list_subsets=['train', 'test'])
 
     for task_id, train_taskset in enumerate(train_scenario):
-        train_loader = DataLoader(train_taskset, batch_size=len(train_taskset))
-        test_taskset = test_scenario[:task_id + 1]  # Evaluating on all seen tasks
-        test_loader = DataLoader(test_taskset, batch_size=len(test_taskset))
+        train_loader = DataLoader(train_taskset)
 
         for x, y, t in train_loader:
-            predictions = model(x)
+            predictions = y  # model(x)
 
-            # Do here your model training with losses and optimizer...
+            logger.add([predictions, y, None], subset="train")
+            _ = (f"Online accuracy: {logger.online_accuracy}")
 
-            logger.add([predictions, y, t], subset='train')
-            print(f"Online accuracy: {logger.online_accuracy}")
+        for x_test, y_test, t_test in test_loader:
+            preds_test = y_test
 
-        for x, y, t in test_loader:
-            pred = model(x, t)
-            logger.add([pred, y, t], subset='test')
+            logger.add([preds_test, y_test, t_test], subset="test")
 
-        print(f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
-        print(f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
+        _ = (f"Task: {task_id}, acc: {logger.accuracy}, avg acc: {logger.average_incremental_accuracy}")
+        if task_id > 0:
+            _ = (f"BWT: {logger.backward_transfer}, FWT: {logger.forward_transfer}")
+
         logger.end_task()
 
 
