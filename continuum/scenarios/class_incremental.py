@@ -47,11 +47,17 @@ class ClassIncremental(_BaseScenario):
 
     def _setup(self, nb_tasks: int) -> int:
         x, y, _ = self.cl_dataset.get_data()
-        unique_classes = np.unique(y)
+
+        if len(y.shape) > 1:
+            unique_classes = np.unique(y[:, 0])
+        else:
+            unique_classes = np.unique(y)
 
         if self.class_order is None:
             if self.cl_dataset.class_order is not None:
                 self.class_order = self.cl_dataset.class_order
+            elif len(y.shape) == 2:
+                self.class_order = np.arange(np.max(y[:, 0]) + 1)
             else:
                 self.class_order = np.arange(np.max(y) + 1)
         self.class_order = list(self.class_order)
@@ -67,7 +73,11 @@ class ClassIncremental(_BaseScenario):
         # Aka if the user wants that the first 2 classes are 2, 7; then all
         # samples with classes 2 & 7 are resp. labeled as 0 & 1.
         self.class_order = np.array(self.class_order)
-        new_y = self.class_order.argsort()[y.astype(np.int64)]
+        if len(y.shape) == 2:
+            new_y = np.copy(y)
+            new_y[:, 0] = self.class_order.argsort()[y[:, 0].astype(np.int64)]
+        else:
+            new_y = self.class_order.argsort()[y.astype(np.int64)]
 
         # Increments setup
         if nb_tasks <= 0:
@@ -108,14 +118,18 @@ class ClassIncremental(_BaseScenario):
         :param increments: increments contains information about classes per tasks
         :return: tensor of task label
         """
-        t = copy(y)  # task label as same size as y
+        t = np.zeros(len(y))
 
         for task_index, _ in enumerate(self.increments):
             max_class = sum(self.increments[:task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
-            indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
+            if len(y.shape) > 1:
+                indexes = np.where(np.logical_and(y[:, 0] >= min_class, y[:, 0] < max_class))[0]
+            else:
+                indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
             t[indexes] = task_index
+
         return t
 
     def _define_increments(

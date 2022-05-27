@@ -475,3 +475,16 @@ class ImageFolderDataset(_ContinuumDataset):
             y[i] = target
 
         return x, y, None
+
+
+class _AudioDataset(_ContinuumDataset):
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.AUDIO
+
+    @property
+    def transformations(self):
+        """Default transformations if nothing is provided to the scenario."""
+        def noop(x):
+            return x
+        return [noop]
