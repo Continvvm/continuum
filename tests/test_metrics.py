@@ -106,6 +106,23 @@ def test_logger_add_tensor(numpy_data):
             logger.end_epoch()
         logger.end_task()
 
+def test_logger_add_tensor_after_end_epoch_end_task(numpy_data):
+    """
+    test to check if we can use the logger to log random tensor with random keword
+    """
+    logger = Logger(list_subsets=['train', 'test'])
+    all_targets, all_tasks = numpy_data
+    nb_tasks = 3
+    nb_epochs = 5
+    for task in range(nb_tasks):
+        for epoch in range(nb_epochs):
+            for targets, task_ids in zip(all_targets, all_tasks):
+                preds_te = np.random.randint(0, 10 + 1, 64)
+                targets_te = np.random.randint(0, 10 + 1, 64)
+                logger.add(value=[preds_te, targets_te, task_ids], subset='test')
+            logger.end_epoch()
+            assert 0. <= logger.accuracy <= 1.
+        logger.end_task()
 
 def test_logger_add_tensor_minibatch(numpy_data):
     """
