@@ -56,6 +56,8 @@ class ClassIncremental(_BaseScenario):
         if self.class_order is None:
             if self.cl_dataset.class_order is not None:
                 self.class_order = self.cl_dataset.class_order
+            elif len(y.shape) == 2:
+                self.class_order = np.arange(np.max(y[:, 0]) + 1)
             else:
                 self.class_order = np.arange(np.max(y) + 1)
         self.class_order = list(self.class_order)
@@ -71,7 +73,11 @@ class ClassIncremental(_BaseScenario):
         # Aka if the user wants that the first 2 classes are 2, 7; then all
         # samples with classes 2 & 7 are resp. labeled as 0 & 1.
         self.class_order = np.array(self.class_order)
-        new_y = self.class_order.argsort()[y.astype(np.int64)]
+        if len(y.shape) == 2:
+            new_y = np.copy(y)
+            new_y[:, 0] = self.class_order.argsort()[y[:, 0].astype(np.int64)]
+        else:
+            new_y = self.class_order.argsort()[y.astype(np.int64)]
 
         # Increments setup
         if nb_tasks <= 0:
