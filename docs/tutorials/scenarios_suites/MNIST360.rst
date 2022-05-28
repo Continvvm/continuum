@@ -17,9 +17,10 @@ We do not propose a click and play scenario for MNIST, however, we show how to i
 
 .. code-block:: python
 
-    from continuum.scenarios import ALMA
-    scenario = ALMA(your_dataset, nb_megabatches=50)
-
+    import os
+    import torch
+    from continuum.scenarios import ClassIncremental
+    from torchvision import transforms
 
     folder = "tests/samples/mnist360/"
     if not os.path.exists(folder):
@@ -57,4 +58,5 @@ We do not propose a click and play scenario for MNIST, however, we show how to i
                 # train here on x, y, t
 
                 #### to visualize result ####
+                # from continuum.viz import visualize_batch
                 # visualize_batch(batch=x[:100], number=100, shape=[28, 28, 1], path=folder + f"MNIST360_{task_id + 9 * i}.jpg")
