@@ -9,6 +9,8 @@ from continuum.metrics import Logger
 from continuum.metrics import get_model_size
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
+
+
 # yapf: disable
 
 @pytest.fixture
@@ -39,7 +41,6 @@ def numpy_data():
 
     return targets, tasks
 
-
 @pytest.fixture
 def torch_models():
     class Small(nn.Module):
@@ -59,6 +60,82 @@ def torch_models():
 
     return Small(), Big()
 
+
+
+@pytest.mark.parametrize("acc_11, acc_12, acc_21, acc_22, metric, expected_result", [
+    (1, 0.5, 1, 0.5, "accuracy", 0.75),
+    (1, 0.5, 0.75, 0.25, "accuracy_per_task", [1, 0.5]),
+    (1, 0.5, 0.5, 0, "average_incremental_accuracy", 0.5),
+    (1, 0.5, 0.5, 0, "backward_transfer", -0.5),
+    (1, 0.25, 0.5, 0.25, "forward_transfer", 0.25),
+    (1, 0.25, 0.5, 0.25, "positive_backward_transfer", 0),
+    (0.75, 0.25, 1.0, 0.25, "positive_backward_transfer", 0.25),
+    (1, 0.25, 0.25, 0.25, "remembering", 0.25),
+    (1, 0.25, 0.25, 0.25, "forgetting", 0.75),
+    (1, 0.25, 0.25, 0.25, "accuracy_A", 0.5),
+])
+def test_exact_test_results(acc_11, acc_12, acc_21, acc_22, metric, expected_result):
+
+    logger = Logger(list_subsets=['train', 'test'])
+    nb_tasks = 2
+    nb_epochs = 3
+    nb_iteration = 4
+    batch_size = 32
+    for task in range(nb_tasks):
+        acc_1 = acc_11
+        acc_2 = acc_12
+        if task == 1:
+            acc_1 = acc_21
+            acc_2 = acc_22
+        assert task < 2
+        for epoch in range(nb_epochs):
+            for iteration in range(nb_iteration):
+
+                # we are on test here so we log all tasks
+                # task 1
+                preds = np.ones(32)
+                size_bad_pred = int(batch_size * (1-acc_1))
+                preds[:size_bad_pred] = 0
+                targets = np.ones(32)
+                task_ids = np.zeros(32)
+                logger.add(value=[preds, targets, task_ids], subset='test')
+
+
+                # task 2
+                preds = np.ones(32)
+                size_bad_pred = int(batch_size * (1-acc_2))
+                preds[:size_bad_pred] = 0
+                targets = np.ones(32)
+                task_ids = np.ones(32)
+                logger.add(value=[preds, targets, task_ids], subset='test')
+
+            logger.end_epoch()
+        logger.end_task()
+
+
+    if metric == "accuracy":
+        assert logger.accuracy == expected_result
+    elif metric == "accuracy_per_task":
+        res = logger.accuracy_per_task
+        print(res)
+        assert res[0] == acc_21
+        assert res[1] == acc_22
+    elif metric == "average_incremental_accuracy":
+        assert logger.average_incremental_accuracy == expected_result
+    elif metric == "backward_transfer":
+        assert logger.backward_transfer == expected_result
+    elif metric == "forward_transfer":
+        assert logger.forward_transfer == expected_result
+    elif metric == "positive_backward_transfer":
+        assert logger.positive_backward_transfer == expected_result
+    elif metric == "remembering":
+        assert logger.remembering == expected_result
+    elif metric == "forgetting":
+        assert logger.forgetting == expected_result
+    elif metric == "accuracy_A":
+        assert logger.accuracy_A == expected_result
+    else:
+        raise NotImplementedError("metric not tested here")
 
 def test_logger_nb_tasks(numpy_data):
     logger = Logger()
@@ -106,6 +183,7 @@ def test_logger_add_tensor(numpy_data):
             logger.end_epoch()
         logger.end_task()
 
+
 def test_logger_add_tensor_after_end_epoch_end_task(numpy_data):
     """
     test to check if we can use the logger to log random tensor with random keword
@@ -123,6 +201,7 @@ def test_logger_add_tensor_after_end_epoch_end_task(numpy_data):
             logger.end_epoch()
             assert 0. <= logger.accuracy <= 1.
         logger.end_task()
+
 
 def test_logger_add_tensor_minibatch(numpy_data):
     """
@@ -183,10 +262,6 @@ def test_metrics(numpy_data, mode, expected):
         assert 0. <= logger.forgetting <= 1.0
 
     assert 0. <= logger.average_incremental_accuracy <= 1.
-
-
-
-
 
 
 @pytest.mark.parametrize("mode,expected", [
