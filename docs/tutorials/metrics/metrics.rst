@@ -72,6 +72,8 @@ Here is a list of all implemented metrics:
       Lopez-paz & ranzato, NeurIPS 2017
 
 
+Note: To measure backward transfer, the logger has to contains accuracy to past tasks at task t.
+
 **Positive Backward Transfer**::
 
     Computes the the positive gain of Backward transfer.
@@ -98,6 +100,7 @@ Here is a list of all implemented metrics:
     * Gradient Episodic Memory for Continual Learning
       Lopez-paz & ranzato, NeurIPS 2017
 
+Note: To measure Forward transfer, the logger has to contains accuracy to the future tasks at task t.
 
 **Forgetting**::
 
