@@ -108,6 +108,8 @@ Existing Datasets
 +----------------------+------------+------------+----------------+------------------+
 | **MetaShift**        | 410        | ?x?x3      | YES            | Images           |
 +----------------------+------------+------------+----------------+------------------+
+| **Fluent Speech**    | 31         | ?          | YES            | Audio            |
++----------------------+------------+------------+----------------+------------------+
 
 
 
@@ -271,3 +273,48 @@ Here are an example with MNIST, but all datasets work the same:
 
     for x, y, t in loader:
         pass  # Your model here
+
+
+Multi-target datasets
+---------------------
+
+Continuum also allows a dataset to return multiple targets per data point. In
+class incremental, only the first target is taken in account for designing the
+increments.
+
+
+.. code-block:: python
+
+    from continuum import ClassIncremental
+    from continuum.datasets import FluentSpeech
+    from torch.utils.data import DataLoader
+
+    dataset = FluentSpeech("/my/data/folder", train=True)
+
+    scenario = ClassIncremental(dataset, increment=1)
+
+    for taskset in scenario:
+        loader = DataLoader(taskset, batch_size=1)
+
+        for x, y, t in loader:
+            print(x.shape, y.shape, t.shape, np.unique(y[:, 0]))
+            break
+
+
+In this situation, the FluentSpeech dataset has 4 targets, but only the first one
+is used to determine the tasks.
+
+
+The Different Data Types
+------------------------
+
+Each dataset has a data type. Here are the ones already implemented:
+
+- **IMAGE_ARRAY**: Image is directly as an array. Example: MNIST dataset.
+- **IMAGE_PATH**: Image is stored as a patch to the actual image. Example: ImageNet dataset.
+- **TEXT**: For `HuggingFace <https://continuum.readthedocs.io/en/latest/tutorials/scenarios_suites/HuggingFace.html>`__ datasets.
+- **TENSOR**: Any kind of tensor.
+- **SEGMENTATION**: For the `Continual Semantic Segmentation <https://continuum.readthedocs.io/en/latest/tutorials/scenarios/scenarios.html#incremental-semantic-segmentation>`__ datasets.
+- **OBJ_DETECTION**: Still WIP.
+- **H5**: Storing tensor in a H5 dataset. For the end user, the usage is quite similar to TENSOR.
+- **AUDIO**: Storing a string to a audio file. Needs to install the `Soundfile <https://pypi.org/project/SoundFile/>`__ library.

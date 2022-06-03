@@ -70,13 +70,13 @@ class Logger(_BaseLogger):
     @property
     @require_subset("train")
     def online_accuracy(self):
-        if self._get_current_predictions("train").size == 0:
+        if self._get_last_predictions("train").size == 0:
             raise Exception(
                 "You need to call add([prediction, label, task_id]) in order to compute an online accuracy "
                 "(add([prediction, label, None]) also works here, task_id is not needed)."
             )
-        predictions = self._get_current_predictions("train")
-        targets = self._get_current_targets("train")
+        predictions = self._get_last_predictions("train")
+        targets = self._get_last_targets("train")
 
         return accuracy(predictions, targets)
 
@@ -84,8 +84,8 @@ class Logger(_BaseLogger):
     @require_subset("test")
     def accuracy(self):
         return accuracy(
-            self._get_current_predictions("test"),
-            self._get_current_targets("test")
+            self._get_last_predictions("test"),
+            self._get_last_targets("test")
         )
 
     @property
