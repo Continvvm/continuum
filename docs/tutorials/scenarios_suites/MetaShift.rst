@@ -39,7 +39,7 @@ Beware that the default configuration will download the full Visual Genome datas
 - Specific Classes:
 
 Select specific classes to appear in the dataset with the argument :code:`class_names`.
-Then specify if all classes should apprear in all tasks with the argument :code:`strict_domain_inc`. If True, some tasks will be merged so that all classes are present in all tasks.
+Then specify if all classes should apprear in all tasks with the argument :code:`strict_domain_inc`. If True, only contexts found in all classes will be kept.
 
 .. code-block:: python
 

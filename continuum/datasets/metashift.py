@@ -6,7 +6,7 @@ from random import randint, seed
 import numpy as np
 from torch import classes
 
-from continuum import download
+from continuum import download, scenarios
 from continuum.datasets.base import _ContinuumDataset
 from continuum.tasks import TaskType
 
@@ -32,8 +32,7 @@ class MetaShift(_ContinuumDataset):
            duplicates of ids will be found in x.
     :param random_seed : set seed (relevant only if random context is True)
     :param nb_task : set the number of distict tasks.
-    :param strict_domain_inc : If true, some tasks are merged so that all classes 
-           are represented in each task. If false, no change is applied to resulting classes. (default = false)
+    :param strict_domain_inc : If true, only contexts represented in all classes are kept. If false, all contexts are kept. (default = false)
     """
     data_url = "https://nlp.stanford.edu/data/gqa/images.zip"
     pickle_url = "https://github.com/Weixin-Liang/MetaShift/blob/main/dataset/meta_data/full-candidate-subsets.pkl?raw=true"
@@ -131,7 +130,8 @@ class MetaShift(_ContinuumDataset):
         self.class_names, y = np.unique(y, return_inverse = True)
 
         if (self.strict_domain_inc == True):
-            t = _strict_domain_tasks(y, t, len(self.class_names))
+            x, y, t = _strict_domain_tasks(x, y, t, len(self.class_names))
+            t = np.unique(t, return_inverse=True)[1]
         else:
             t = np.unique(t, return_inverse = True)[1]
         
@@ -165,39 +165,22 @@ def _select_unique_occurence(x, y, t, rand_seed):
 
     return x2, y2, t2
 
-def _strict_domain_tasks(y, t, nb_classes):
-    # Merge some tasks to make sure all classes are represented in each task --> call to recursive function.
+def _strict_domain_tasks(x, y, t, nb_classes):
+    # selects tasks for which all classes are represented.
     t2 = np.unique(t, return_inverse=True)[1]
     nb_tasks = np.max(t2)+1
-    # Make a table of number of class reprensented in each task.
-    task_dict = {}
+    selected_tasks = np.ndarray([nb_tasks,], dtype=bool)
     for task_id in range(nb_tasks):
         classes = np.unique(y[np.where(t2==task_id)])
-        task_dict[task_id] = set(classes)
+        if len(classes) == nb_classes:
+            selected_tasks[task_id] = True
+        else:
+            selected_tasks[task_id] = False
     
-    return _rec_strict_domain_tasks(t2, task_dict, nb_classes)
+    if np.all(selected_tasks == False):
+        raise ValueError("Error : No task contains all classes. Try with fewer classes or set strict_domain_inc to false.")
 
-def _len_set_in_tuple(x):
-    return len(x[1])
+    idx_selected = np.where(selected_tasks[t2]==True)
 
-def _rec_strict_domain_tasks(t, task_dict, nb_classes):
-    stop_cond = True
-    for v in task_dict.values():
-        if len(v) != nb_classes:
-            stop_cond = False
-            break
-    
-    if stop_cond: ## return t when all classes are represented in each task.
-        return np.unique(t, return_inverse=True)[1]
-    else:
-        smallest_task = min(task_dict.items(), key = _len_set_in_tuple)[0] ## take task containing the least number of distinct classes --> smallest task
-        classes_sml_task = task_dict.pop(smallest_task)
-        
-        len_intersec = lambda x : len(classes_sml_task.intersection(x[1])) ## gives size of intersect beween classes in smallest_task and classes of task x.
-        
-        task_to_merge = min(task_dict.items(), key = len_intersec)[0] ## take task having the smallest number of common classes with smallest_task --> task_to_merge.
-        
-        t = np.where(t==smallest_task, task_to_merge, t) # Merge tasks
-        task_dict[task_to_merge] = task_dict[task_to_merge].union(classes_sml_task) # update task_dict
-        return _rec_strict_domain_tasks(t, task_dict, nb_classes) ## Recursive call
-        
+    return x[idx_selected], y[idx_selected], t2[idx_selected]
+
