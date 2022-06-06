@@ -22,6 +22,13 @@ def test_metashift_with_class_names():
 
     assert scenario.nb_classes == 3
     
+@pytest.mark.slow
+def test_metashift_with_strict_domain():
+
+    dataset = MetaShift(DATA_PATH, download=False, train=True,class_names = ["cat", "dog", "horse", "car", "bus", "rice", "potato", "bowl", "pasta", "ship", "airplane"], strict_domain_inc=True)
+    x, y, t = dataset.get_data()
+
+    assert np.max(t) != 0
 
 @pytest.mark.slow
 def test_metashift_with_nb_tasks():

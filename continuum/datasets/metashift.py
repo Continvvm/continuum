@@ -191,13 +191,13 @@ def _rec_strict_domain_tasks(t, task_dict, nb_classes):
         return np.unique(t, return_inverse=True)[1]
     else:
         smallest_task = min(task_dict.items(), key = _len_set_in_tuple)[0] ## take task containing the least number of distinct classes --> smallest task
-        dict_no_smallest = {k:v for k, v in task_dict.items() if k!=smallest_task}
+        classes_sml_task = task_dict.pop(smallest_task)
         
-        len_intersec = lambda x : len(task_dict[smallest_task].intersection(x[1])) ## gives size of intersect beween classes in smallest_task and classes of task x.
+        len_intersec = lambda x : len(classes_sml_task.intersection(x[1])) ## gives size of intersect beween classes in smallest_task and classes of task x.
         
-        task_to_merge = min(dict_no_smallest.items(), key = len_intersec)[0] ## take task having the smallest number of common classes with smallest_task --> task_to_merge.
+        task_to_merge = min(task_dict.items(), key = len_intersec)[0] ## take task having the smallest number of common classes with smallest_task --> task_to_merge.
         
-        t2 = np.where(t==smallest_task, task_to_merge, t) # Merge tasks
-        dict_no_smallest[task_to_merge] = dict_no_smallest[task_to_merge].union(task_dict[smallest_task]) # update task_dict
-        return _rec_strict_domain_tasks(t2, dict_no_smallest, nb_classes) ## Recursive call
+        t = np.where(t==smallest_task, task_to_merge, t) # Merge tasks
+        task_dict[task_to_merge] = task_dict[task_to_merge].union(classes_sml_task) # update task_dict
+        return _rec_strict_domain_tasks(t, task_dict, nb_classes) ## Recursive call
         
