@@ -4,13 +4,14 @@ from typing import Iterable, Tuple, Union
 from random import randint, seed
 
 import numpy as np
+from torch import classes
 
 from continuum import download
 from continuum.datasets.base import _ContinuumDataset
 from continuum.tasks import TaskType
 
 class MetaShift(_ContinuumDataset):
-    # NOTE : using random_contexts can cause some contexts to contain few examples.
+    # NOTE : using unique_occurence can cause some contexts to contain few examples.
     """Continuum version of the MetaShift dataset.
 
     References:
@@ -26,11 +27,13 @@ class MetaShift(_ContinuumDataset):
            containing classes and contexts if not already in data_path folder.
     :param train_image_ids: Images ids to use.
     :param class_names : classes to consider (default = None --> all classes)
-    :param random_context : If true ; only one occurence of each image in a 
+    :param unique_occurence : If true ; only one occurence of each image in a 
            random choosen class&context combination. If false, all valid contexts are considered, 
            duplicates of ids will be found in x.
-    :param random_seed : set seed (relevant ponly if random context is True)
+    :param random_seed : set seed (relevant only if random context is True)
     :param nb_task : set the number of distict tasks.
+    :param strict_domain_inc : If true, some tasks are merged so that all classes 
+           are represented in each task. If false, no change is applied to resulting classes. (default = false)
     """
     data_url = "https://nlp.stanford.edu/data/gqa/images.zip"
     pickle_url = "https://github.com/Weixin-Liang/MetaShift/blob/main/dataset/meta_data/full-candidate-subsets.pkl?raw=true"
@@ -42,16 +45,18 @@ class MetaShift(_ContinuumDataset):
             download:bool = True,
             class_names:Union[Iterable[str], None] = None, #Only get images corresponding to specific classe(s)
             train_image_ids:Union[Iterable[str], None] = None, #Only get specific ids for training. (if None : all)
-            random_contexts:bool = False, #If true, the images will be assigned random class(context) combination among all valid combinations.
+            unique_occurence:bool = False, #If true, the images will be assigned random class(context) combination among all valid combinations.
             random_seed:int = 42,
-            nb_tasks:int = 0
+            nb_tasks:int = 0,
+            strict_domain_inc:bool = False
             ):
 
         self.train_image_ids = train_image_ids
-        self.random_contexts = random_contexts
+        self.unique_occurence = unique_occurence
         self.class_names = class_names
         self.seed = random_seed
         self.nb_tasks = nb_tasks
+        self.strict_domain_inc = strict_domain_inc
         super().__init__(data_path, train, download)
 
     @property
@@ -120,12 +125,17 @@ class MetaShift(_ContinuumDataset):
         x, y, t = np.array(x), np.array(y), np.array(t)
         
 
-        if(self.random_contexts == True):
-            x, y, t = _select_random_contexts(x, y, t, self.seed)
+        if(self.unique_occurence == True):
+            x, y, t = _select_unique_occurence(x, y, t, self.seed)
 
-        y = np.unique(y, return_inverse = True)[1]
-        n, t = np.unique(t, return_inverse = True)
-        n = len(n)
+        self.class_names, y = np.unique(y, return_inverse = True)
+
+        if (self.strict_domain_inc == True):
+            t = _strict_domain_tasks(y, t, len(self.class_names))
+        else:
+            t = np.unique(t, return_inverse = True)[1]
+        
+        n = np.max(t) + 1
 
         if (self.nb_tasks > 0) and (n > self.nb_tasks): # to be tested
             scale = lambda x : x % self.nb_tasks # scale task ids to number of tasks
@@ -133,7 +143,7 @@ class MetaShift(_ContinuumDataset):
 
         return x, y, t
 
-def _select_random_contexts(x, y, t, rand_seed): 
+def _select_unique_occurence(x, y, t, rand_seed): 
     #choose a random context for each class(context) combiation for each image amoung available.    
     idx_sort = np.argsort(x)
     sorted_x = x[idx_sort]
@@ -154,4 +164,40 @@ def _select_random_contexts(x, y, t, rand_seed):
     t2 = sorted_t[final_idx_list]
 
     return x2, y2, t2
+
+def _strict_domain_tasks(y, t, nb_classes):
+    # Merge some tasks to make sure all classes are represented in each task --> call to recursive function.
+    t2 = np.unique(t, return_inverse=True)[1]
+    nb_tasks = np.max(t2)+1
+    # Make a table of number of class reprensented in each task.
+    task_dict = {}
+    for task_id in range(nb_tasks):
+        classes = np.unique(y[np.where(t2==task_id)])
+        task_dict[task_id] = set(classes)
     
+    return _rec_strict_domain_tasks(t2, task_dict, nb_classes)
+
+def _len_set_in_tuple(x):
+    return len(x[1])
+
+def _rec_strict_domain_tasks(t, task_dict, nb_classes):
+    stop_cond = True
+    for v in task_dict.values():
+        if len(v) != nb_classes:
+            stop_cond = False
+            break
+    
+    if stop_cond: ## return t when all classes are represented in each task.
+        return np.unique(t, return_inverse=True)[1]
+    else:
+        smallest_task = min(task_dict.items(), key = _len_set_in_tuple)[0] ## take task containing the least number of distinct classes --> smallest task
+        dict_no_smallest = {k:v for k, v in task_dict.items() if k!=smallest_task}
+        
+        len_intersec = lambda x : len(task_dict[smallest_task].intersection(x[1])) ## gives size of intersect beween classes in smallest_task and classes of task x.
+        
+        task_to_merge = min(dict_no_smallest.items(), key = len_intersec)[0] ## take task having the smallest number of common classes with smallest_task --> task_to_merge.
+        
+        t2 = np.where(t==smallest_task, task_to_merge, t) # Merge tasks
+        dict_no_smallest[task_to_merge] = dict_no_smallest[task_to_merge].union(task_dict[smallest_task]) # update task_dict
+        return _rec_strict_domain_tasks(t2, dict_no_smallest, nb_classes) ## Recursive call
+        

@@ -16,11 +16,11 @@ DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
 @pytest.mark.slow
 def test_metashift_with_class_names():
 
-    dataset = MetaShift(DATA_PATH, download=True, train=True, class_names=["cat", "dog"])
+    dataset = MetaShift(DATA_PATH, download=True, train=True, class_names=["cat", "dog", "horse"], strict_domain_inc=True)
 
     scenario = ContinualScenario(dataset)
 
-    assert scenario.nb_classes == 2
+    assert scenario.nb_classes == 3
     
 
 @pytest.mark.slow
@@ -34,14 +34,13 @@ def test_metashift_with_nb_tasks():
     
 
 @pytest.mark.slow
-def test_metashift_with_random_contexts():
+def test_metashift_with_unique_occurence():
     
     dataset = MetaShift(DATA_PATH, download=True, train=True, 
-                        random_contexts=True, 
+                        unique_occurence=True, 
                         train_image_ids=["2317182", "2324913", "2383885"])
     
     x, y, t = dataset.get_data()
 
     assert len(x) == 3
     
-
