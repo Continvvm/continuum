@@ -70,6 +70,8 @@ class FluentSpeech(_AudioDataset):
             ])
             if self.train == "train":
                 t.append(self.train_speaker_ids[items[2]])
+            elif self.train == "valid":
+                t.append(self.valid_speaker_ids[items[2]])
             else:
                 t.append(self.test_speaker_ids[items[2]])
 
@@ -232,6 +234,22 @@ class FluentSpeech(_AudioDataset):
              'ZebMRl5Z7dhrPKRD': 74,
              'zwKdl7Z2VRudGj2L': 75,
              'zZezMeg5XvcbRdg3': 76,
+        }
+
+    @property
+    def valid_speaker_ids(self):
+        return {
+            '7NqqnAOPVVSKnxyv':0,
+            '8B9N9jOOXGUordVG':1,
+            '9MX3AgZzVgCw4W4j':2,
+            'D4jGxZ7KamfVo4E2V':3,
+            'DWNjK4kYDACjeEg3':4,
+            'eBQAWmMg4gsLYLLa':5,
+            'mj4BWeRbp7ildyB9d':6,
+            'NgXwdx5KkZI5GRWa':7,
+            'Pz327QrLaGuxW8Do':8,
+            'vnljypgejkINbBAY':9
+
         }
 
     @property
