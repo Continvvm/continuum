@@ -19,13 +19,29 @@ To download the Visual Genome dataset in advance :
 .. code-block:: bash
 
     wget -c https://nlp.stanford.edu/data/gqa/images.zip
-    unzip images.zip -d images
+    unzip images.zip -d MetaShift
 
+Use the :code:`visual_genome_path` argument in MetaShift constructor if you already have the original Visual Genome dataset downloaded.
+Provide it with the path to the folder containing all Visual Genome images.
+
+.. code-block:: python
+
+    from continuum.datasets import MetaShift
+    data = MetaShift(datafolder, visual_genome_path = "some/path/images")
 
 ContinualScenario:
 ##################
 
-Beware that the default configuration will download the full Visual Genome dataset if it is not already present in a folder named "images" (20GB).
+Beware that the default configuration will download the full Visual Genome dataset if it is not already present in a folder named "MetaShift" (20GB).
+
+Tasks are defined by the context in whcich  the objects appear. In the following example, dogs and cats with water on the right and with computers on the left.
+
+.. image:: ../../../images/Metashift_dogcat_water.jpg
+    :width: 40%
+.. image:: ../../../images/Metashift_dogcat_computer.jpg
+    :width: 40%
+
+- Default scenario settings:
 
 .. code-block:: python
 
@@ -36,41 +52,50 @@ Beware that the default configuration will download the full Visual Genome datas
     scenario = ContinualScenario(data)
 
 
-- Specific Classes:
+- Specific classes:
 
 Select specific classes to appear in the dataset with the argument :code:`class_names`.
-Then specify if all classes should apprear in all tasks with the argument :code:`strict_domain_inc`. If True, only contexts found in all classes will be kept.
+Then specify if all classes should apprear in all tasks with the argument :code:`strict_domain_inc`. If True, only contexts found in all specified classes will be kept.
 
 .. code-block:: python
 
     from continuum.datasets import MetaShift
     from continuum.scenarios import ContinualScenario
+    from continuum.datasets.metashift import get_all_classes_contexts
+
+    all_classes, all_contexts = get_all_classes_contexts(datafolder) 
+    # Use this function to retrieve all metashift classes and contexts.
 
     data = MetaShift(datafolder, class_names = ["cat", "dog"], strict_domain_inc = True)
     scenario = ContinualScenario(data)
 
 
-- Specific image ids:
+- Specific contexts:
 
-Select specific training iamage ids with the argument :code:`train_image_ids`.
+Select specific contexts with the argument :code:`context_names`.
 
 .. code-block:: python
 
     from continuum.datasets import MetaShift
     from continuum.scenarios import ContinualScenario
+    from continuum.datasets.metashift import get_all_contexts_from_classes
 
-    data = MetaShift(datafolder, train_image_ids=["2317182", "2324913", "2383885"])
+    contexts = get_all_classes_contexts(datafolder, ["cat", "dog", "horse"]) 
+    # Use this function to retreive all metashift contexts for given classes.
+
+    data = MetaShift(datafolder, context_names=["water", "ocean"])
     scenario = ContinualScenario(data)
 
 
 - Get a unique task for each image:
 
-Tasks will be choosen randomly for each image among all contexts corresponding to the image.
+Tasks can appear in multiple combinations of classes and contexts.
+By setting :code:`unique_occurence=True`, the task in which each image appears will be chosen randomly.
 
 .. code-block:: python
 
     from continuum.datasets import MetaShift
     from continuum.scenarios import ContinualScenario
 
-    data = MetaShift(datafolder, unique_occurence=True)
+    data = MetaShift(datafolder, unique_occurence=True, random_seed=42)
     scenario = ContinualScenario(data)

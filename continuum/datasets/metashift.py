@@ -1,14 +1,12 @@
 import pickle as pkl
 import os
 from typing import Iterable, Tuple, Union
-from random import randint, seed
-
 import numpy as np
-from torch import classes
-
-from continuum import download, scenarios
+from continuum import download
 from continuum.datasets.base import _ContinuumDataset
 from continuum.tasks import TaskType
+from warnings import warn
+import zipfile
 
 class MetaShift(_ContinuumDataset):
     # NOTE : using unique_occurence can cause some contexts to contain few examples.
@@ -22,11 +20,11 @@ class MetaShift(_ContinuumDataset):
           arXiv:2202.06523v1
 
     :param data_path: The folder path containing the data.
-    :param train : 
+    :param train : (bool) Default is True.
     :param download: If true, will download images and the dictionnary 
            containing classes and contexts if not already in data_path folder.
-    :param train_image_ids: Images ids to use.
     :param class_names : classes to consider (default = None --> all classes)
+    :param context_names : ccontexts to consider (default = None --> all contexts)
     :param unique_occurence : If true ; only one occurence of each image in a 
            random choosen class&context combination. If false, all valid contexts are considered, 
            duplicates of ids will be found in x.
@@ -36,26 +34,31 @@ class MetaShift(_ContinuumDataset):
     """
     data_url = "https://nlp.stanford.edu/data/gqa/images.zip"
     pickle_url = "https://github.com/Weixin-Liang/MetaShift/blob/main/dataset/meta_data/full-candidate-subsets.pkl?raw=true"
+    targets_url = "https://nlp.stanford.edu/data/gqa/sceneGraphs.zip"
 
     def __init__(
             self,
             data_path:str,
+            visual_genome_path:Union[str, None] = None,
             train:bool = True,
             download:bool = True,
             class_names:Union[Iterable[str], None] = None, #Only get images corresponding to specific classe(s)
-            train_image_ids:Union[Iterable[str], None] = None, #Only get specific ids for training. (if None : all)
+            context_names:Union[Iterable[str], None] = None, #Only get images corresponding to specific context(s)
             unique_occurence:bool = False, #If true, the images will be assigned random class(context) combination among all valid combinations.
             random_seed:int = 42,
             nb_tasks:int = 0,
             strict_domain_inc:bool = False
             ):
 
-        self.train_image_ids = train_image_ids
         self.unique_occurence = unique_occurence
+        self.visual_genome_path = os.path.expanduser(visual_genome_path) if visual_genome_path is not None else os.path.join(os.path.expanduser(data_path), "MetaShift", "images")
         self.class_names = class_names
+        self.context_names = context_names
         self.seed = random_seed
         self.nb_tasks = nb_tasks
         self.strict_domain_inc = strict_domain_inc
+        self.class_names_updated = None
+        self.context_names_updated = None
         super().__init__(data_path, train, download)
 
     @property
@@ -64,12 +67,16 @@ class MetaShift(_ContinuumDataset):
 
     def _download(self):
         # Visual Genome Dataset
-        if os.path.exists(os.path.join(self.data_path, "images")):
+        if os.path.exists(self.visual_genome_path):
             print("Dataset already extracted.")
         else:
-            path = download.download(self.data_url, self.data_path)
-            download.unzip(path)
-            print("Dataset extracted.")
+            print("BEWARE : 20GB file is downloading")
+            path = os.path.join(self.data_path, "MetaShift")
+            if not os.path.exists(path) : os.mkdir(path)
+            file = download.download(self.data_url, self.data_path)
+            with zipfile.ZipFile(file, 'r') as zip_file:
+                zip_file.extractall(path)
+            print("\nDataset extracted.")
 
         # Pickle file
         if os.path.exists(os.path.join(self.data_path, "full-candidate-subsets.pkl")):
@@ -77,7 +84,18 @@ class MetaShift(_ContinuumDataset):
         else:
             file = download.download(self.pickle_url, self.data_path)
             os.rename(file, os.path.join(self.data_path, "full-candidate-subsets.pkl"))
-            print("Classes and contexts downloaded")
+            print("\nClasses and contexts downloaded")
+        
+        # Visual Genome targets
+        if os.path.exists(os.path.join(self.data_path, "sceneGraphs")):
+            print("Visual Genome targets already downloaded")
+        else:
+            file = download.download(self.targets_url, self.data_path)
+            path = os.path.join(self.data_path, "sceneGraphs")
+            if not os.path.exists(path) : os.mkdir(path)
+            with zipfile.ZipFile(file, 'r') as zip_file:
+                zip_file.extractall(path)
+            print("\nVisual Genome targets downloaded")
     
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate Metashift Data
@@ -111,76 +129,123 @@ class MetaShift(_ContinuumDataset):
             context_name = key.split("(")[1][:-1]
             class_name = key.split("(")[0]
 
-            if (self.class_names is None or class_name in self.class_names) :
+            if ( (self.class_names is None or class_name in self.class_names) and (self.context_names is None or context_name in self.context_names) ):
                 
                 for id in pkl_dict[key]:    # Iterate through all ids
-
-                    if self.train_image_ids is None or id in self.train_image_ids :
-                        x.append(os.path.join(self.data_path, "images", "images", id)+".jpg")
-                        y.append(class_name)
-                        t.append(context_name)
-
+                    x.append(os.path.join(self.visual_genome_path, id)+".jpg")
+                    y.append(class_name)
+                    t.append(context_name)
 
         x, y, t = np.array(x), np.array(y), np.array(t)
-        
 
         if(self.unique_occurence == True):
-            x, y, t = _select_unique_occurence(x, y, t, self.seed)
+            x, y, t = self._select_unique_occurence(x, y, t)
 
-        self.class_names, y = np.unique(y, return_inverse = True)
+        self.class_names_updated, y = np.unique(y, return_inverse = True)
 
         if (self.strict_domain_inc == True):
-            x, y, t = _strict_domain_tasks(x, y, t, len(self.class_names))
-            t = np.unique(t, return_inverse=True)[1]
+            x, y, t = self._strict_domain_tasks(x, y, t)
+            self.context_names_updated, t = np.unique(t, return_inverse=True)
         else:
-            t = np.unique(t, return_inverse = True)[1]
+            self.context_names_updated, t = np.unique(t, return_inverse = True) 
         
         n = np.max(t) + 1
 
         if (self.nb_tasks > 0) and (n > self.nb_tasks): # to be tested
-            scale = lambda x : x % self.nb_tasks # scale task ids to number of tasks
-            t = scale(t)
+            t = t % self.nb_tasks # scale task ids to number of tasks
 
         return x, y, t
 
-def _select_unique_occurence(x, y, t, rand_seed): 
-    #choose a random context for each class(context) combiation for each image amoung available.    
-    idx_sort = np.argsort(x)
-    sorted_x = x[idx_sort]
-    sorted_y = y[idx_sort]
-    sorted_t = t[idx_sort]
+    def get_class_context_in_order(self):
+        """Returns arrays of class names and context names such that the indices correspond to the y and t values. (If nb_task was not fixed.)
+        If the get_data() method was not called or no scenario was created, warns the user and returns (None, None).
 
-    final_idx_list = []
-
-    vals, idx_start, count = np.unique(sorted_x, return_counts=True, return_index=True)
-
-    seed(rand_seed)
-
-    for i in range(len(vals)):
-        final_idx_list.append(randint(idx_start[i], idx_start[i]+count[i]-1))
+        Returns:
+            tuple[NDArray | None, NDArray | None]: array of class names, array of context names
+        """
+        if self.class_names_updated is None or self.context_names_updated is None:
+            warn("get_class_context_in_order, the class and task indices are not known yet : get_data() was not called and no scenario was created.")
         
-    x2 = sorted_x[final_idx_list]
-    y2 = sorted_y[final_idx_list]
-    t2 = sorted_t[final_idx_list]
-
-    return x2, y2, t2
-
-def _strict_domain_tasks(x, y, t, nb_classes):
-    # selects tasks for which all classes are represented.
-    t2 = np.unique(t, return_inverse=True)[1]
-    nb_tasks = np.max(t2)+1
-    selected_tasks = np.ndarray([nb_tasks,], dtype=bool)
-    for task_id in range(nb_tasks):
-        classes = np.unique(y[np.where(t2==task_id)])
-        if len(classes) == nb_classes:
-            selected_tasks[task_id] = True
-        else:
-            selected_tasks[task_id] = False
+        return self.class_names_updated, self.context_names_updated
     
-    if np.all(selected_tasks == False):
-        raise ValueError("Error : No task contains all classes. Try with fewer classes or set strict_domain_inc to false.")
+    def _strict_domain_tasks(self, x, y, t):
+        # selects tasks for which all classes are represented.
+        unique_tasks, t2 = np.unique(t, return_inverse=True)
 
-    idx_selected = np.where(selected_tasks[t2]==True)
+        selected_tasks = np.zeros([len(unique_tasks),], dtype=np.int8)
 
-    return x[idx_selected], y[idx_selected], t2[idx_selected]
+        # for each task, verify if the number of classes in task corresponds to the number of classes.
+        for i, context in enumerate(unique_tasks):
+            classes = np.unique(y[np.where(t==context)])
+            if len(classes) == len(self.class_names):
+                selected_tasks[i] = 1
+        
+        # If no tasks contains all classes : raise an error
+        if np.all(selected_tasks == 0):
+            raise ValueError("Error : No task contains all classes. Try with fewer classes or set strict_domain_inc to false.")
+
+        # Create subset for selected tasks.
+        idx_selected = np.where(selected_tasks[t2]==1)
+
+        return x[idx_selected], y[idx_selected], t[idx_selected]
+
+
+    def _select_unique_occurence(self, x, y, t): 
+        # choose an unique context for each data point (randomly)    
+        np.random.seed(seed=self.seed)
+
+        # shuffle
+        permutation = np.random.permutation(len(x))
+        x2, y2, t2 = x[permutation], y[permutation], t[permutation]
+
+        # keep first occurence
+        x2, idx = np.unique(x2, return_index=True)
+        y2, t2 = y2[idx], t2[idx]
+
+        return x2, y2, t2
+
+def get_all_classes_contexts(data_path):
+    """Returns list of all class names and context names present in the original MetaShift dataset.
+
+    Args:
+        data_path (str): path to data folder containing full-candidate-subsets.pkl
+
+    Returns:
+        tuple[List, List] : List of class names, List of context names
+    """
+    with open(os.path.join(data_path, "full-candidate-subsets.pkl"), 'rb') as pkl_file:
+        pkl_dict = pkl.load(pkl_file)
+    
+    all_classes = []
+    all_contexts = []
+    for key in pkl_dict.keys():
+        class_name, context = key.split('(')
+        context = context[:-1]
+        if class_name not in all_classes:
+            all_classes.append(class_name)
+        if context not in all_contexts:
+            all_contexts.append(context)
+
+    return all_classes, all_contexts
+
+def get_all_contexts_from_classes(data_path, class_names):
+    """Returns a list of all context names corresponding to given class names in MetaShift dataset.
+
+    Args:
+        data_path (str): path to folder containing full-candidate-subsets.pkl
+        class_names (List): class names
+
+    Returns:
+        Lsit : context names corresponding to class names.
+    """
+    with open(os.path.join(data_path, "full-candidate-subsets.pkl"), 'rb') as pkl_file:
+        pkl_dict = pkl.load(pkl_file)
+    
+    all_contexts = []
+    for key in pkl_dict.keys():
+        class_name, context = key.split('(')
+        context = context[:-1]
+        if class_name in class_names and context not in all_contexts:
+            all_contexts.append(context)
+    return all_contexts
 
