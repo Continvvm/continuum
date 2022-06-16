@@ -128,7 +128,7 @@ This project was started by a joint effort from [Arthur Douillard](https://arthu
 Feel free to contribute! If you want to propose new features, please create an issue.
 
 Contributors: [Lucas Caccia](https://github.com/pclucas14) [Lucas Cecchi](https://github.com/Lucasc-99) [Pau Rodriguez](https://github.com/prlz77), [Yury Antonov](https://github.com/yantonov),
-[psychicmario](https://github.com/psychicmario), [fcld94](https://github.com/fcdl94), [Ashok Arjun](https://github.com/ashok-arjun), [Md Rifat Arefin](https://github.com/rarefin), [DanieleMugnai](https://github.com/mugnaidaniele), [Xiaohan Zou](https://github.com/Renovamen), [Umberto Cappellazzo](https://github.com/umbertocappellazzo].
+[psychicmario](https://github.com/psychicmario), [fcld94](https://github.com/fcdl94), [Ashok Arjun](https://github.com/ashok-arjun), [Md Rifat Arefin](https://github.com/rarefin), [DanieleMugnai](https://github.com/mugnaidaniele), [Xiaohan Zou](https://github.com/Renovamen), [Umberto Cappellazzo](https://github.com/umbertocappellazzo).
 
 
 ### On PyPi
