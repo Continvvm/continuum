@@ -80,7 +80,7 @@ Select specific contexts with the argument :code:`context_names`.
     from continuum.scenarios import ContinualScenario
     from continuum.datasets.metashift import get_all_contexts_from_classes
 
-    contexts = get_all_classes_contexts(datafolder, ["cat", "dog", "horse"]) 
+    contexts = get_all_contexts_from_classes(datafolder, ["cat", "dog", "horse"]) 
     # Use this function to retreive all metashift contexts for given classes.
 
     data = MetaShift(datafolder, context_names=["water", "ocean"])

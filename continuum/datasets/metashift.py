@@ -236,7 +236,7 @@ def get_all_contexts_from_classes(data_path, class_names):
         class_names (List): class names
 
     Returns:
-        Lsit : context names corresponding to class names.
+        List : context names corresponding to class names.
     """
     with open(os.path.join(data_path, "full-candidate-subsets.pkl"), 'rb') as pkl_file:
         pkl_dict = pkl.load(pkl_file)
