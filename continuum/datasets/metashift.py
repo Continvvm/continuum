@@ -151,7 +151,7 @@ class MetaShift(_ContinuumDataset):
         
         n = np.max(t) + 1
 
-        if (self.nb_tasks > 0) and (n > self.nb_tasks): # to be tested
+        if (self.nb_tasks > 0) and (n > self.nb_tasks):
             t = t % self.nb_tasks # scale task ids to number of tasks
 
         return x, y, t
