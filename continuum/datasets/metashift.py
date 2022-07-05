@@ -88,14 +88,14 @@ class MetaShift(_ContinuumDataset):
         
         # Visual Genome targets
         if os.path.exists(os.path.join(self.data_path, "sceneGraphs")):
-            print("Visual Genome targets already downloaded")
+            print("Metashift targets already downloaded")
         else:
             file = download.download(self.targets_url, self.data_path)
             path = os.path.join(self.data_path, "sceneGraphs")
             if not os.path.exists(path) : os.mkdir(path)
             with zipfile.ZipFile(file, 'r') as zip_file:
                 zip_file.extractall(path)
-            print("\nVisual Genome targets downloaded")
+            print("\nMetashift targets downloaded")
     
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate Metashift Data

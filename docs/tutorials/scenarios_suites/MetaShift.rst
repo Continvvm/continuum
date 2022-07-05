@@ -34,7 +34,7 @@ ContinualScenario:
 
 Beware that the default configuration will download the full Visual Genome dataset if it is not already present in a folder named "MetaShift" (20GB).
 
-Tasks are defined by the context in whcich  the objects appear. In the following example, dogs and cats with water on the right and with computers on the left.
+Tasks are defined by the context in which  the objects appear. In the following example, dogs and cats with water on the right and with computers on the left.
 
 .. image:: ../../../images/Metashift_dogcat_water.jpg
     :width: 40%
@@ -67,7 +67,7 @@ Then specify if all classes should apprear in all tasks with the argument :code:
     # Use this function to retrieve all metashift classes and contexts.
 
     data = MetaShift(datafolder, class_names = ["cat", "dog"], strict_domain_inc = True)
-    scenario = ContinualScenario(data)
+    scenario = ContinualScenario(data) # 81 tasks will be generated.
 
 
 - Specific contexts:
