@@ -64,8 +64,8 @@ Useful functions
 - ``split_train_val(dataset, split_val = 0.1)`` split a task_set into two for validation purpose
 
 .. code-block:: python
-
+    from continuum.tasks.utils import split_train_val
     task_set = MyTaskSet()
 
     # split the task_set such as 10% of the data, randomly selected, are used for validation.
-    task_set_train, task_set_valid = (task_set, val_split = 0.1)
+    task_set_train, task_set_valid = split_train_val(task_set, val_split = 0.1)
