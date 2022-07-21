@@ -4,10 +4,11 @@ import os
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
-from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200, AwA2, Core50
+from continuum.datasets import MNIST, CIFAR10, CIFAR100, KMNIST, FashionMNIST, TinyImageNet200, AwA2, Core50, MetaShift
 from continuum.scenarios import Rotations
 from continuum.scenarios import Permutations
 from continuum.scenarios import ClassIncremental
+from continuum.scenarios import ContinualScenario
 from continuum.datasets import MNISTFellowship
 
 DATA_PATH = os.environ.get("CONTINUUM_DATA_PATH")
@@ -158,3 +159,19 @@ def test_visualization_MNIST360():
 
                 #### to visualize result ####
                 # visualize_batch(batch=x[:100], number=100, shape=[28, 28, 1], path=folder + f"MNIST360_{task_id + 9 * i}.jpg")
+
+@pytest.mark.slow
+def test_visualization_MetaShift():
+    folder = "tests/samples/MetaShift/"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    
+    dataset = MetaShift(DATA_PATH, class_names=['dog', 'cat'], strict_domain_inc=True)
+    trsf = [transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])]
+    scenario = ContinualScenario(dataset, transformations=trsf)
+
+    for task_id, taskset in enumerate(scenario):
+        taskset.plot(path=folder,
+                     title="Metashift_dog_{}.jpg".format(task_id),
+                     nb_samples=16,
+                     shape=[224, 224, 3])

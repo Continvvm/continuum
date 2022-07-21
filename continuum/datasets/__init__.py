@@ -41,4 +41,5 @@ from continuum.datasets.gtsrb import GTSRB
 from continuum.datasets.sun397 import SUN397
 from continuum.datasets.fer2013 import FER2013
 from continuum.datasets.eurosat import EuroSAT
+from continuum.datasets.metashift import MetaShift
 from continuum.datasets.fluentspeech import FluentSpeech
