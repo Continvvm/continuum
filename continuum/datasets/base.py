@@ -77,7 +77,9 @@ class _ContinuumDataset(abc.ABC):
             keep_tasks, discard_tasks
         )
 
-        new_x, new_y, new_t = x[indexes], y[indexes], t[indexes]
+        new_x, new_y, new_t = x[indexes], y[indexes], None
+        if t is not None:
+            new_t = t[indexes]
         sliced_dataset = InMemoryDataset(
             new_x, new_y, new_t,
             data_type=self.data_type
