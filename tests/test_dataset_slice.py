@@ -26,6 +26,22 @@ def dataset():
 
     return x, y, t
 
+@pytest.fixture
+def dataset2():
+    """"Dataset without task index"""
+    x = np.zeros((20, 4, 4, 3))
+    y = np.zeros((20,))
+
+    for i in range(20):
+        x[i] = i
+
+    c = 0
+    for i in range(0, 20, 2):
+        y[i] = c
+        y[i+1] = c
+        c += 1
+
+    return x, y, None
 
 @pytest.mark.parametrize("keep_classes,discard_classes,keep_tasks,discard_tasks,error,ids", [
     ([1], [1], None, None, True, None),
@@ -64,6 +80,16 @@ def test_slice(
     x, _, _ = sliced_dataset.get_data()
 
     assert (np.unique(x) == np.array(ids)).all(), (np.unique(x), ids)
+
+@pytest.mark.parametrize("keep_classes,discard_classes", [
+    ([0, 1], None),
+    (None, [0, 1])
+])
+def test_slice_without_t(dataset2, keep_classes, discard_classes):
+
+    dataset = InMemoryDataset(*dataset2)
+    sliced_dataset = dataset.slice(keep_classes, discard_classes)
+    x, _, _ = sliced_dataset.get_data()
 
 
 @pytest.mark.parametrize("keep_classes,discard_classes,keep_tasks,discard_tasks,error,ids", [

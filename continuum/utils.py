@@ -37,22 +37,24 @@ def _slice(
             "No task ids information is present by default with this dataset, "
             "thus you cannot slice some task ids."
         )
-    y, t = y.astype(np.int64), t.astype(np.int64)
+    y = y.astype(np.int64)
+    if t is not None:
+        t = t.astype(np.int64)
 
     indexes = set()
-    if keep_classes:
+    if keep_classes is not None:
         indexes = set(np.where(np.isin(y, keep_classes))[0])
-    elif discard_classes:
+    elif discard_classes is not None:
         keep_classes = list(set(y) - set(discard_classes))
         indexes = set(np.where(np.isin(y, keep_classes))[0])
 
-    if keep_tasks:
+    if keep_tasks is not None:
         _indexes = np.where(np.isin(t, keep_tasks))[0]
         if len(indexes) > 0:
             indexes = indexes.intersection(_indexes)
         else:
             indexes = indexes.union(_indexes)
-    elif discard_tasks:
+    elif discard_tasks is not None:
         keep_tasks = list(set(t) - set(discard_tasks))
         _indexes = np.where(np.isin(t, keep_tasks))[0]
         if len(indexes) > 0:
