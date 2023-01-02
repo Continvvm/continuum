@@ -77,32 +77,32 @@ if you want to evaluate after each task, on all seen tasks do `clloader_test[:n]
 
 **CIFAR10**:
 
-|<img src="images/cifar10_0.jpg" width="150">|<img src="images/cifar10_1.jpg" width="150">|<img src="images/cifar10_2.jpg" width="150">|<img src="images/cifar10_3.jpg" width="150">|<img src="images/cifar10_4.jpg" width="150">|
+|<img src="https://github.com/Continvvm/continuum/blob/master/images/cifar10_0.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/cifar10_1.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/cifar10_2.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/cifar10_3.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/cifar10_4.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
 
 **MNIST Fellowship (MNIST + FashionMNIST + KMNIST)**:
 
-|<img src="images/mnist_fellowship_0.jpg" width="150">|<img src="images/mnist_fellowship_1.jpg" width="150">|<img src="images/mnist_fellowship_2.jpg" width="150">|
+|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_fellowship_0.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_fellowship_1.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_fellowship_2.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 |
 
 
 **PermutedMNIST**:
 
-|<img src="images/mnist_permuted_0.jpg" width="150">|<img src="images/mnist_permuted_1.jpg" width="150">|<img src="images/mnist_permuted_2.jpg" width="150">|<img src="images/mnist_permuted_3.jpg" width="150">|<img src="images/mnist_permuted_4.jpg" width="150">|
+|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_permuted_0.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_permuted_1.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_permuted_2.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_permuted_3.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_permuted_4.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
 
 **RotatedMNIST**:
 
-|<img src="images/mnist_rotated_0.jpg" width="150">|<img src="images/mnist_rotated_1.jpg" width="150">|<img src="images/mnist_rotated_2.jpg" width="150">|<img src="images/mnist_rotated_3.jpg" width="150">|<img src="images/mnist_rotated_4.jpg" width="150">|
+|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_rotated_0.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_rotated_1.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_rotated_2.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_rotated_3.jpg" width="150">|<img src="https://github.com/Continvvm/continuum/blob/master/images/mnist_rotated_4.jpg" width="150">|
 |:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 | Task 3 | Task 4|
 
 **TransformIncremental + BackgroundSwap**:
 
-|<img src="images/background_0.jpg" width="250">|<img src="images/background_1.jpg" width="250">|<img src="images/background_2.jpg" width="250">|
+|<img src="https://github.com/Continvvm/continuum/blob/master/images/background_0.jpg" width="250">|<img src="https://github.com/Continvvm/continuum/blob/master/images/background_1.jpg" width="250">|<img src="https://github.com/Continvvm/continuum/blob/master/images/background_2.jpg" width="250">|
 |:-------------------------:|:-------------------------:|:-------------------------:|
 |Task 0 | Task 1 | Task 2 |
 
