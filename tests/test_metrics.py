@@ -66,7 +66,7 @@ def torch_models():
     ([1, 0.5], [0.75, 0.25], "accuracy_per_task", [1, 0.5]),
     ([1, 0.5], [0.5, 0], "average_incremental_accuracy", 0.5),
     ([1, 0.5], [0.5, 0], "backward_transfer", -0.5),
-    ([1, 0.5], [0.25, 0.25], "forward_transfer", 0.25),
+    ([1, 0.25], [0.125, 0.25], "forward_transfer", 0.125),
     ([1, 0.25], [0.5, 0.25], "positive_backward_transfer", 0),
     ([0.75, 1.0], [0.25, 0.25], "positive_backward_transfer", 0.25),
     ([1, 0.25], [0.25, 0.25], "remembering", 0.25),

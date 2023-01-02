@@ -138,10 +138,13 @@ def forward_transfer(all_preds, all_targets, all_tasks):
 
     fwt = 0.
     for i in range(1, T):
-        # in GEM we sum over R_{i-1,i} - b_i, where b_i is accuracy at initialization, we ignore b_i here.
+        # in GEM, they sum over R_{i-1,i} - b_i, where b_i is accuracy at initialization, we ignore b_i here.
+        # NB: to get the same forward transfer as GEM the result should reduced by  "1/(T-1) sum_i b_i"
         fwt += _get_R_ij(i-1, i, all_preds, all_targets, all_tasks)
+        print(i)
+        print(fwt)
 
-    metric = fwt / (T * (T - 1) / 2)
+    metric = fwt / (T-1)
     assert -1. <= metric <= 1.0, metric
     return metric
 
