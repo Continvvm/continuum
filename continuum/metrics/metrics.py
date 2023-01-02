@@ -71,9 +71,8 @@ def backward_transfer(all_preds, all_targets, all_tasks):
     if T <= 1:
         return 0.
     bwt = 0.
-
     for i in range(1, T):
-        for j in range(0, i - 1):
+        for j in range(0, i):
             r_ij = _get_R_ij(i, j, all_preds, all_targets, all_tasks)
             r_jj = _get_R_ij(j, j, all_preds, all_targets, all_tasks)
 
@@ -138,11 +137,14 @@ def forward_transfer(all_preds, all_targets, all_tasks):
         return 0.
 
     fwt = 0.
-    for i in range(T):
-        for j in range(i):
-            fwt += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
+    for i in range(1, T):
+        # in GEM, they sum over R_{i-1,i} - b_i, where b_i is accuracy at initialization, we ignore b_i here.
+        # NB: to get the same forward transfer as GEM the result should reduced by  "1/(T-1) sum_i b_i"
+        fwt += _get_R_ij(i-1, i, all_preds, all_targets, all_tasks)
+        print(i)
+        print(fwt)
 
-    metric = fwt / (T * (T - 1) / 2)
+    metric = fwt / (T-1)
     assert -1. <= metric <= 1.0, metric
     return metric
 
@@ -162,11 +164,11 @@ def forgetting(all_preds, all_targets, all_tasks):
         return 0.
 
     f = 0.
-    for j in range(k - 2):
+    for j in range(k - 1):
         # Accuracy on task j after learning current task k
         a_kj = _get_R_ij(k - 1, j, all_preds, all_targets, all_tasks)
         # Best previous accuracy on task j
-        max_a_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(k - 2) if l >= j)
+        max_a_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(k - 1) if l >= j)
         f += max_a_lj - a_kj  # We want this results to be as low as possible
 
     metric = f / (k - 1)

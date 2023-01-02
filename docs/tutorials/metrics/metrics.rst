@@ -3,7 +3,13 @@ Metrics
 
 Continual Learning has many different metrics due to the nature of the task.
 Continuum proposes a logger module that accumulates the predictions of the model.
-Then the logger can compute various type of continual learning metrics based on the prediction saved.
+Then the logger can compute various types of continual learning metrics based on the prediction saved.
+
+Disclaimer: We aim to propose some tools for metric evaluation. Nevertheless, they are many different ways of evaluating CL
+and different metrics need different information: for example, the forward transfer might need the test accuracy of future tasks
+or accuracy of the same model trained from scratch.
+In our metric tools, we assume that we can measure test accuracy on future tasks and that task transitions are clear and available.
+We do not provide tools for measuring compute efficiency.
 
 Pseudo-code
 
@@ -72,6 +78,8 @@ Here is a list of all implemented metrics:
       Lopez-paz & ranzato, NeurIPS 2017
 
 
+Note: To measure backward transfer, the logger has to contains accuracy to past tasks at task t.
+
 **Positive Backward Transfer**::
 
     Computes the the positive gain of Backward transfer.
@@ -98,6 +106,7 @@ Here is a list of all implemented metrics:
     * Gradient Episodic Memory for Continual Learning
       Lopez-paz & ranzato, NeurIPS 2017
 
+Note: To measure Forward transfer, the logger has to contains accuracy to the future tasks at task t.
 
 **Forgetting**::
 
