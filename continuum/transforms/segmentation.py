@@ -3,15 +3,15 @@ See there:
 - https://github.com/fcdl94/MiB/blob/master/dataset/transform.py
 """
 
-import warnings
-import math
-import random
-import numbers
 import collections
+import math
+import numbers
+import random
+import warnings
 
+import numpy as np
 import torch
 import torchvision.transforms.functional as Fv
-import numpy as np
 from PIL import Image
 
 _pil_interpolation_to_str = {

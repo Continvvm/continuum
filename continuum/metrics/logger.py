@@ -3,11 +3,9 @@ import statistics
 import numpy as np
 
 from continuum.metrics.base_logger import _BaseLogger
-from continuum.metrics.utils import require_subset, cache
 from continuum.metrics.metrics import (
     accuracy,
     get_model_size_growth,
-    _get_R_ij,
     forgetting,
     accuracy_A,
     remembering,
@@ -15,6 +13,7 @@ from continuum.metrics.metrics import (
     forward_transfer,
     backward_transfer,
 )
+from continuum.metrics.utils import require_subset
 
 
 class Logger(_BaseLogger):

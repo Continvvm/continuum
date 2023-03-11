@@ -1,7 +1,7 @@
 import abc
 
-import torch
 import numpy as np
+import torch
 
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import (

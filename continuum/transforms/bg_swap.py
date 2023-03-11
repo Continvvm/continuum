@@ -1,8 +1,11 @@
 from typing import Tuple, Union, Callable, Optional
+
 import numpy as np
 import torch
-from continuum.datasets import _ContinuumDataset
 from skimage.transform import resize
+
+from continuum.datasets import _ContinuumDataset
+
 
 # pylint: disable=invalid-unary-operand-type
 
