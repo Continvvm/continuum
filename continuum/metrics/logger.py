@@ -51,15 +51,24 @@ class Logger(_BaseLogger):
         last_epoch_targets = []
         last_epoch_task_ids = []
         for task_id in range(len(self.logger_dict[subset]["performance"])):
-            predictions = self.logger_dict[subset]["performance"][task_id][-1][
-                "predictions"
-            ]
-            targets = self.logger_dict[subset]["performance"][task_id][-1]["targets"]
-            task_id = self.logger_dict[subset]["performance"][task_id][-1]["task_ids"]
+            # we verify first that something is log to avoid pb just after end_task/epoch
+            if (
+                len(self.logger_dict[subset]["performance"][task_id][-1]["predictions"])
+                != 0
+            ):
+                predictions = self.logger_dict[subset]["performance"][task_id][-1][
+                    "predictions"
+                ]
+                targets = self.logger_dict[subset]["performance"][task_id][-1][
+                    "targets"
+                ]
+                task_id = self.logger_dict[subset]["performance"][task_id][-1][
+                    "task_ids"
+                ]
 
-            last_epoch_pred.append(predictions)
-            last_epoch_targets.append(targets)
-            last_epoch_task_ids.append(task_id)
+                last_epoch_pred.append(predictions)
+                last_epoch_targets.append(targets)
+                last_epoch_task_ids.append(task_id)
 
         return last_epoch_pred, last_epoch_targets, last_epoch_task_ids
 
@@ -107,11 +116,20 @@ class Logger(_BaseLogger):
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
         all_preds, all_targets, all_tasks = self._get_best_epochs(subset="test")
-        last_preds, last_targets, last_tasks = (
-            all_preds[-1],
-            all_targets[-1],
-            all_tasks[-1],
-        )
+        if len(all_preds[-1]) == len(all_targets[-1]) == len(all_tasks[-1]) == 0:
+            # we are at the beginning of a new task without any logging, we can take results from previous task
+            last_preds, last_targets, last_tasks = (
+                all_preds[-2],
+                all_targets[-2],
+                all_tasks[-2],
+            )
+        else:
+            last_preds, last_targets, last_tasks = (
+                all_preds[-1],
+                all_targets[-1],
+                all_tasks[-1],
+            )
+
         correct_pred = last_preds == last_targets
 
         acc_per_task = []
