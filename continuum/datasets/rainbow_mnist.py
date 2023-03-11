@@ -5,14 +5,9 @@ from continuum.datasets import MNIST
 
 class RainbowMNIST(MNIST):
     def __init__(
-        self,
-        *args,
-        color: str = "red",
-        rotation: float = 0.,
-        scale=1.,
-        **kwargs
+        self, *args, color: str = "red", rotation: float = 0.0, scale=1.0, **kwargs
     ):
-        if rotation != 0. or scale != 1.:
+        if rotation != 0.0 or scale != 1.0:
             raise NotImplementedError(
                 "Rotation and scale are not supported yet for RainbowMNIST."
             )

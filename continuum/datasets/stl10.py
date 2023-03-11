@@ -17,8 +17,10 @@ class STL10(_ContinuumDataset):
       Adam Coates, Honglak Lee, Andrew Y. Ng
       AISTATS 2011
     """
+
     def __init__(
-            self, data_path: str = "", train: Union[bool, str] = True, download: bool = True):
+        self, data_path: str = "", train: Union[bool, str] = True, download: bool = True
+    ):
 
         super().__init__(data_path=data_path, train=train, download=download)
 
@@ -27,9 +29,8 @@ class STL10(_ContinuumDataset):
         self.train = train
 
         self.dataset = torchdata.STL10(
-            self.data_path,
-            download=self.download,
-            split=self.train)
+            self.data_path, download=self.download, split=self.train
+        )
 
     @property
     def data_type(self) -> TaskType:

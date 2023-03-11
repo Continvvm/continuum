@@ -34,13 +34,13 @@ class Stream51(_ContinuumDataset):
     url = "http://klab.cis.rit.edu/files/Stream-51.zip"
 
     def __init__(
-            self,
-            data_path: str = "",
-            train: bool = True,
-            download: bool = True,
-            crop: bool = True,
-            ratio: float = 1.1,
-            task_criterion: str = "clip"
+        self,
+        data_path: str = "",
+        train: bool = True,
+        download: bool = True,
+        crop: bool = True,
+        ratio: float = 1.1,
+        task_criterion: str = "clip",
     ):
         if task_criterion not in ("clip", "video"):
             raise ValueError(
@@ -85,12 +85,14 @@ class Stream51(_ContinuumDataset):
             cw = bbox[0] - bbox[1]
             ch = bbox[2] - bbox[3]
             center = [int(bbox[1] + cw / 2), int(bbox[3] + ch / 2)]
-            formatted_bounding_boxes.append([
-                int(center[0] - (cw * self.ratio / 2)),  # x1
-                int(center[1] - (ch * self.ratio / 2)),  # y1
-                int(center[0] + (cw * self.ratio / 2)),  # x2
-                int(center[1] + (ch * self.ratio / 2)),  # y2
-            ])
+            formatted_bounding_boxes.append(
+                [
+                    int(center[0] - (cw * self.ratio / 2)),  # x1
+                    int(center[1] - (ch * self.ratio / 2)),  # y1
+                    int(center[0] + (cw * self.ratio / 2)),  # x2
+                    int(center[1] + (ch * self.ratio / 2)),  # y2
+                ]
+            )
 
         self._bounding_boxes = np.array(formatted_bounding_boxes)
 
@@ -104,7 +106,9 @@ class Stream51(_ContinuumDataset):
 
     def _parse_json(self):
         if self.train:
-            path = os.path.join(self.data_path, "Stream-51", "Stream-51_meta_train.json")
+            path = os.path.join(
+                self.data_path, "Stream-51", "Stream-51_meta_train.json"
+            )
         else:
             path = os.path.join(self.data_path, "Stream-51", "Stream-51_meta_test.json")
 
@@ -120,9 +124,9 @@ class Stream51(_ContinuumDataset):
             y.append(line[0])
             if self.train:
                 if self.task_criterion == "clip":
-                    num = line[1] #clip_num
+                    num = line[1]  # clip_num
                 else:
-                    num = line[2] #video_num
+                    num = line[2]  # video_num
                 t.append(num)
             else:
                 t.append(0)

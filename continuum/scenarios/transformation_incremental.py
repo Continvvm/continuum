@@ -23,28 +23,34 @@ class TransformationIncremental(InstanceIncremental):
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            incremental_transformations: List[List[Callable]],
-            base_transformations: List[Callable] = None,
-            shared_label_space=True
+        self,
+        cl_dataset: _ContinuumDataset,
+        incremental_transformations: List[List[Callable]],
+        base_transformations: List[Callable] = None,
+        shared_label_space=True,
     ):
         nb_tasks = len(incremental_transformations)
         if incremental_transformations is None:
             raise ValueError("For this scenario a list transformation should be set")
 
         if cl_dataset.data_type == TaskType.H5:
-            raise NotImplementedError("TransformationIncremental are not compatible yet with h5 files.")
+            raise NotImplementedError(
+                "TransformationIncremental are not compatible yet with h5 files."
+            )
 
         self.inc_trsf = incremental_transformations
-        #self._nb_tasks = self._setup(nb_tasks)
+        # self._nb_tasks = self._setup(nb_tasks)
         self.shared_label_space = shared_label_space
 
         super().__init__(
-            cl_dataset=cl_dataset, nb_tasks=nb_tasks, transformations=base_transformations
+            cl_dataset=cl_dataset,
+            nb_tasks=nb_tasks,
+            transformations=base_transformations,
         )
 
-        self.num_classes_per_task = len(np.unique(self.dataset[1]))  # the num of classes is the same for all task is this scenario
+        self.num_classes_per_task = len(
+            np.unique(self.dataset[1])
+        )  # the num of classes is the same for all task is this scenario
 
     @property
     def nb_classes(self) -> int:
@@ -86,7 +92,9 @@ class TransformationIncremental(InstanceIncremental):
             step = task_index.step if task_index.step is not None else 1
             task_index = list(range(start, stop, step))
             if len(task_index) == 0:
-                raise ValueError(f"Invalid slicing resulting in no data (start={start}, end={stop}, step={step}).")
+                raise ValueError(
+                    f"Invalid slicing resulting in no data (start={start}, end={stop}, step={step})."
+                )
         elif isinstance(task_index, np.ndarray):
             task_index = list(task_index)
         elif isinstance(task_index, int):
@@ -96,26 +104,21 @@ class TransformationIncremental(InstanceIncremental):
 
         task_index = set([_handle_negative_indexes(ti, len(self)) for ti in task_index])
 
-        t = np.concatenate([
-            (np.ones(len(x)) * ti).astype(np.int32) for ti in task_index
-        ])
-        x = np.concatenate([
-            x for _ in range(len(task_index))
-        ])
+        t = np.concatenate(
+            [(np.ones(len(x)) * ti).astype(np.int32) for ti in task_index]
+        )
+        x = np.concatenate([x for _ in range(len(task_index))])
         if self.shared_label_space:
-            y = np.concatenate([
-                y for _ in range(len(task_index))
-            ])
+            y = np.concatenate([y for _ in range(len(task_index))])
         else:
             # Different transformations have different labels even though
             # the original images were the same
-            y = np.concatenate([
-                y + ti * self.num_classes_per_task for ti in task_index
-            ])
+            y = np.concatenate(
+                [y + ti * self.num_classes_per_task for ti in task_index]
+            )
 
         trsf = [  # Non-used tasks have a None trsf
-            self.get_task_transformation(ti)
-            if ti in task_index else None
+            self.get_task_transformation(ti) if ti in task_index else None
             for ti in range(len(self))
         ]
 

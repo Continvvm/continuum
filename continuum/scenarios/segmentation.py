@@ -60,7 +60,7 @@ class SegmentationClassIncremental(ClassIncremental):
         class_order: Optional[List[int]] = None,
         mode: str = "overlap",
         save_indexes: Optional[str] = None,
-        test_background: bool = True
+        test_background: bool = True,
     ) -> None:
         self.mode = mode
         self.save_indexes = save_indexes
@@ -115,10 +115,12 @@ class SegmentationClassIncremental(ClassIncremental):
         t = self._get_task_ids(t, task_index)
 
         return TaskSet(
-            x, y, t,
+            x,
+            y,
+            t,
             self.trsf,
             target_trsf=self._get_label_transformation(task_index),
-            data_type=self.cl_dataset.data_type
+            data_type=self.cl_dataset.data_type,
         )
 
     def get_original_targets(self, targets: np.ndarray) -> np.ndarray:
@@ -166,7 +168,9 @@ class SegmentationClassIncremental(ClassIncremental):
             )
         )
 
-    def _get_task_ids(self, t: np.ndarray, task_indexes: Union[int, List[int]]) -> np.ndarray:
+    def _get_task_ids(
+        self, t: np.ndarray, task_indexes: Union[int, List[int]]
+    ) -> np.ndarray:
         """Reduce multiple task ids to a single one per sample.
 
         In segmentation, the same image can have several task ids. We assume that
@@ -192,24 +196,29 @@ class SegmentationClassIncremental(ClassIncremental):
 
         labels = set()
         for t in task_indexes:
-           previous_inc = sum(self._increments[:t])
-           labels.update(
-               self.class_order[previous_inc:previous_inc+self._increments[t]]
-           )
+            previous_inc = sum(self._increments[:t])
+            labels.update(
+                self.class_order[previous_inc : previous_inc + self._increments[t]]
+            )
 
         return list(labels)
 
     def _setup(self, nb_tasks: int) -> int:
         """Setups the different tasks."""
         x, y, _ = self.cl_dataset.get_data()
-        self.class_order = self.class_order or self.cl_dataset.class_order or list(
-            range(1, self._nb_classes + 1))
+        self.class_order = (
+            self.class_order
+            or self.cl_dataset.class_order
+            or list(range(1, self._nb_classes + 1))
+        )
 
         # For when the class ordering is changed,
         # so we can quickly find the original labels
         def class_mapping(c):
-            if c in (0, 255): return c
+            if c in (0, 255):
+                return c
             return self.class_order[c - 1]
+
         self._class_mapping = np.vectorize(class_mapping)
 
         self._increments = self._define_increments(
@@ -224,9 +233,7 @@ class SegmentationClassIncremental(ClassIncremental):
             t = np.load(self.save_indexes)
         else:
             print("Computing indexes, it may be slow!")
-            t = _filter_images(
-                y, self._increments, self.class_order, self.mode
-            )
+            t = _filter_images(y, self._increments, self.class_order, self.mode)
             if self.save_indexes is not None:
                 np.save(self.save_indexes, t)
 
@@ -241,7 +248,7 @@ def _filter_images(
     paths: Union[np.ndarray, List[str]],
     increments: List[int],
     class_order: List[int],
-    mode: str = "overlap"
+    mode: str = "overlap",
 ) -> np.ndarray:
     """Select images corresponding to the labels.
 
@@ -270,7 +277,7 @@ def _filter_images(
     accumulated_inc = 0
 
     for task_id, inc in enumerate(increments):
-        labels = class_order[accumulated_inc:accumulated_inc+inc]
+        labels = class_order[accumulated_inc : accumulated_inc + inc]
         old_labels = class_order[:accumulated_inc]
         all_labels = labels + old_labels + [0, 255]
 
@@ -279,7 +286,9 @@ def _filter_images(
                 if any(c in labels for c in classes):
                     t[index, task_id] = 1
             elif mode in ("disjoint", "sequential"):
-                if any(c in labels for c in classes) and all(c in all_labels for c in classes):
+                if any(c in labels for c in classes) and all(
+                    c in all_labels for c in classes
+                ):
                     t[index, task_id] = 1
             else:
                 raise ValueError(f"Unknown mode={mode}.")

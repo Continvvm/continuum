@@ -24,15 +24,17 @@ class OnlineFellowship(_BaseScenario):
     """
 
     def __init__(
-            self,
-            cl_datasets: List[Union[_ContinuumDataset, BaseTaskSet]],
-            transformations: Union[List[Callable], List[List[Callable]]] = None,
-            update_labels=True
+        self,
+        cl_datasets: List[Union[_ContinuumDataset, BaseTaskSet]],
+        transformations: Union[List[Callable], List[List[Callable]]] = None,
+        update_labels=True,
     ) -> None:
         self.cl_datasets = cl_datasets
         self.update_labels = update_labels
 
-        trsf_0 = self._get_trsf(ind_task=0, transformations=transformations, compose=False)
+        trsf_0 = self._get_trsf(
+            ind_task=0, transformations=transformations, compose=False
+        )
         super().__init__(cl_dataset=cl_datasets[0], nb_tasks=1, transformations=trsf_0)
 
         self.trsf = transformations
@@ -47,15 +49,26 @@ class OnlineFellowship(_BaseScenario):
                 raise ValueError(
                     "The transformations is not set correctly. It should be: "
                     "A list of transformations applied to all tasks. "
-                    "Or a list of list of size nb_task, with one transformation list per task.")
+                    "Or a list of list of size nb_task, with one transformation list per task."
+                )
 
         unique_data_types = set([dataset.data_type for dataset in self.cl_datasets])
-        classif_data_types = [TaskType.IMAGE_ARRAY, TaskType.TENSOR, TaskType.IMAGE_PATH, TaskType.H5]
-        other_data_types = [TaskType.SEGMENTATION, TaskType.OBJ_DETECTION, TaskType.TEXT]
+        classif_data_types = [
+            TaskType.IMAGE_ARRAY,
+            TaskType.TENSOR,
+            TaskType.IMAGE_PATH,
+            TaskType.H5,
+        ]
+        other_data_types = [
+            TaskType.SEGMENTATION,
+            TaskType.OBJ_DETECTION,
+            TaskType.TEXT,
+        ]
 
-        if any(data_type in unique_data_types for data_type in other_data_types) and \
-           (any(data_type in unique_data_types for data_type in classif_data_types) or \
-            len(unique_data_types) > 1):
+        if any(data_type in unique_data_types for data_type in other_data_types) and (
+            any(data_type in unique_data_types for data_type in classif_data_types)
+            or len(unique_data_types) > 1
+        ):
             raise ValueError(
                 "You cannot combine SEGMENTATION, OBJ_DETECTION, or TEXT "
                 " with other data_types.\nYou provided the data types: "
@@ -81,12 +94,14 @@ class OnlineFellowship(_BaseScenario):
 
             self._classes_per_task.append(len(classes))
 
-            if dataset.data_type != TaskType.SEGMENTATION and np.all(classes != np.arange(len(classes))):
+            if dataset.data_type != TaskType.SEGMENTATION and np.all(
+                classes != np.arange(len(classes))
+            ):
                 raise Exception(
                     "Classes are not annotated correctly, they are"
                     "expected to be annotated continuously from 0 to N-1 but"
-                    f"they are {classes}.")
-
+                    f"they are {classes}."
+                )
 
             if self.update_labels:
                 # we just shift the label number by the nb of classes seen so far
@@ -96,8 +111,10 @@ class OnlineFellowship(_BaseScenario):
 
         self._unique_classes = np.array(list(self._unique_classes))
 
-    def _get_trsf(self, ind_task: int, transformations: List[Callable], compose: bool = True):
-        """"Choose the right transformation for the right dataset/task."""
+    def _get_trsf(
+        self, ind_task: int, transformations: List[Callable], compose: bool = True
+    ):
+        """ "Choose the right transformation for the right dataset/task."""
         if transformations is None:
             # then we set the default dataset transformations if any
             transformations = self.cl_datasets[ind_task].transformations
@@ -116,7 +133,7 @@ class OnlineFellowship(_BaseScenario):
         return transformations
 
     def _get_label_trsf(self, task_index: int):
-        """"Manage data label transformation. Necessary if update_labels is True. """
+        """ "Manage data label transformation. Necessary if update_labels is True."""
         label_trsf = None
         if self.update_labels:
             if self.cl_datasets[task_index].data_type == TaskType.SEGMENTATION:
@@ -125,9 +142,12 @@ class OnlineFellowship(_BaseScenario):
                     if x == 0 or x == 255:
                         return x
                     return x + sum(self._classes_per_task[:task_index])
+
                 label_trsf = transforms.Lambda(lambda x: x.apply_(_trsf))
             else:
-                label_trsf = transforms.Lambda(lambda x: x + sum(self._classes_per_task[:task_index]))
+                label_trsf = transforms.Lambda(
+                    lambda x: x + sum(self._classes_per_task[:task_index])
+                )
         return label_trsf
 
     @property
@@ -175,14 +195,18 @@ class OnlineFellowship(_BaseScenario):
             t = np.ones(len(y)) * task_index
 
             taskset = TaskSet(
-                x, y, t,
+                x,
+                y,
+                t,
                 trsf=self._get_trsf(task_index, self.transformations),
                 target_trsf=self._get_label_trsf(task_index),
                 data_type=self.cl_dataset.data_type,
-                bounding_boxes=self.cl_dataset.bounding_boxes
+                bounding_boxes=self.cl_dataset.bounding_boxes,
             )
         else:
             if not isinstance(self.cl_dataset, BaseTaskSet):
-                raise ValueError("self.cl_datasets can only contain _ContinuumDataset or TaskSet")
+                raise ValueError(
+                    "self.cl_datasets can only contain _ContinuumDataset or TaskSet"
+                )
             taskset = self.cl_dataset
         return taskset

@@ -20,10 +20,17 @@ class VLCS(ImageFolderDataset):
       Fang, Xu, and Rockmore.
       ICCV 2013
     """
+
     images_gdrive_id = "1skwblH1_okBwxWxmRsp9_qi15hyPpxg8"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True,
-                 test_split: float = 0.2, random_seed: int = 1):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed: int = 1,
+    ):
         self._attributes = None
         self.test_split = test_split
         self.random_seed = random_seed
@@ -38,13 +45,13 @@ class VLCS(ImageFolderDataset):
             tar_path = os.path.join(self.data_path, "VLCS.tar.gz")
 
             if not os.path.exists(tar_path):
-                print("Downloading zip images archive...", end=' ')
+                print("Downloading zip images archive...", end=" ")
                 download_file_from_google_drive(self.images_gdrive_id, tar_path)
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             untar(tar_path)
-            print('Done!')
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         domains = ["Caltech101", "LabelMe", "SUN09", "VOC2007"]
@@ -52,12 +59,12 @@ class VLCS(ImageFolderDataset):
         full_x, full_y, full_t = [], [], []
 
         for domain_id, domain_name in enumerate(domains):
-            dataset = torchdata.ImageFolder(os.path.join(self.data_path, "VLCS", domain_name))
+            dataset = torchdata.ImageFolder(
+                os.path.join(self.data_path, "VLCS", domain_name)
+            )
             x, y, _ = self._format(dataset.imgs)
             x_train, x_test, y_train, y_test = train_test_split(
-                x, y,
-                test_size=self.test_split,
-                random_state=self.random_seed
+                x, y, test_size=self.test_split, random_state=self.random_seed
             )
 
             if self.train:

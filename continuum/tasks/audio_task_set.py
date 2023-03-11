@@ -23,25 +23,29 @@ class AudioTaskSet(BaseTaskSet):
     """
 
     def __init__(
-            self,
-            x: np.ndarray,
-            y: np.ndarray,
-            t: np.ndarray,
-            trsf: Union[transforms.Compose, List[transforms.Compose]],
-            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        t: np.ndarray,
+        trsf: Union[transforms.Compose, List[transforms.Compose]],
+        target_trsf: Optional[
+            Union[transforms.Compose, List[transforms.Compose]]
+        ] = None,
     ):
         if not soundfile:
-            raise ImportError("You need to install the soundfile library to work on audio data.")
+            raise ImportError(
+                "You need to install the soundfile library to work on audio data."
+            )
 
         super().__init__(x, y, t, trsf, target_trsf)
         self.data_type = TaskType.AUDIO
 
     def plot(
-            self,
-            path: Union[str, None] = None,
-            title: str = "",
-            nb_samples: int = 100,
-            shape: Optional[Tuple[int, int]] = None,
+        self,
+        path: Union[str, None] = None,
+        title: str = "",
+        nb_samples: int = 100,
+        shape: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -74,6 +78,3 @@ class AudioTaskSet(BaseTaskSet):
             y = self.get_task_target_trsf(t)(y)
 
         return x, y, t
-
-
-

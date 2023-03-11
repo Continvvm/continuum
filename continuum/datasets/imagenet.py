@@ -15,6 +15,7 @@ class ImageNet1000(ImageFolderDataset):
     Simple wrapper around ImageFolderDataset to provide a link to the download
     page.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.train:
@@ -28,7 +29,7 @@ class ImageNet1000(ImageFolderDataset):
         return [
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
         ]
 
     def _download(self):
@@ -51,11 +52,18 @@ class ImageNet100(_ContinuumDataset):
           Douillard et al. 2020
     """
 
-    train_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/train_100.txt"
-    test_subset_url = "https://github.com/Continvvm/continuum/releases/download/v0.1/val_100.txt"
+    train_subset_url = (
+        "https://github.com/Continvvm/continuum/releases/download/v0.1/train_100.txt"
+    )
+    test_subset_url = (
+        "https://github.com/Continvvm/continuum/releases/download/v0.1/val_100.txt"
+    )
 
     def __init__(
-            self, *args, data_subset: Union[Tuple[np.array, np.array], str, None] = None, **kwargs
+        self,
+        *args,
+        data_subset: Union[Tuple[np.array, np.array], str, None] = None,
+        **kwargs,
     ):
         self.data_subset = data_subset
         super().__init__(*args, **kwargs)
@@ -70,7 +78,7 @@ class ImageNet100(_ContinuumDataset):
         return [
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
         ]
 
     def _download(self):
@@ -100,9 +108,7 @@ class ImageNet100(_ContinuumDataset):
         return (*data, None)
 
     def _parse_subset(
-            self,
-            subset: Union[Tuple[np.array, np.array], str, None],
-            train: bool = True
+        self, subset: Union[Tuple[np.array, np.array], str, None], train: bool = True
     ) -> Tuple[np.array, np.array]:
         if isinstance(subset, str):
             x, y = [], []
@@ -143,7 +149,7 @@ class TinyImageNet200(_ContinuumDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
         # First load wnids
-        wnids_file = os.path.join(self.data_path, "tiny-imagenet-200","wnids.txt")
+        wnids_file = os.path.join(self.data_path, "tiny-imagenet-200", "wnids.txt")
         with open(os.path.join(wnids_file), "r") as f:
             wnids = [x.strip() for x in f]
 
@@ -154,12 +160,25 @@ class TinyImageNet200(_ContinuumDataset):
             # Next load validation data
             val_files = []
             val_wnids = []
-            with open(os.path.join(self.data_path, "tiny-imagenet-200", "val", "val_annotations.txt"), "r") as f:
+            with open(
+                os.path.join(
+                    self.data_path, "tiny-imagenet-200", "val", "val_annotations.txt"
+                ),
+                "r",
+            ) as f:
                 for line in f:
                     # Select only validation images in chosen wnids set
                     if line.split()[1] in wnids:
                         img_file, wnid = line.split("\t")[:2]
-                        val_files.append(os.path.join(self.data_path, "tiny-imagenet-200", "val", "images", img_file))
+                        val_files.append(
+                            os.path.join(
+                                self.data_path,
+                                "tiny-imagenet-200",
+                                "val",
+                                "images",
+                                img_file,
+                            )
+                        )
                         val_wnids.append(wnid)
             x_val = np.array(val_files)
             y_val = np.array([wnid_to_label[wnid] for wnid in val_wnids])
@@ -170,10 +189,23 @@ class TinyImageNet200(_ContinuumDataset):
         y_train = []
         for wnid in wnids:
             # To figure out the filenames we need to open the boxes file
-            boxes_file = os.path.join(self.data_path, "tiny-imagenet-200", "train", wnid, "%s_boxes.txt" % wnid)
+            boxes_file = os.path.join(
+                self.data_path,
+                "tiny-imagenet-200",
+                "train",
+                wnid,
+                "%s_boxes.txt" % wnid,
+            )
             with open(boxes_file, "r") as f:
                 train_filenames = [
-                    os.path.join(self.data_path, "tiny-imagenet-200", "train", wnid, "images", x.split("\t")[0])
+                    os.path.join(
+                        self.data_path,
+                        "tiny-imagenet-200",
+                        "train",
+                        wnid,
+                        "images",
+                        x.split("\t")[0],
+                    )
                     for x in f
                 ]
             num_images = len(train_filenames)

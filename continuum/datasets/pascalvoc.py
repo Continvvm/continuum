@@ -21,7 +21,13 @@ class PascalVOC2012(_ContinuumDataset):
     segmentation_url = "http://cs.jhu.edu/~cxliu/data/SegmentationClassAug.zip"
     split_url = "http://cs.jhu.edu/~cxliu/data/list.zip"
 
-    def __init__(self, data_path: str = "", train: bool = True, download: bool = True, augmented: bool = True) -> None:
+    def __init__(
+        self,
+        data_path: str = "",
+        train: bool = True,
+        download: bool = True,
+        augmented: bool = True,
+    ) -> None:
         super().__init__(data_path=data_path, train=train, download=download)
         self.augmented = augmented
 
@@ -73,7 +79,9 @@ class PascalVOC2012(_ContinuumDataset):
         with open(list_path, "r") as f:
             for line in f:
                 p1, p2 = line.split(" ")
-                image_paths.append(os.path.join(self.data_path, "VOCdevkit", "VOC2012", p1[1:].strip()))
+                image_paths.append(
+                    os.path.join(self.data_path, "VOCdevkit", "VOC2012", p1[1:].strip())
+                )
                 map_paths.append(os.path.join(self.data_path, p2[1:].strip()))
 
         return np.array(image_paths), np.array(map_paths), None
@@ -86,13 +94,21 @@ class PascalVOC2007(_ContinuumDataset):
     setting with this dataset.
     If you wish to do segmentation, you should consider usinng PascalVOC2012.
     """
+
     url = "http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar"
 
-
-    def __init__(self, data_path, train: bool = True, download: bool = True, mode: str = "classification"):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        mode: str = "classification",
+    ):
         if mode not in ("classification", "detection", "segmentation"):
-            raise ValueError(f"Unsupported target <{mode}>, available are "
-                             " <classification>, <detection>, and <segmentation>.")
+            raise ValueError(
+                f"Unsupported target <{mode}>, available are "
+                " <classification>, <detection>, and <segmentation>."
+            )
         if mode in ("detection", "segmentation"):
             raise NotImplementedError(f"This mode <{mode}> is not yet supported.")
 
@@ -104,7 +120,7 @@ class PascalVOC2007(_ContinuumDataset):
     def data_type(self) -> TaskType:
         if self.mode == "classification":
             return TaskType.IMAGE_PATH
-        elif self.mode  == "segmentation":
+        elif self.mode == "segmentation":
             return TaskType.SEGMENTATION
         return TaskType.DETECTION
 
@@ -115,7 +131,7 @@ class PascalVOC2007(_ContinuumDataset):
             if not os.path.exists(archive_path):
                 print(f"Downloading archive ...", end=" ")
                 download.download(self.url, self.data_path)
-                print('Done!')
+                print("Done!")
 
             print(f"Extracting archive...", end=" ")
             download.untar(archive_path)
@@ -123,9 +139,26 @@ class PascalVOC2007(_ContinuumDataset):
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         classes = [
-            "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car",
-            "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike",
-            "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+            "aeroplane",
+            "bicycle",
+            "bird",
+            "boat",
+            "bottle",
+            "bus",
+            "car",
+            "cat",
+            "chair",
+            "cow",
+            "diningtable",
+            "dog",
+            "horse",
+            "motorbike",
+            "person",
+            "pottedplant",
+            "sheep",
+            "sofa",
+            "train",
+            "tvmonitor",
         ]
 
         if self.train:
@@ -137,8 +170,11 @@ class PascalVOC2007(_ContinuumDataset):
         for class_id, class_name in enumerate(classes):
             path = os.path.join(
                 self.data_path,
-                "VOCdevkit", "VOC2007", "ImageSets", "Main",
-                f"{class_name}_{suffix}.txt"
+                "VOCdevkit",
+                "VOC2007",
+                "ImageSets",
+                "Main",
+                f"{class_name}_{suffix}.txt",
             )
 
             with open(path) as f:
@@ -152,8 +188,10 @@ class PascalVOC2007(_ContinuumDataset):
                     x.append(
                         os.path.join(
                             self.data_path,
-                            "VOCdevkit", "VOC2007", "JPEGImages",
-                            f"{image_id}.jpg"
+                            "VOCdevkit",
+                            "VOC2007",
+                            "JPEGImages",
+                            f"{image_id}.jpg",
                         )
                     )
                     y.append(class_id)

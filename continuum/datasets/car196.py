@@ -16,18 +16,31 @@ class Car196(_ContinuumDataset):
       Jonathan Krause, Michael Stark, Jia Deng, Li Fei-Fei
       ICCV 2013 Workshop
     """
+
     devkit_url = "http://ai.stanford.edu/~jkrause/cars/car_devkit.tgz"
     train_url = "http://ai.stanford.edu/~jkrause/car196/cars_train.tgz"
     test_url = "http://ai.stanford.edu/~jkrause/car196/cars_test.tgz"
-    test_labels_url = "http://ai.stanford.edu/~jkrause/car196/cars_test_annos_withlabels.mat"
+    test_labels_url = (
+        "http://ai.stanford.edu/~jkrause/car196/cars_test_annos_withlabels.mat"
+    )
 
-    def __init__(self, data_path, train: bool = True, download: bool = True, mode: str = "classification"):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        mode: str = "classification",
+    ):
         super().__init__(data_path, train, download)
 
         if mode not in ("classification", "detection"):
-            raise ValueError(f"Unsupported mode <{mode}>, available are <classification> and <detection>.")
+            raise ValueError(
+                f"Unsupported mode <{mode}>, available are <classification> and <detection>."
+            )
         if mode == "detection":
-            raise NotImplementedError("Detection is not yet supported by Continuum, sorry!")
+            raise NotImplementedError(
+                "Detection is not yet supported by Continuum, sorry!"
+            )
         self.mode = mode
 
     @property
@@ -46,21 +59,27 @@ class Car196(_ContinuumDataset):
                 if not os.path.exists(archive_path):
                     print(f"Downloading archive {a} ...", end=" ")
                     download(u, self.data_path)
-                    print('Done!')
+                    print("Done!")
 
                 print(f"Extracting archive... {a}->{f}", end=" ")
                 untar(archive_path)
                 print("Done!")
 
-        if not os.path.exists(os.path.join(self.data_path, "cars_test_annos_withlabels.mat")):
+        if not os.path.exists(
+            os.path.join(self.data_path, "cars_test_annos_withlabels.mat")
+        ):
             download(self.test_labels_url, self.data_path)
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if self.train:
-            mat = io.loadmat(os.path.join(self.data_path, "devkit", "cars_train_annos.mat"))
+            mat = io.loadmat(
+                os.path.join(self.data_path, "devkit", "cars_train_annos.mat")
+            )
             folder = "cars_train"
         else:
-            mat = io.loadmat(os.path.join(self.data_path, "cars_test_annos_withlabels.mat"))
+            mat = io.loadmat(
+                os.path.join(self.data_path, "cars_test_annos_withlabels.mat")
+            )
             folder = "cars_test"
         mat = mat["annotations"][0]
 

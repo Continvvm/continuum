@@ -29,9 +29,16 @@ class Birdsnap(_ContinuumDataset):
 
     :param crop_bbox: Use the provided bounding boxes for maximal cropping around the birds.
     """
+
     meta_url = "http://thomasberg.org/datasets/birdsnap/1.1/birdsnap.tgz"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True, crop_bbox: bool = False):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        crop_bbox: bool = False,
+    ):
         self.crop_bbox = crop_bbox
         self._bboxes = None
 
@@ -57,13 +64,13 @@ class Birdsnap(_ContinuumDataset):
             archive_path = os.path.join(self.data_path, "birdsnap.tgz")
 
             if not os.path.exists(archive_path):
-                print("Downloading archive of metadata...", end=' ')
+                print("Downloading archive of metadata...", end=" ")
                 download(self.meta_url, self.data_path)
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             untar(archive_path)
-            print('Done!')
+            print("Done!")
 
         with open(os.path.join(self.data_path, "birdsnap", "images.txt")) as f:
             data = f.readlines()[1:]
@@ -81,7 +88,9 @@ class Birdsnap(_ContinuumDataset):
 
         pb.end(len(data))
         if good_images != len(data):
-            warnings.warn(f"{len(data)-good_images} couldn't be downloaded among {len(data)}.")
+            warnings.warn(
+                f"{len(data)-good_images} couldn't be downloaded among {len(data)}."
+            )
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y, bboxes = [], [], []
@@ -102,7 +111,9 @@ class Birdsnap(_ContinuumDataset):
                 if not os.path.exists(full_path):
                     continue
 
-                if (self.train and path in test_paths) or (not self.train and path not in test_paths):
+                if (self.train and path in test_paths) or (
+                    not self.train and path not in test_paths
+                ):
                     continue
 
                 x.append(full_path)
@@ -137,12 +148,12 @@ def _download_images(line):
     try:
         r = requests.get(url)
         if r.status_code == 200:
-                with open(full_path, 'wb') as fout:
-                    for chunk in r.iter_content(1024):
-                        fout.write(chunk)
+            with open(full_path, "wb") as fout:
+                for chunk in r.iter_content(1024):
+                    fout.write(chunk)
         else:
             return None
-    except:
+    finally:
         _clean_if_failed(full_path)
         return None
 
@@ -153,8 +164,9 @@ def _download_images(line):
 
 
 def _check_image(md5, imagepath):
-    if not os.path.exists(imagepath): return False
-    with open(imagepath, 'rb') as fin:
+    if not os.path.exists(imagepath):
+        return False
+    with open(imagepath, "rb") as fin:
         valid = hashlib.md5(fin.read()).hexdigest() == md5
 
     if not valid:

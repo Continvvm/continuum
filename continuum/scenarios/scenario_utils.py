@@ -37,7 +37,9 @@ def remap_class_vector(class_vector, remapping=None):
     :param remapping: 1D vector with current mapping might be None if the mapping does not exist yet
     """
     remapping = update_remapping(class_vector, remapping)
-    new_class_vector = np.array(list(map(lambda x: remapping.tolist().index(x), class_vector)))
+    new_class_vector = np.array(
+        list(map(lambda x: remapping.tolist().index(x), class_vector))
+    )
     return new_class_vector.astype(int), remapping
 
 
@@ -71,7 +73,9 @@ def create_subscenario(base_scenario, task_indexes):
     if torch.is_tensor(task_indexes):
         task_indexes = task_indexes.numpy()
 
-    if base_scenario.transformations is not None and isinstance(base_scenario.transformations[0], list):
+    if base_scenario.transformations is not None and isinstance(
+        base_scenario.transformations[0], list
+    ):
         transformations = [base_scenario.transformations[i] for i in task_indexes]
     else:
         transformations = base_scenario.transformations
@@ -80,18 +84,22 @@ def create_subscenario(base_scenario, task_indexes):
     if isinstance(base_scenario, OnlineFellowship):
         # We just want to changes base_scenario.cl_datasets order
         new_cl_datasets = [base_scenario.cl_datasets[i] for i in task_indexes]
-        sub_scenario = OnlineFellowship(new_cl_datasets,
-                                        transformations=transformations,
-                                        update_labels=base_scenario.update_labels)
+        sub_scenario = OnlineFellowship(
+            new_cl_datasets,
+            transformations=transformations,
+            update_labels=base_scenario.update_labels,
+        )
     elif base_scenario.cl_dataset.data_type == TaskType.H5:
         list_taskset = [base_scenario[i] for i in task_indexes]
-        sub_scenario = OnlineFellowship(list_taskset,
-                                        transformations=transformations,
-                                        update_labels=False)
+        sub_scenario = OnlineFellowship(
+            list_taskset, transformations=transformations, update_labels=False
+        )
     else:
         new_x, new_y, new_t = None, None, None
         if base_scenario.cl_dataset.bounding_boxes is not None:
-            raise ValueError("the function create_subscenario is not compatible with scenario with bounding_boxes yet.")
+            raise ValueError(
+                "the function create_subscenario is not compatible with scenario with bounding_boxes yet."
+            )
         for i, index in enumerate(task_indexes):
             taskset = base_scenario[index]
             all_task_indexes = np.arange(len(taskset))
@@ -105,7 +113,9 @@ def create_subscenario(base_scenario, task_indexes):
                 new_x = np.concatenate([new_x, x], axis=0)
                 new_y = np.concatenate([new_y, y], axis=0)
                 new_t = np.concatenate([new_t, t], axis=0)
-        dataset = InMemoryDataset(new_x, new_y, new_t, data_type=base_scenario.cl_dataset.data_type)
+        dataset = InMemoryDataset(
+            new_x, new_y, new_t, data_type=base_scenario.cl_dataset.data_type
+        )
         sub_scenario = ContinualScenario(dataset, transformations=transformations)
 
     return sub_scenario
@@ -124,7 +134,9 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
     training_mode = model.training
 
     if inference_fct is None:
-        inference_fct = (lambda model, x: model.to(torch.device('cuda:0'))(x.to(torch.device('cuda:0'))))
+        inference_fct = lambda model, x: model.to(torch.device("cuda:0"))(
+            x.to(torch.device("cuda:0"))
+        )
 
     # we save feature in eval mode
     model.eval()
@@ -139,7 +151,9 @@ def encode_into_dataset(model, scenario, batch_size, filename, inference_fct=Non
                 t = (torch.ones(len(y)) * task_id).long()
 
             if task_id == 0 and i == 0:
-                encoded_dataset = H5Dataset(features.cpu().numpy(), y, t, data_path=filename)
+                encoded_dataset = H5Dataset(
+                    features.cpu().numpy(), y, t, data_path=filename
+                )
             else:
                 encoded_dataset.add_data(features.cpu().numpy(), y, t)
 
@@ -161,7 +175,9 @@ def encode_scenario(scenario, model, batch_size, filename, inference_fct=None):
         raise ValueError(f"File name: {filename} already exists")
 
     print(f"Encoding {filename}.")
-    encoded_dataset = encode_into_dataset(model, scenario, batch_size, filename, inference_fct)
+    encoded_dataset = encode_into_dataset(
+        model, scenario, batch_size, filename, inference_fct
+    )
     print(f"Encoding is done.")
 
     return ContinualScenario(encoded_dataset)

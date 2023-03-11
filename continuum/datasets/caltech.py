@@ -23,13 +23,13 @@ class Caltech101(_ContinuumDataset):
     folder = "101_ObjectCategories"
 
     def __init__(
-            self,
-            data_path: str = "",
-            train: bool = True,
-            download: bool = True,
-            test_split: float = 0.2,
-            random_seed: int = 1,
-            remove_bg_google: bool = True
+        self,
+        data_path: str = "",
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed: int = 1,
+        remove_bg_google: bool = True,
     ):
 
         super().__init__(data_path=data_path, train=train, download=download)
@@ -49,10 +49,7 @@ class Caltech101(_ContinuumDataset):
         if not os.path.exists(data_folder):
             if not os.path.exists(data_folder + ".tar.gz"):
                 print("Downloading data archive...", end=" ")
-                download_file_from_google_drive(
-                    self.data_id,
-                    data_folder + ".tar.gz"
-                )
+                download_file_from_google_drive(self.data_id, data_folder + ".tar.gz")
                 print("Done!")
 
             print("Extracting data archive...", end=" ")
@@ -62,20 +59,22 @@ class Caltech101(_ContinuumDataset):
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         categories = sorted(os.listdir(os.path.join(self.data_path, self.folder)))
         if self.remove_bg_google and "BACKGROUND_Google" in categories:
-            categories.remove("BACKGROUND_Google")  # this is not a real class, in Caltech101
+            categories.remove(
+                "BACKGROUND_Google"
+            )  # this is not a real class, in Caltech101
 
         x, y = [], []
         for (i, c) in enumerate(categories):
-            for path in glob.iglob(os.path.join(self.data_path, self.folder, c, "*_*.jpg")):
+            for path in glob.iglob(
+                os.path.join(self.data_path, self.folder, c, "*_*.jpg")
+            ):
                 x.append(path)
                 y.append(c)
 
         x, y = np.array(x), np.array(y)
 
         x_train, x_test, y_train, y_test = train_test_split(
-            x, y,
-            test_size=self.test_split,
-            random_state=self.random_seed
+            x, y, test_size=self.test_split, random_state=self.random_seed
         )
 
         if self.train:

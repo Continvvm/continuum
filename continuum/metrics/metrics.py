@@ -13,10 +13,12 @@ def accuracy(task_preds, task_targets):
 
     assert task_preds.size > 0
     assert task_targets.size > 0
-    assert task_targets.size == task_preds.size, f"{task_targets.size} vs {task_preds.size}"
+    assert (
+        task_targets.size == task_preds.size
+    ), f"{task_targets.size} vs {task_preds.size}"
 
     metric = (task_preds == task_targets).mean()
-    assert 0. <= metric <= 1.0, metric
+    assert 0.0 <= metric <= 1.0, metric
     return metric
 
 
@@ -43,14 +45,14 @@ def accuracy_A(all_preds, all_targets, all_tasks):
     """
     T = len(all_preds)  # Number of seen tasks so far
     # TODO if we take in account zeroshot, we should take the max of all_tasks?
-    A = 0.
+    A = 0.0
 
     for i in range(T):
         for j in range(i + 1):
             A += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
     metric = A / (T * (T + 1) / 2)
-    assert 0. <= metric <= 1.0, metric
+    assert 0.0 <= metric <= 1.0, metric
     return metric
 
 
@@ -69,18 +71,18 @@ def backward_transfer(all_preds, all_targets, all_tasks):
     T = len(all_preds)  # Number of seen tasks so far
     # TODO if we take in account zeroshot, we should take the max of all_tasks?
     if T <= 1:
-        return 0.
-    bwt = 0.
+        return 0.0
+    bwt = 0.0
 
     for i in range(1, T):
         for j in range(0, i - 1):
             r_ij = _get_R_ij(i, j, all_preds, all_targets, all_tasks)
             r_jj = _get_R_ij(j, j, all_preds, all_targets, all_tasks)
 
-            bwt += (r_ij - r_jj)
+            bwt += r_ij - r_jj
 
     metric = bwt / (T * (T - 1) / 2)
-    assert -1. <= metric <= 1.0, metric
+    assert -1.0 <= metric <= 1.0, metric
     return metric
 
 
@@ -97,8 +99,8 @@ def positive_backward_transfer(all_preds, all_targets, all_tasks):
     :return: a float metric between 0 and 1.
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
-    metric = max(bwt, 0.)
-    assert 0. <= metric <= 1.0, metric
+    metric = max(bwt, 0.0)
+    assert 0.0 <= metric <= 1.0, metric
     return metric
 
 
@@ -115,8 +117,8 @@ def remembering(all_preds, all_targets, all_tasks):
     :return: a float metric between 0 and 1.
     """
     bwt = backward_transfer(all_preds, all_targets, all_tasks)
-    metric = 1 - abs(min(bwt, 0.))
-    assert 0. <= metric <= 1.0, metric
+    metric = 1 - abs(min(bwt, 0.0))
+    assert 0.0 <= metric <= 1.0, metric
     return metric
 
 
@@ -135,15 +137,15 @@ def forward_transfer(all_preds, all_targets, all_tasks):
     T = len(all_preds)  # Number of seen tasks so far
     # TODO if we take in account zeroshot, we should take the max of all_tasks?
     if T <= 1:
-        return 0.
+        return 0.0
 
-    fwt = 0.
+    fwt = 0.0
     for i in range(T):
         for j in range(i):
             fwt += _get_R_ij(i, j, all_preds, all_targets, all_tasks)
 
     metric = fwt / (T * (T - 1) / 2)
-    assert -1. <= metric <= 1.0, metric
+    assert -1.0 <= metric <= 1.0, metric
     return metric
 
 
@@ -159,14 +161,18 @@ def forgetting(all_preds, all_targets, all_tasks):
     k = len(all_preds)  # Number of seen tasks so far
     # TODO if we take in account zeroshot, we should take the max of all_tasks?
     if k <= 1:
-        return 0.
+        return 0.0
 
-    f = 0.
+    f = 0.0
     for j in range(k - 2):
         # Accuracy on task j after learning current task k
         a_kj = _get_R_ij(k - 1, j, all_preds, all_targets, all_tasks)
         # Best previous accuracy on task j
-        max_a_lj = max(_get_R_ij(l, j, all_preds, all_targets, all_tasks) for l in range(k - 2) if l >= j)
+        max_a_lj = max(
+            _get_R_ij(l, j, all_preds, all_targets, all_tasks)
+            for l in range(k - 2)
+            if l >= j
+        )
         f += max_a_lj - a_kj  # We want this results to be as low as possible
 
     metric = f / (k - 1)
@@ -258,10 +264,10 @@ def get_model_size_growth(model_sizes):
     if T <= 1:
         return 1.0
 
-    ms = 0.
+    ms = 0.0
     for i in range(T):
-        ms += (model_sizes[0][0] / model_sizes[i][-1])
+        ms += model_sizes[0][0] / model_sizes[i][-1]
 
-    metric = min(1., ms / T)
-    assert 0. <= metric <= 1.0, metric
+    metric = min(1.0, ms / T)
+    assert 0.0 <= metric <= 1.0, metric
     return metric

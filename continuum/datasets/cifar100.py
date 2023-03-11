@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple
 
 import numpy as np
 from torchvision import datasets as torchdata
@@ -7,20 +7,114 @@ from torchvision import transforms
 from continuum.datasets import PyTorchDataset
 
 
-cifar100_coarse_labels = np.array([4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
-                                   3, 14, 9, 18, 7, 11, 3, 9, 7, 11,
-                                   6, 11, 5, 10, 7, 6, 13, 15, 3, 15,
-                                   0, 11, 1, 10, 12, 14, 16, 9, 11, 5,
-                                   5, 19, 8, 8, 15, 13, 14, 17, 18, 10,
-                                   16, 4, 17, 4, 2, 0, 17, 4, 18, 17,
-                                   10, 3, 2, 12, 12, 16, 12, 1, 9, 19,
-                                   2, 10, 0, 1, 16, 12, 9, 13, 15, 13,
-                                   16, 19, 2, 4, 6, 19, 5, 5, 8, 19,
-                                   18, 1, 2, 15, 6, 0, 17, 8, 14, 13])
+cifar100_coarse_labels = np.array(
+    [
+        4,
+        1,
+        14,
+        8,
+        0,
+        6,
+        7,
+        7,
+        18,
+        3,
+        3,
+        14,
+        9,
+        18,
+        7,
+        11,
+        3,
+        9,
+        7,
+        11,
+        6,
+        11,
+        5,
+        10,
+        7,
+        6,
+        13,
+        15,
+        3,
+        15,
+        0,
+        11,
+        1,
+        10,
+        12,
+        14,
+        16,
+        9,
+        11,
+        5,
+        5,
+        19,
+        8,
+        8,
+        15,
+        13,
+        14,
+        17,
+        18,
+        10,
+        16,
+        4,
+        17,
+        4,
+        2,
+        0,
+        17,
+        4,
+        18,
+        17,
+        10,
+        3,
+        2,
+        12,
+        12,
+        16,
+        12,
+        1,
+        9,
+        19,
+        2,
+        10,
+        0,
+        1,
+        16,
+        12,
+        9,
+        13,
+        15,
+        13,
+        16,
+        19,
+        2,
+        4,
+        6,
+        19,
+        5,
+        5,
+        8,
+        19,
+        18,
+        1,
+        2,
+        15,
+        6,
+        0,
+        17,
+        8,
+        14,
+        13,
+    ]
+)
 
 
 def get_lifelong_cifar100(y):
-    """"
+    """ "
     Create a task label such as having one of coarse label in each task but one 20 different classes in each task.
     """
 
@@ -32,7 +126,9 @@ def get_lifelong_cifar100(y):
     np_indexes_coarse_labels = np.zeros((5, 20))
     for i in range(20):
         indexes_coarse_labels = np.where(cifar100_coarse_labels == i)[0]
-        assert len(indexes_coarse_labels) == 5, print(f"len(indexes_coarse_labels): {len(indexes_coarse_labels)}")
+        assert len(indexes_coarse_labels) == 5, print(
+            f"len(indexes_coarse_labels): {len(indexes_coarse_labels)}"
+        )
         np_indexes_coarse_labels[:, i] = np.array(indexes_coarse_labels)
 
     np_indexes_coarse_labels = np_indexes_coarse_labels.astype(int)
@@ -42,14 +138,17 @@ def get_lifelong_cifar100(y):
     # so we create the task label vector
     t = np.zeros(len(y))
     for i in range(5):
-        indexes = np_indexes_coarse_labels[i,:]
-        assert len(np.unique(cifar100_coarse_labels[indexes])) == 20, print(cifar100_coarse_labels[indexes])
+        indexes = np_indexes_coarse_labels[i, :]
+        assert len(np.unique(cifar100_coarse_labels[indexes])) == 20, print(
+            cifar100_coarse_labels[indexes]
+        )
         assert len(indexes) == 20, print(f"len(indexes) {len(indexes)}")
         for index in indexes:
-            data_index_class = np.where(y==index)[0]
+            data_index_class = np.where(y == index)[0]
             t[data_index_class] = i
 
     return t.astype(int)
+
 
 class CIFAR100(PyTorchDataset):
     """Continuum use of the CIFAR100 dataset.
@@ -65,19 +164,25 @@ class CIFAR100(PyTorchDataset):
     :param task_labels: labels type define what type of labels we use if we want to create a task id vector.
     """
 
-    def __init__(self, *args, labels_type: str = "class", task_labels: str = None, **kwargs):
+    def __init__(
+        self, *args, labels_type: str = "class", task_labels: str = None, **kwargs
+    ):
         super().__init__(*args, dataset_type=torchdata.cifar.CIFAR100, **kwargs)
         if not labels_type in ["class", "category"]:
-            AssertionError("unknown labels_type parameter, choose among ['class', 'category']")
-        if not  task_labels in [None, "class", "category"]:
-            AssertionError("unknown task_labels parameter, choose among [None, 'class', 'category', 'lifelong']")
+            AssertionError(
+                "unknown labels_type parameter, choose among ['class', 'category']"
+            )
+        if not task_labels in [None, "class", "category"]:
+            AssertionError(
+                "unknown task_labels parameter, choose among [None, 'class', 'category', 'lifelong']"
+            )
 
         self.labels_type = labels_type
         self.task_labels_type = task_labels
 
         # lifelong scenario can not be with 'class' label_type
-        if task_labels == 'lifelong':
-            labels_type = 'category'
+        if task_labels == "lifelong":
+            labels_type = "category"
 
         if self.task_labels_type is None:
             # the dataset does not provide a task id vector
@@ -101,26 +206,28 @@ class CIFAR100(PyTorchDataset):
             self.dataset.targets = cifar100_coarse_labels[self.dataset.targets]
 
             # update classes
-            self.dataset.classes = [['beaver', 'dolphin', 'otter', 'seal', 'whale'],
-                                    ['aquarium_fish', 'flatfish', 'ray', 'shark', 'trout'],
-                                    ['orchid', 'poppy', 'rose', 'sunflower', 'tulip'],
-                                    ['bottle', 'bowl', 'can', 'cup', 'plate'],
-                                    ['apple', 'mushroom', 'orange', 'pear', 'sweet_pepper'],
-                                    ['clock', 'keyboard', 'lamp', 'telephone', 'television'],
-                                    ['bed', 'chair', 'couch', 'table', 'wardrobe'],
-                                    ['bee', 'beetle', 'butterfly', 'caterpillar', 'cockroach'],
-                                    ['bear', 'leopard', 'lion', 'tiger', 'wolf'],
-                                    ['bridge', 'castle', 'house', 'road', 'skyscraper'],
-                                    ['cloud', 'forest', 'mountain', 'plain', 'sea'],
-                                    ['camel', 'cattle', 'chimpanzee', 'elephant', 'kangaroo'],
-                                    ['fox', 'porcupine', 'possum', 'raccoon', 'skunk'],
-                                    ['crab', 'lobster', 'snail', 'spider', 'worm'],
-                                    ['baby', 'boy', 'girl', 'man', 'woman'],
-                                    ['crocodile', 'dinosaur', 'lizard', 'snake', 'turtle'],
-                                    ['hamster', 'mouse', 'rabbit', 'shrew', 'squirrel'],
-                                    ['maple_tree', 'oak_tree', 'palm_tree', 'pine_tree', 'willow_tree'],
-                                    ['bicycle', 'bus', 'motorcycle', 'pickup_truck', 'train'],
-                                    ['lawn_mower', 'rocket', 'streetcar', 'tank', 'tractor']]
+            self.dataset.classes = [
+                ["beaver", "dolphin", "otter", "seal", "whale"],
+                ["aquarium_fish", "flatfish", "ray", "shark", "trout"],
+                ["orchid", "poppy", "rose", "sunflower", "tulip"],
+                ["bottle", "bowl", "can", "cup", "plate"],
+                ["apple", "mushroom", "orange", "pear", "sweet_pepper"],
+                ["clock", "keyboard", "lamp", "telephone", "television"],
+                ["bed", "chair", "couch", "table", "wardrobe"],
+                ["bee", "beetle", "butterfly", "caterpillar", "cockroach"],
+                ["bear", "leopard", "lion", "tiger", "wolf"],
+                ["bridge", "castle", "house", "road", "skyscraper"],
+                ["cloud", "forest", "mountain", "plain", "sea"],
+                ["camel", "cattle", "chimpanzee", "elephant", "kangaroo"],
+                ["fox", "porcupine", "possum", "raccoon", "skunk"],
+                ["crab", "lobster", "snail", "spider", "worm"],
+                ["baby", "boy", "girl", "man", "woman"],
+                ["crocodile", "dinosaur", "lizard", "snake", "turtle"],
+                ["hamster", "mouse", "rabbit", "shrew", "squirrel"],
+                ["maple_tree", "oak_tree", "palm_tree", "pine_tree", "willow_tree"],
+                ["bicycle", "bus", "motorcycle", "pickup_truck", "train"],
+                ["lawn_mower", "rocket", "streetcar", "tank", "tractor"],
+            ]
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y, _ = super().get_data()
@@ -129,5 +236,7 @@ class CIFAR100(PyTorchDataset):
     @property
     def transformations(self):
         """Default transformations if nothing is provided to the scenario."""
-        return [transforms.ToTensor(),
-                transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))]
+        return [
+            transforms.ToTensor(),
+            transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
+        ]

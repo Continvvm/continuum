@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 
 from continuum.datasets.base import _ContinuumDataset
-from continuum.datasets.pytorch import (CIFAR10, KMNIST, MNIST, FashionMNIST)
+from continuum.datasets.pytorch import CIFAR10, KMNIST, MNIST, FashionMNIST
 from continuum.datasets.cifar100 import CIFAR100
 
 
@@ -17,6 +17,7 @@ class Fellowship(_ContinuumDataset):
                           update_labels=False will share the first 10 classes.
                           In doubt, let this param to True.
     """
+
     def __init__(
         self,
         datasets: List[_ContinuumDataset],
@@ -26,7 +27,6 @@ class Fellowship(_ContinuumDataset):
 
         self.update_labels = update_labels
         self.datasets = datasets
-
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y, t = [], [], []
@@ -50,40 +50,45 @@ class Fellowship(_ContinuumDataset):
         t = np.concatenate(t)
 
         # There should be by default as much task id as datasets
-        assert len(np.unique(t)) == len(self.datasets), f'They should be as much datasets as task ids,' \
-                                                        f' we have {len(self.datasets)} datasets vs' \
-                                                        f' {len(np.unique(t))} task ids'
+        assert len(np.unique(t)) == len(self.datasets), (
+            f"They should be as much datasets as task ids,"
+            f" we have {len(self.datasets)} datasets vs"
+            f" {len(np.unique(t))} task ids"
+        )
 
         return x, y, t
 
-class MNISTFellowship(Fellowship):
 
-    def __init__(self,
-                 data_path: str = "",
-                 train: bool = True,
-                 download: bool = True,
-                 update_labels: bool = True) -> None:
+class MNISTFellowship(Fellowship):
+    def __init__(
+        self,
+        data_path: str = "",
+        train: bool = True,
+        download: bool = True,
+        update_labels: bool = True,
+    ) -> None:
         super().__init__(
             datasets=[
                 MNIST(data_path=data_path, train=train, download=download),
                 FashionMNIST(data_path=data_path, train=train, download=download),
-                KMNIST(data_path=data_path, train=train, download=download)
+                KMNIST(data_path=data_path, train=train, download=download),
             ],
-            update_labels=update_labels
+            update_labels=update_labels,
         )
 
 
 class CIFARFellowship(Fellowship):
-
-    def __init__(self,
-                 data_path: str = "",
-                 train: bool = True,
-                 download: bool = True,
-                 update_labels: bool = True) -> None:
+    def __init__(
+        self,
+        data_path: str = "",
+        train: bool = True,
+        download: bool = True,
+        update_labels: bool = True,
+    ) -> None:
         super().__init__(
             datasets=[
                 CIFAR10(data_path=data_path, train=train, download=download),
-                CIFAR100(data_path=data_path, train=train, download=download)
+                CIFAR100(data_path=data_path, train=train, download=download),
             ],
-            update_labels=update_labels
+            update_labels=update_labels,
         )

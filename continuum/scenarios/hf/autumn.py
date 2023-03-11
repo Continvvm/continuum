@@ -24,33 +24,36 @@ class AutumnClassification(HuggingFaceFellowship):
                      115,000 examples per dataset for train, and 7,600 for test.
     :param seed: Random seed for the sampled if using balanced.
     """
+
     def __init__(
         self,
         train: bool = True,
-        dataset_order: List[str] = ['agnews', 'yelp', 'dbpedia', 'amazon', 'yahoo'],
+        dataset_order: List[str] = ["agnews", "yelp", "dbpedia", "amazon", "yahoo"],
         balanced: bool = True,
-        seed: int = 1
+        seed: int = 1,
     ):
         self.dataset_order = dataset_order
         self.balanced = balanced
         self.seed = seed
 
         self.name_to_id = {
-            "yelp": 'yelp_review_full',
+            "yelp": "yelp_review_full",
             "amazon": ("amazon_reviews_multi", "en"),
-            "agnews": 'ag_news',
-            "dbpedia": 'dbpedia_14',
-            "yahoo": 'yahoo_answers_topics',
+            "agnews": "ag_news",
+            "dbpedia": "dbpedia_14",
+            "yahoo": "yahoo_answers_topics",
         }
         self.name_to_cls = {
             "yelp": 5,
             "amazon": 5,
             "agnews": 4,
             "dbpedia": 14,
-            "yahoo": 10
+            "yahoo": 10,
         }
         self.merged_classes = ["yelp", "amazon"]
-        self.first_common_dataset = min(dataset_order.index(d) for d in self.merged_classes)
+        self.first_common_dataset = min(
+            dataset_order.index(d) for d in self.merged_classes
+        )
         for index, dataset in enumerate(self.dataset_order):
             if dataset not in self.merged_classes:
                 continue
@@ -59,9 +62,7 @@ class AutumnClassification(HuggingFaceFellowship):
             self.name_to_cls[dataset] = 0
 
         super().__init__(
-            [self.name_to_id[name] for name in dataset_order],
-            lazy=True,
-            train=train
+            [self.name_to_id[name] for name in dataset_order], lazy=True, train=train
         )
 
     def __getitem__(self, index):
@@ -74,22 +75,26 @@ class AutumnClassification(HuggingFaceFellowship):
             self.name_to_cls[name] for name in self.dataset_order[:index]
         )
 
-        if 'topic' in dataset.column_names:  # for yahoo
+        if "topic" in dataset.column_names:  # for yahoo
             dataset = dataset.rename_column("topic", "label")
-        if 'stars' in dataset.column_names:  # for amazon
+        if "stars" in dataset.column_names:  # for amazon
             dataset = dataset.rename_column("stars", "label")
             class_counter -= 1
 
         def _closure(row):
-            row['label'] += class_counter
+            row["label"] += class_counter
             return row
 
         dataset = dataset.map(_closure)
         if self.balanced:
-            if self.split == "train": size = 115000
-            else: size = 7600
+            if self.split == "train":
+                size = 115000
+            else:
+                size = 7600
 
-            dataset = dataset.train_test_split(test_size=size, seed=self.seed, shuffle=True)["test"]
+            dataset = dataset.train_test_split(
+                test_size=size, seed=self.seed, shuffle=True
+            )["test"]
 
         return dataset
 

@@ -19,10 +19,17 @@ class EuroSAT(ImageFolderDataset):
       Helber, Patrick and Bischke, Benjamin and Dengel, Andreas and Borth, Damian
       IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing 2019
     """
+
     images_url = "http://madm.dfki.de/files/sentinel/EuroSAT.zip"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True, test_split: float = 0.2,
-                 random_seed=1):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed=1,
+    ):
         self.test_split = test_split
         self.random_seed = random_seed
         super().__init__(data_path, train, download)
@@ -36,22 +43,20 @@ class EuroSAT(ImageFolderDataset):
             zip_path = os.path.join(self.data_path, "EuroSAT.zip")
 
             if not os.path.exists(zip_path):
-                print("Downloading zip images archive...", end=' ')
+                print("Downloading zip images archive...", end=" ")
                 download(self.images_url, self.data_path)
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             unzip(zip_path)
-            print('Done!')
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         dataset = torchdata.ImageFolder(os.path.join(self.data_path, "2750"))
         x, y, _ = self._format(dataset.imgs)
 
         x_train, x_test, y_train, y_test = train_test_split(
-            x, y,
-            test_size=self.test_split,
-            random_state=self.random_seed
+            x, y, test_size=self.test_split, random_state=self.random_seed
         )
 
         if self.train:

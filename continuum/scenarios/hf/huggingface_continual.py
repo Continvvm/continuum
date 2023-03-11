@@ -13,7 +13,7 @@ class HuggingFaceContinual(_BaseScenario):
         hf_dataset: Union[HFDataset, str, Tuple],
         split_field: str,
         increment: int = 1,
-        train: bool = True
+        train: bool = True,
     ):
         self.split_field = split_field
         self.split = "train" if train else "test"
@@ -53,5 +53,7 @@ class HuggingFaceContinual(_BaseScenario):
         return self.nb_classes // self.increment
 
     def __getitem__(self, index):
-        classes = set(self.classes[index * self.increment:(index + 1) * self.increment])
+        classes = set(
+            self.classes[index * self.increment : (index + 1) * self.increment]
+        )
         return self.hf_dataset.filter(lambda x: x[self.split_field] in classes)

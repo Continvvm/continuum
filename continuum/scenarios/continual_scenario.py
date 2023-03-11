@@ -21,12 +21,16 @@ class ContinualScenario(_BaseScenario):
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            transformations: Union[List[Callable], List[List[Callable]]] = None,
+        self,
+        cl_dataset: _ContinuumDataset,
+        transformations: Union[List[Callable], List[List[Callable]]] = None,
     ) -> None:
         self.check_data(cl_dataset)
-        super().__init__(cl_dataset=cl_dataset, nb_tasks=self.nb_tasks, transformations=transformations)
+        super().__init__(
+            cl_dataset=cl_dataset,
+            nb_tasks=self.nb_tasks,
+            transformations=transformations,
+        )
 
     def check_data(self, cl_dataset: _ContinuumDataset):
         x, y, t = cl_dataset.get_data()
@@ -34,9 +38,13 @@ class ContinualScenario(_BaseScenario):
         assert t is not None, print("The t vector should be defined for this scenario")
 
         if cl_dataset.data_type != TaskType.H5:
-            assert len(x) == len(y) == len(t), print("data, label and task label vectors need to have the same length")
+            assert len(x) == len(y) == len(t), print(
+                "data, label and task label vectors need to have the same length"
+            )
         else:
-            assert len(y) == len(t), print("label and task label vectors need to have the same length")
+            assert len(y) == len(t), print(
+                "label and task label vectors need to have the same length"
+            )
 
         list_unique_tasks_ids = np.unique(t)
         self._nb_tasks = len(list_unique_tasks_ids)
@@ -49,7 +57,8 @@ class ContinualScenario(_BaseScenario):
             f"there should be at least one data point"
             f"for each task from task id equal"
             f"zero to num_tasks-1 \n (unique task indexes) {list_unique_tasks_ids} vs "
-            f"(expected) {np.arange(self.nb_tasks)}")
+            f"(expected) {np.arange(self.nb_tasks)}"
+        )
 
     # nothing to do in the setup function
     def _setup(self, nb_tasks: int) -> int:

@@ -22,10 +22,10 @@ class _BaseScenario(abc.ABC):
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            nb_tasks: int,
-            transformations: Union[List[Callable], List[List[Callable]]] = None
+        self,
+        cl_dataset: _ContinuumDataset,
+        nb_tasks: int,
+        transformations: Union[List[Callable], List[List[Callable]]] = None,
     ) -> None:
 
         self.cl_dataset = cl_dataset
@@ -39,7 +39,9 @@ class _BaseScenario(abc.ABC):
             composer = SegmentationCompose
         else:
             composer = transforms.Compose
-        if self.transformations is not None and isinstance(self.transformations[0], list):
+        if self.transformations is not None and isinstance(
+            self.transformations[0], list
+        ):
             # We have list of list of callable, where each sublist is dedicated to
             # a task.
             if len(self.transformations) != nb_tasks:
@@ -121,16 +123,17 @@ class _BaseScenario(abc.ABC):
         x, y, t, _, data_indexes = self._select_data_by_task(task_index)
 
         return TaskSet(
-            x, y, t,
+            x,
+            y,
+            t,
             trsf=self.trsf[task_index] if isinstance(self.trsf, list) else self.trsf,
             data_type=self.cl_dataset.data_type,
             bounding_boxes=self.cl_dataset.bounding_boxes,
-            data_indexes=data_indexes
+            data_indexes=data_indexes,
         )
 
     def _select_data_by_task(
-            self,
-            task_index: Union[int, slice, np.ndarray]
+        self, task_index: Union[int, slice, np.ndarray]
     ) -> Union[np.ndarray, np.ndarray, np.ndarray, Union[int, List[int]]]:
         """Selects a subset of the whole data for a given task.
 
@@ -154,7 +157,9 @@ class _BaseScenario(abc.ABC):
             step = task_index.step if task_index.step is not None else 1
             task_index = list(range(start, stop, step))
             if len(task_index) == 0:
-                raise ValueError(f"Invalid slicing resulting in no data (start={start}, end={stop}, step={step}).")
+                raise ValueError(
+                    f"Invalid slicing resulting in no data (start={start}, end={stop}, step={step})."
+                )
 
         if isinstance(task_index, np.ndarray):
             task_index = list(task_index)
@@ -163,7 +168,8 @@ class _BaseScenario(abc.ABC):
 
         if isinstance(task_index, list):
             task_index = [
-                t if t >= 0 else _handle_negative_indexes(t, len(self)) for t in task_index
+                t if t >= 0 else _handle_negative_indexes(t, len(self))
+                for t in task_index
             ]
             if len(t.shape) == 2:
                 data_indexes = np.unique(np.where(t[:, task_index] == 1)[0])
@@ -187,7 +193,9 @@ class _BaseScenario(abc.ABC):
         selected_y = y[data_indexes]
         selected_t = t[data_indexes]
 
-        if self.cl_dataset.need_class_remapping:  # TODO: to remove with TransformIncremental
+        if (
+            self.cl_dataset.need_class_remapping
+        ):  # TODO: to remove with TransformIncremental
             # A remapping of the class ids is done to handle some special cases
             # like PermutedMNIST or RotatedMNIST.
             selected_y = self.cl_dataset.class_remapping(selected_y)

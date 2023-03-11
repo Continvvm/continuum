@@ -15,12 +15,12 @@ import numpy as np
 from PIL import Image
 
 _pil_interpolation_to_str = {
-    Image.NEAREST: 'PIL.Image.NEAREST',
-    Image.BILINEAR: 'PIL.Image.BILINEAR',
-    Image.BICUBIC: 'PIL.Image.BICUBIC',
-    Image.LANCZOS: 'PIL.Image.LANCZOS',
-    Image.HAMMING: 'PIL.Image.HAMMING',
-    Image.BOX: 'PIL.Image.BOX',
+    Image.NEAREST: "PIL.Image.NEAREST",
+    Image.BILINEAR: "PIL.Image.BILINEAR",
+    Image.BICUBIC: "PIL.Image.BICUBIC",
+    Image.LANCZOS: "PIL.Image.LANCZOS",
+    Image.HAMMING: "PIL.Image.HAMMING",
+    Image.BOX: "PIL.Image.BOX",
 }
 
 
@@ -44,11 +44,11 @@ class Compose:
             return img
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+        format_string = self.__class__.__name__ + "("
         for t in self.transforms:
-            format_string += '\n'
-            format_string += '    {0}'.format(t)
-        format_string += '\n)'
+            format_string += "\n"
+            format_string += "    {0}".format(t)
+        format_string += "\n)"
         return format_string
 
 
@@ -65,7 +65,9 @@ class Resize:
     """
 
     def __init__(self, size, interpolation=Image.BILINEAR):
-        assert isinstance(size, int) or (isinstance(size, collections.Iterable) and len(size) == 2)
+        assert isinstance(size, int) or (
+            isinstance(size, collections.Iterable) and len(size) == 2
+        )
         self.size = size
         self.interpolation = interpolation
 
@@ -75,13 +77,17 @@ class Resize:
         :return: PIL Image: Rescaled image.
         """
         if lbl is not None:
-            return Fv.resize(img, self.size, self.interpolation), Fv.resize(lbl, self.size, Image.NEAREST)
+            return Fv.resize(img, self.size, self.interpolation), Fv.resize(
+                lbl, self.size, Image.NEAREST
+            )
         else:
             return Fv.resize(img, self.size, self.interpolation)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
-        return self.__class__.__name__ + '(size={0}, interpolation={1})'.format(self.size, interpolate_str)
+        return self.__class__.__name__ + "(size={0}, interpolation={1})".format(
+            self.size, interpolate_str
+        )
 
 
 class CenterCrop:
@@ -109,7 +115,7 @@ class CenterCrop:
             return Fv.center_crop(img, self.size)
 
     def __repr__(self):
-        return self.__class__.__name__ + f'(size={self.size})'
+        return self.__class__.__name__ + f"(size={self.size})"
 
 
 class Pad:
@@ -134,13 +140,15 @@ class Pad:
                             will result in [2, 1, 1, 2, 3, 4, 4, 3]
     """
 
-    def __init__(self, padding, fill=0, padding_mode='constant'):
+    def __init__(self, padding, fill=0, padding_mode="constant"):
         assert isinstance(padding, (numbers.Number, tuple))
         assert isinstance(fill, (numbers.Number, str))
-        assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
+        assert padding_mode in ["constant", "edge", "reflect", "symmetric"]
         if isinstance(padding, collections.Sequence) and len(padding) not in [2, 4]:
-            raise ValueError("Padding must be an int or a 2, or 4 element tuple, not a " +
-                             "{} element tuple".format(len(padding)))
+            raise ValueError(
+                "Padding must be an int or a 2, or 4 element tuple, not a "
+                + "{} element tuple".format(len(padding))
+            )
 
         self.padding = padding
         self.fill = fill
@@ -152,13 +160,19 @@ class Pad:
         :return: PIL Image: Padded image.
         """
         if lbl is not None:
-            return Fv.pad(img, self.padding, self.fill, self.padding_mode), Fv.pad(lbl, self.padding, self.fill, self.padding_mode)
+            return Fv.pad(img, self.padding, self.fill, self.padding_mode), Fv.pad(
+                lbl, self.padding, self.fill, self.padding_mode
+            )
         else:
             return Fv.pad(img, self.padding, self.fill, self.padding_mode)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(padding={0}, fill={1}, padding_mode={2})'.\
-            format(self.padding, self.fill, self.padding_mode)
+        return (
+            self.__class__.__name__
+            + "(padding={0}, fill={1}, padding_mode={2})".format(
+                self.padding, self.fill, self.padding_mode
+            )
+        )
 
 
 class Lambda:
@@ -178,7 +192,7 @@ class Lambda:
             return self.lambd(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '()'
+        return self.__class__.__name__ + "()"
 
 
 class RandomRotation:
@@ -234,18 +248,19 @@ class RandomRotation:
 
         angle = self.get_params(self.degrees)
         if lbl is not None:
-            return Fv.rotate(img, angle, self.resample, self.expand, self.center), \
-                   Fv.rotate(lbl, angle, self.resample, self.expand, self.center)
+            return Fv.rotate(
+                img, angle, self.resample, self.expand, self.center
+            ), Fv.rotate(lbl, angle, self.resample, self.expand, self.center)
         else:
             return Fv.rotate(img, angle, self.resample, self.expand, self.center)
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '(degrees={0}'.format(self.degrees)
-        format_string += ', resample={0}'.format(self.resample)
-        format_string += ', expand={0}'.format(self.expand)
+        format_string = self.__class__.__name__ + "(degrees={0}".format(self.degrees)
+        format_string += ", resample={0}".format(self.resample)
+        format_string += ", expand={0}".format(self.expand)
         if self.center is not None:
-            format_string += ', center={0}'.format(self.center)
-        format_string += ')'
+            format_string += ", center={0}".format(self.center)
+        format_string += ")"
         return format_string
 
 
@@ -274,7 +289,7 @@ class RandomHorizontalFvlip:
             return img
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + "(p={})".format(self.p)
 
 
 class RandomVerticalFvlip:
@@ -303,7 +318,7 @@ class RandomVerticalFvlip:
             return img
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
+        return self.__class__.__name__ + "(p={})".format(self.p)
 
 
 class ToTensor:
@@ -331,7 +346,7 @@ class ToTensor:
             return Fv.to_tensor(pic)
 
     def __repr__(self):
-        return self.__class__.__name__ + '()'
+        return self.__class__.__name__ + "()"
 
 
 class Normalize:
@@ -360,7 +375,9 @@ class Normalize:
             return Fv.normalize(tensor, self.mean, self.std)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+        return self.__class__.__name__ + "(mean={0}, std={1})".format(
+            self.mean, self.std
+        )
 
 
 class RandomCrop:
@@ -423,7 +440,9 @@ class RandomCrop:
             return Fv.crop(img, i, j, h, w)
 
         else:
-            assert img.size == lbl.size, 'size of img and lbl should be the same. %s, %s' % (img.size, lbl.size)
+            assert (
+                img.size == lbl.size
+            ), "size of img and lbl should be the same. %s, %s" % (img.size, lbl.size)
             if self.padding > 0:
                 img = Fv.pad(img, self.padding)
                 lbl = Fv.pad(lbl, self.padding)
@@ -443,7 +462,9 @@ class RandomCrop:
             return Fv.crop(img, i, j, h, w), Fv.crop(lbl, i, j, h, w)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0}, padding={1})'.format(self.size, self.padding)
+        return self.__class__.__name__ + "(size={0}, padding={1})".format(
+            self.size, self.padding
+        )
 
 
 class RandomResizedCrop:
@@ -459,7 +480,13 @@ class RandomResizedCrop:
     :param interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __init__(self, size, scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.), interpolation=Image.BILINEAR):
+    def __init__(
+        self,
+        size,
+        scale=(0.08, 1.0),
+        ratio=(3.0 / 4.0, 4.0 / 3.0),
+        interpolation=Image.BILINEAR,
+    ):
         if isinstance(size, tuple):
             self.size = size
         else:
@@ -498,10 +525,10 @@ class RandomResizedCrop:
 
         # Fvallback to central crop
         in_ratio = img.size[0] / img.size[1]
-        if (in_ratio < min(ratio)):
+        if in_ratio < min(ratio):
             w = img.size[0]
             h = int(round(w / min(ratio)))
-        elif (in_ratio > max(ratio)):
+        elif in_ratio > max(ratio):
             h = img.size[1]
             w = int(round(h * max(ratio)))
         else:  # whole image
@@ -518,17 +545,18 @@ class RandomResizedCrop:
         """
         i, j, h, w = self.get_params(img, self.scale, self.ratio)
         if lbl is not None:
-            return Fv.resized_crop(img, i, j, h, w, self.size, self.interpolation), \
-                   Fv.resized_crop(lbl, i, j, h, w, self.size, Image.NEAREST)
+            return Fv.resized_crop(
+                img, i, j, h, w, self.size, self.interpolation
+            ), Fv.resized_crop(lbl, i, j, h, w, self.size, Image.NEAREST)
         else:
             return Fv.resized_crop(img, i, j, h, w, self.size, self.interpolation)
 
     def __repr__(self):
         interpolate_str = _pil_interpolation_to_str[self.interpolation]
-        format_string = self.__class__.__name__ + '(size={0}'.format(self.size)
-        format_string += ', scale={0}'.format(tuple(round(s, 4) for s in self.scale))
-        format_string += ', ratio={0}'.format(tuple(round(r, 4) for r in self.ratio))
-        format_string += ', interpolation={0})'.format(interpolate_str)
+        format_string = self.__class__.__name__ + "(size={0}".format(self.size)
+        format_string += ", scale={0}".format(tuple(round(s, 4) for s in self.scale))
+        format_string += ", ratio={0}".format(tuple(round(r, 4) for r in self.ratio))
+        format_string += ", interpolation={0})".format(interpolate_str)
         return format_string
 
 
@@ -548,17 +576,23 @@ class ColorJitter:
                 hue_factor is chosen uniformly from [-hue, hue] or the given [min, max].
                 Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
     """
-    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
-        self.brightness = self._check_input(brightness, 'brightness')
-        self.contrast = self._check_input(contrast, 'contrast')
-        self.saturation = self._check_input(saturation, 'saturation')
-        self.hue = self._check_input(hue, 'hue', center=0, bound=(-0.5, 0.5),
-                                     clip_first_on_zero=False)
 
-    def _check_input(self, value, name, center=1, bound=(0, float('inf')), clip_first_on_zero=True):
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
+        self.brightness = self._check_input(brightness, "brightness")
+        self.contrast = self._check_input(contrast, "contrast")
+        self.saturation = self._check_input(saturation, "saturation")
+        self.hue = self._check_input(
+            hue, "hue", center=0, bound=(-0.5, 0.5), clip_first_on_zero=False
+        )
+
+    def _check_input(
+        self, value, name, center=1, bound=(0, float("inf")), clip_first_on_zero=True
+    ):
         if isinstance(value, numbers.Number):
             if value < 0:
-                raise ValueError("If {} is a single number, it must be non negative.".format(name))
+                raise ValueError(
+                    "If {} is a single number, it must be non negative.".format(name)
+                )
             value = [center - value, center + value]
             if clip_first_on_zero:
                 value[0] = max(value[0], 0)
@@ -566,7 +600,11 @@ class ColorJitter:
             if not bound[0] <= value[0] <= value[1] <= bound[1]:
                 raise ValueError("{} values should be between {}".format(name, bound))
         else:
-            raise TypeError("{} should be a single number or a list/tuple with lenght 2.".format(name))
+            raise TypeError(
+                "{} should be a single number or a list/tuple with lenght 2.".format(
+                    name
+                )
+            )
 
         # if value is 0 or (1., 1.) for brightness/contrast/saturation
         # or (0., 0.) for hue, do nothing
@@ -586,15 +624,21 @@ class ColorJitter:
 
         if brightness is not None:
             brightness_factor = random.uniform(brightness[0], brightness[1])
-            transforms.append(Lambda(lambda img: Fv.adjust_brightness(img, brightness_factor)))
+            transforms.append(
+                Lambda(lambda img: Fv.adjust_brightness(img, brightness_factor))
+            )
 
         if contrast is not None:
             contrast_factor = random.uniform(contrast[0], contrast[1])
-            transforms.append(Lambda(lambda img: Fv.adjust_contrast(img, contrast_factor)))
+            transforms.append(
+                Lambda(lambda img: Fv.adjust_contrast(img, contrast_factor))
+            )
 
         if saturation is not None:
             saturation_factor = random.uniform(saturation[0], saturation[1])
-            transforms.append(Lambda(lambda img: Fv.adjust_saturation(img, saturation_factor)))
+            transforms.append(
+                Lambda(lambda img: Fv.adjust_saturation(img, saturation_factor))
+            )
 
         if hue is not None:
             hue_factor = random.uniform(hue[0], hue[1])
@@ -610,17 +654,18 @@ class ColorJitter:
         :param img: (PIL Image): Input image.
         :return: PIL Image: Color jittered image.
         """
-        transform = self.get_params(self.brightness, self.contrast,
-                                    self.saturation, self.hue)
+        transform = self.get_params(
+            self.brightness, self.contrast, self.saturation, self.hue
+        )
         if lbl is not None:
             return transform(img), lbl
         else:
             return transform(img)
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
-        format_string += 'brightness={0}'.format(self.brightness)
-        format_string += ', contrast={0}'.format(self.contrast)
-        format_string += ', saturation={0}'.format(self.saturation)
-        format_string += ', hue={0})'.format(self.hue)
+        format_string = self.__class__.__name__ + "("
+        format_string += "brightness={0}".format(self.brightness)
+        format_string += ", contrast={0}".format(self.contrast)
+        format_string += ", saturation={0}".format(self.saturation)
+        format_string += ", hue={0})".format(self.hue)
         return format_string

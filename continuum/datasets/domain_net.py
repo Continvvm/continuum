@@ -19,17 +19,24 @@ class DomainNet(ImageFolderDataset):
       Peng et al.
       ICCV 2019
     """
+
     urls = [
         "http://csr.bu.edu/ftp/visda/2019/multi-source/groundtruth/clipart.zip",
         "http://csr.bu.edu/ftp/visda/2019/multi-source/infograph.zip",
         "http://csr.bu.edu/ftp/visda/2019/multi-source/groundtruth/painting.zip",
         "http://csr.bu.edu/ftp/visda/2019/multi-source/quickdraw.zip",
         "http://csr.bu.edu/ftp/visda/2019/multi-source/real.zip",
-        "http://csr.bu.edu/ftp/visda/2019/multi-source/sketch.zip"
+        "http://csr.bu.edu/ftp/visda/2019/multi-source/sketch.zip",
     ]
 
-    def __init__(self, data_path, train: bool = True, download: bool = True,
-                 test_split: float = 0.2, random_seed: int = 1):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed: int = 1,
+    ):
         self.test_split = test_split
         self.random_seed = random_seed
         super().__init__(data_path, train, download)
@@ -50,9 +57,9 @@ class DomainNet(ImageFolderDataset):
                     print(f"Downloading {base_file_name}...")
                     download(url, self.data_path)
 
-                print('Extracting archive...', end=' ')
+                print("Extracting archive...", end=" ")
                 unzip(zip_path)
-                print('Done!')
+                print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         domains = ["clipart", "infograph", "painting", "quickdraw", "real", "sketch"]
@@ -64,9 +71,7 @@ class DomainNet(ImageFolderDataset):
 
             x, y, _ = self._format(dataset.imgs)
             x_train, x_test, y_train, y_test = train_test_split(
-                x, y,
-                test_size=self.test_split,
-                random_state=self.random_seed
+                x, y, test_size=self.test_split, random_state=self.random_seed
             )
 
             if self.train:

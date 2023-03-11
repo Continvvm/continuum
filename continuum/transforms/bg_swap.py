@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from continuum.datasets import _ContinuumDataset
 from skimage.transform import resize
+
 # pylint: disable=invalid-unary-operand-type
 
 
@@ -15,9 +16,13 @@ class BackgroundSwap:
     :param normalize_bg: an optional normalization function.
     """
 
-    def __init__(self, bg_images: _ContinuumDataset, input_dim: Tuple[int, int] = (28, 28),
-                 bg_label: Optional[int] = None,
-                 normalize_bg: Optional[Callable] = lambda x: x / 255.0):
+    def __init__(
+        self,
+        bg_images: _ContinuumDataset,
+        input_dim: Tuple[int, int] = (28, 28),
+        bg_label: Optional[int] = None,
+        normalize_bg: Optional[Callable] = lambda x: x / 255.0,
+    ):
         self.bg_label = bg_label
         self.normalize_bg = normalize_bg
         self.input_dim = input_dim
@@ -29,9 +34,11 @@ class BackgroundSwap:
         else:
             self.bg_images = full[0]
 
-    def __call__(self, img: Union[np.ndarray, torch.Tensor],
-                 mask: Optional[Union[np.ndarray, torch.BoolTensor]] = None
-                 ) -> Union[np.ndarray, torch.Tensor]:
+    def __call__(
+        self,
+        img: Union[np.ndarray, torch.Tensor],
+        mask: Optional[Union[np.ndarray, torch.BoolTensor]] = None,
+    ) -> Union[np.ndarray, torch.Tensor]:
         """Call transform on img input and return swapped bg.
 
         :param img: input image, must be normalized.
@@ -48,14 +55,16 @@ class BackgroundSwap:
         else:
             raise NotImplementedError(f"Input type {type(img)} not implemented")
 
-        new_background: np.ndarray = self.bg_images[np.random.randint(0, len(self.bg_images))]
+        new_background: np.ndarray = self.bg_images[
+            np.random.randint(0, len(self.bg_images))
+        ]
 
         if self.normalize_bg:
             new_background = self.normalize_bg(new_background)
 
         new_background = resize(new_background, self.input_dim)
 
-        mask = (img > .5) if mask is None else mask
+        mask = (img > 0.5) if mask is None else mask
         out = mask * img + ~mask * new_background
 
         if isinstance(out, torch.Tensor):

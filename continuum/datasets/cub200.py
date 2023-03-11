@@ -24,8 +24,10 @@ class CUB200(_ContinuumDataset):
         if self._attributes is None:
             att = np.loadtxt(
                 os.path.join(
-                    self.data_path, "CUB_200_2011",
-                    "attributes", "class_attribute_labels_continuous.txt"
+                    self.data_path,
+                    "CUB_200_2011",
+                    "attributes",
+                    "class_attribute_labels_continuous.txt",
                 )
             )
             self._attributes = att / np.linalg.norm(att, axis=-1, keepdims=True)
@@ -41,20 +43,21 @@ class CUB200(_ContinuumDataset):
             tgz_path = os.path.join(self.data_path, "CUB_200_2011.tgz")
 
             if not os.path.exists(tgz_path):
-                print("Downloading tgz archive...", end=' ')
+                print("Downloading tgz archive...", end=" ")
                 download_file_from_google_drive(
-                    "1hbzc_P1FuxMkcabkgn9ZKinBwW683j45",
-                    tgz_path
+                    "1hbzc_P1FuxMkcabkgn9ZKinBwW683j45", tgz_path
                 )
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             try:
                 untar(tgz_path)
             except tarfile.ReadError:
                 print()
-                try: os.remove(tgz_path)
-                except: pass
+                try:
+                    os.remove(tgz_path)
+                except:
+                    pass
 
                 raise IOError(
                     "The file wasn't downloaded properly, probably because it "
@@ -63,22 +66,25 @@ class CUB200(_ContinuumDataset):
                     "http://www.vision.caltech.edu/visipedia-data/CUB-200/images.tgz"
                 )
 
-            print('Done!')
+            print("Done!")
 
     def _load_metadata(self):
         images = pd.read_csv(
             os.path.join(self.data_path, "CUB_200_2011", "images.txt"),
             sep=" ",
-            names=["img_id", "filedata_path"])
+            names=["img_id", "filedata_path"],
+        )
 
         image_class_labels = pd.read_csv(
             os.path.join(self.data_path, "CUB_200_2011", "image_class_labels.txt"),
             sep=" ",
-            names=["img_id", "target"])
+            names=["img_id", "target"],
+        )
         train_test_split = pd.read_csv(
             os.path.join(self.data_path, "CUB_200_2011", "train_test_split.txt"),
             sep=" ",
-            names=["img_id", "is_training_img"])
+            names=["img_id", "is_training_img"],
+        )
 
         data = images.merge(image_class_labels, on="img_id")
         self.data = data.merge(train_test_split, on="img_id")
@@ -88,8 +94,14 @@ class CUB200(_ContinuumDataset):
         else:
             self.data = self.data[self.data.is_training_img == 0]
 
-        x = os.path.join(self.data_path, "CUB_200_2011", "images") + "/" + np.array(self.data["filedata_path"])
-        y = np.array(self.data["target"]) - 1  # Targets start at 1 by default, so shift to 0
+        x = (
+            os.path.join(self.data_path, "CUB_200_2011", "images")
+            + "/"
+            + np.array(self.data["filedata_path"])
+        )
+        y = (
+            np.array(self.data["target"]) - 1
+        )  # Targets start at 1 by default, so shift to 0
 
         self.dataset = [x, y, None]
 
@@ -100,7 +112,9 @@ class CUB200(_ContinuumDataset):
             return False
 
         for index, row in self.data.iterrows():
-            filedata_path = os.path.join(self.data_path, self.base_folder, row.filedata_path)
+            filedata_path = os.path.join(
+                self.data_path, self.base_folder, row.filedata_path
+            )
             if not os.path.isfile(filedata_path):
                 print(filedata_path)
                 return False
@@ -115,6 +129,7 @@ class CUB200(_ContinuumDataset):
             raise RuntimeError(
                 "Dataset not found or corrupted. Remove existing file and download again, "
                 "or try to download the dataset manually "
-                "at http://www.vision.caltech.edu/visipedia/CUB-200-2011.html")
+                "at http://www.vision.caltech.edu/visipedia/CUB-200-2011.html"
+            )
 
         return self.dataset

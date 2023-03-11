@@ -15,6 +15,7 @@ class Food101(ImageFolderDataset):
     * Food-101 – Mining Discriminative Components with Random Forests
       Lukas Bossard, Matthieu Guillaumin and Luc Van Gool
     """
+
     images_url = "http://data.vision.ee.ethz.ch/cvl/food-101.tar.gz"
 
     def __init__(self, data_path, train: bool = True, download: bool = True):
@@ -30,16 +31,18 @@ class Food101(ImageFolderDataset):
             archive_path = os.path.join(self.data_path, "food-101.tar.gz")
 
             if not os.path.exists(archive_path):
-                print("Downloading images archive...", end=' ')
+                print("Downloading images archive...", end=" ")
                 download(self.images_url, self.data_path)
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             untar(archive_path)
-            print('Done!')
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        dataset = torchdata.ImageFolder(os.path.join(self.data_path, "food-101", "images"))
+        dataset = torchdata.ImageFolder(
+            os.path.join(self.data_path, "food-101", "images")
+        )
         x, y, _ = self._format(dataset.imgs)
 
         test_ids = set()
@@ -51,8 +54,9 @@ class Food101(ImageFolderDataset):
         for path, label in zip(x, y):
             image_id = str(path).split("/")[-1][:-5]
 
-            if (self.train and image_id not in test_ids) or \
-                (not self.train and image_id in test_ids):
+            if (self.train and image_id not in test_ids) or (
+                not self.train and image_id in test_ids
+            ):
                 final_x.append(path)
                 final_y.append(label)
 

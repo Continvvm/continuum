@@ -11,7 +11,12 @@ def convert_numpy(tensor):
 
 
 class _BaseLogger(abc.ABC):
-    def __init__(self, root_log=None, list_keywords=["performance"], list_subsets=["train", "test"]):
+    def __init__(
+        self,
+        root_log=None,
+        list_keywords=["performance"],
+        list_subsets=["train", "test"],
+    ):
         """
         root_log: folder where logged informations will be saved
         list_keywords: keywords indicating the differentes informations to log, they might be chosen by the user
@@ -22,11 +27,21 @@ class _BaseLogger(abc.ABC):
         self.list_keywords = list_keywords
         self.list_subsets = list_subsets
 
-        assert self.list_keywords is not None, f" self.list_keywords should contains at list one keyword"
-        assert self.list_subsets is not None, f" self.list_subsets should contains at list one subset"
-        assert len(self.list_keywords) >= 1, f" self.list_keywords should contains at list one keyword"
-        assert len(self.list_subsets) >= 1, f" self.list_subsets should contains at list one subset"
-        assert len(self.list_subsets) == len(set(self.list_subsets)), f" There are duplicate in the subset list"
+        assert (
+            self.list_keywords is not None
+        ), f" self.list_keywords should contains at list one keyword"
+        assert (
+            self.list_subsets is not None
+        ), f" self.list_subsets should contains at list one subset"
+        assert (
+            len(self.list_keywords) >= 1
+        ), f" self.list_keywords should contains at list one keyword"
+        assert (
+            len(self.list_subsets) >= 1
+        ), f" self.list_subsets should contains at list one subset"
+        assert len(self.list_subsets) == len(
+            set(self.list_subsets)
+        ), f" There are duplicate in the subset list"
 
         self.logger_dict = {}
 
@@ -43,8 +58,12 @@ class _BaseLogger(abc.ABC):
         self._update_dict_architecture(update_task=True)
 
     def add(self, value, keyword="performance", subset="train"):
-        assert keyword in self.list_keywords, f"Keyword {keyword} is not declared in list_keywords {self.list_keywords}"
-        assert subset in self.list_subsets, f"Field {subset} is not declared in list_keywords {self.list_subsets}"
+        assert (
+            keyword in self.list_keywords
+        ), f"Keyword {keyword} is not declared in list_keywords {self.list_keywords}"
+        assert (
+            subset in self.list_subsets
+        ), f"Field {subset} is not declared in list_keywords {self.list_subsets}"
 
         if keyword == "performance":
             predictions, targets, task_ids = value
@@ -53,13 +72,19 @@ class _BaseLogger(abc.ABC):
             self._add_value(value, keyword, subset)
 
     def _get_current_predictions(self, subset="train"):
-        return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["predictions"]
+        return self.logger_dict[subset]["performance"][self.current_task][
+            self.current_epoch
+        ]["predictions"]
 
     def _get_current_targets(self, subset="train"):
-        return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["targets"]
+        return self.logger_dict[subset]["performance"][self.current_task][
+            self.current_epoch
+        ]["targets"]
 
     def _get_current_task_ids(self, subset="train"):
-        return self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"]
+        return self.logger_dict[subset]["performance"][self.current_task][
+            self.current_epoch
+        ]["task_ids"]
 
     def _get_last_predictions(self, subset="train"):
         return self._get_last("predictions", subset)
@@ -71,47 +96,72 @@ class _BaseLogger(abc.ABC):
         return self._get_last("task_ids", subset)
 
     def _get_last(self, keyword, subset):
-        if len(self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][keyword]) == 0:
+        if (
+            len(
+                self.logger_dict[subset]["performance"][self.current_task][
+                    self.current_epoch
+                ][keyword]
+            )
+            == 0
+        ):
             if self.current_epoch != 0:
-                last = self.logger_dict[subset]["performance"][self.current_task][self.current_epoch-1][
-                    keyword]
+                last = self.logger_dict[subset]["performance"][self.current_task][
+                    self.current_epoch - 1
+                ][keyword]
             elif self.current_epoch == 0 and self.current_task != 0:
                 # we have finished a task but not started a new one yet, so we take last pred from last task
-                last = self.logger_dict[subset]["performance"][self.current_task-1][self.current_epoch][keyword]
+                last = self.logger_dict[subset]["performance"][self.current_task - 1][
+                    self.current_epoch
+                ][keyword]
         else:
-            last = self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][keyword]
+            last = self.logger_dict[subset]["performance"][self.current_task][
+                self.current_epoch
+            ][keyword]
         return last
 
     def _add_value(self, tensor, keyword, subset="train"):
-        """Add a tensor in the list of the current epoch (tensor can also be a single value) """
+        """Add a tensor in the list of the current epoch (tensor can also be a single value)"""
 
         tensor = convert_numpy(tensor)
 
         self.logger_dict[subset][keyword][self.current_task][self.current_epoch].append(
-            tensor)
+            tensor
+        )
 
     def _add_perf(self, predictions, targets, task_ids=None, subset="train"):
-        """Special function for performance, so performance can be logged in one line """
+        """Special function for performance, so performance can be logged in one line"""
         predictions = convert_numpy(predictions)
         targets = convert_numpy(targets)
         task_ids = convert_numpy(task_ids)
 
         if not isinstance(predictions, np.ndarray):
-            raise TypeError(f"Provide predictions as np.ndarray, not {type(predictions).__name__}.")
+            raise TypeError(
+                f"Provide predictions as np.ndarray, not {type(predictions).__name__}."
+            )
         if not isinstance(targets, np.ndarray):
-            raise TypeError(f"Provide targets as np.ndarray, not {type(targets).__name__}.")
+            raise TypeError(
+                f"Provide targets as np.ndarray, not {type(targets).__name__}."
+            )
 
         assert predictions.size == targets.size, f"{predictions.size} vs {targets.size}"
 
-        predictions = np.concatenate([self._get_current_predictions(subset), predictions])
-        self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["predictions"] = predictions
+        predictions = np.concatenate(
+            [self._get_current_predictions(subset), predictions]
+        )
+        self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][
+            "predictions"
+        ] = predictions
 
         targets = np.concatenate([self._get_current_targets(subset), targets])
-        self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["targets"] = targets
+        self.logger_dict[subset]["performance"][self.current_task][self.current_epoch][
+            "targets"
+        ] = targets
 
         if task_ids is not None:
             task_ids = np.concatenate([self._get_current_task_ids(subset), task_ids])
-            self.logger_dict[subset]["performance"][self.current_task][self.current_epoch]["task_ids"] = task_ids
+            self.logger_dict[subset]["performance"][self.current_task][
+                self.current_epoch
+            ]["task_ids"] = task_ids
 
     def _update_dict_architecture(self, update_task=False):
         for keyword in self.list_keywords:
@@ -120,28 +170,58 @@ class _BaseLogger(abc.ABC):
                     if self.current_task != 0:
                         # end_epoch add empty vector. If end_epoch was called just before end task, we remove this vector
                         if keyword == "performance":
-                            if len(self.logger_dict[subset][keyword][self.current_task-1][-1]["predictions"]) == 0:
-                                del self.logger_dict[subset][keyword][self.current_task-1][-1]
+                            if (
+                                len(
+                                    self.logger_dict[subset][keyword][
+                                        self.current_task - 1
+                                    ][-1]["predictions"]
+                                )
+                                == 0
+                            ):
+                                del self.logger_dict[subset][keyword][
+                                    self.current_task - 1
+                                ][-1]
                         else:
-                            if len(self.logger_dict[subset][keyword][self.current_task - 1]) == 0:
-                                self.logger_dict[subset][keyword][self.current_task - 1].pop()
+                            if (
+                                len(
+                                    self.logger_dict[subset][keyword][
+                                        self.current_task - 1
+                                    ]
+                                )
+                                == 0
+                            ):
+                                self.logger_dict[subset][keyword][
+                                    self.current_task - 1
+                                ].pop()
 
                     self.logger_dict[subset][keyword].append([])
                 if keyword == "performance":
                     self.logger_dict[subset][keyword][self.current_task].append({})
-                    self.logger_dict[subset][keyword][self.current_task][self.current_epoch][
-                        "predictions"] = np.zeros(0)
-                    self.logger_dict[subset][keyword][self.current_task][self.current_epoch]["targets"] = np.zeros(0)
-                    self.logger_dict[subset][keyword][self.current_task][self.current_epoch]["task_ids"] = np.zeros(0)
+                    self.logger_dict[subset][keyword][self.current_task][
+                        self.current_epoch
+                    ]["predictions"] = np.zeros(0)
+                    self.logger_dict[subset][keyword][self.current_task][
+                        self.current_epoch
+                    ]["targets"] = np.zeros(0)
+                    self.logger_dict[subset][keyword][self.current_task][
+                        self.current_epoch
+                    ]["task_ids"] = np.zeros(0)
                 else:
                     self.logger_dict[subset][keyword][self.current_task].append([])
 
-                assert len(self.logger_dict[subset][keyword]) - 1 == self.current_task, \
-                    f"the current task index is {self.current_task} while there are" \
+                assert (
+                    len(self.logger_dict[subset][keyword]) - 1 == self.current_task
+                ), (
+                    f"the current task index is {self.current_task} while there are"
                     f" {len(self.logger_dict[subset][keyword]) - 1} past tasks, there is a mismatch"
-                assert len(self.logger_dict[subset][keyword][self.current_task]) - 1 == self.current_epoch, \
-                    f"the current epoch index is {self.current_epoch} while there are" \
+                )
+                assert (
+                    len(self.logger_dict[subset][keyword][self.current_task]) - 1
+                    == self.current_epoch
+                ), (
+                    f"the current epoch index is {self.current_epoch} while there are"
                     f" {len(self.logger_dict[subset][keyword][self.current_task]) - 1} past epoch, there is a mismatch"
+                )
 
     def print_state(self, keyword, subset):
 
@@ -170,9 +250,10 @@ class _BaseLogger(abc.ABC):
 
     def _save(self):
         import pickle as pkl
+
         filename = f"logger_dic_task_{self.current_task}.pkl"
         filename = os.path.join(self.root_log, filename)
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             pkl.dump(self.logger_dict, f, pkl.HIGHEST_PROTOCOL)
 
         # after saving values we remove them from dictionary to save space and memory

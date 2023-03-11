@@ -25,7 +25,7 @@ class Rotations(TransformationIncremental):
         list_degrees: Union[List[Tuple], List[int]],
         nb_tasks: Union[int, None] = None,
         base_transformations: List[Callable] = None,
-        shared_label_space=True
+        shared_label_space=True,
     ):
 
         if nb_tasks is not None and len(list_degrees) != nb_tasks:
@@ -40,7 +40,7 @@ class Rotations(TransformationIncremental):
             cl_dataset=cl_dataset,
             incremental_transformations=trsfs,
             base_transformations=base_transformations,
-            shared_label_space=shared_label_space
+            shared_label_space=shared_label_space,
         )
 
     def _generate_transformations(self, degrees):

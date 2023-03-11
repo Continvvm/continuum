@@ -19,10 +19,17 @@ class SUN397(_ContinuumDataset):
       J. Xiao, J. Hays, K. Ehinger, A. Oliva, and A. Torralba.
       CVPR 2010
     """
+
     images_url = "http://vision.princeton.edu/projects/2010/SUN/SUN397.tar.gz"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True, test_split: float = 0.2,
-                 random_seed=1):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed=1,
+    ):
         self.test_split = test_split
         self.random_seed = random_seed
         super().__init__(data_path, train, download)
@@ -36,14 +43,13 @@ class SUN397(_ContinuumDataset):
             archive_path = os.path.join(self.data_path, "SUN397.tar.gz")
 
             if not os.path.exists(archive_path):
-                print("Downloading images archive...", end=' ')
+                print("Downloading images archive...", end=" ")
                 download(self.images_url, self.data_path)
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             untar(archive_path)
-            print('Done!')
-
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         x, y = [], []
@@ -60,9 +66,7 @@ class SUN397(_ContinuumDataset):
         y = np.array(y)
 
         x_train, x_test, y_train, y_test = train_test_split(
-            x, y,
-            test_size=self.test_split,
-            random_state=self.random_seed
+            x, y, test_size=self.test_split, random_state=self.random_seed
         )
 
         if self.train:

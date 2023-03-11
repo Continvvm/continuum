@@ -28,7 +28,7 @@ class Permutations(TransformationIncremental):
         nb_tasks: Union[int, None] = None,
         base_transformations: List[Callable] = None,
         seed: Union[int, List[int]] = 0,
-        shared_label_space=True
+        shared_label_space=True,
     ):
         trsfs = self._generate_transformations(seed, nb_tasks)
 
@@ -36,15 +36,17 @@ class Permutations(TransformationIncremental):
             cl_dataset=cl_dataset,
             incremental_transformations=trsfs,
             base_transformations=base_transformations,
-            shared_label_space=shared_label_space
+            shared_label_space=shared_label_space,
         )
 
     def _generate_transformations(self, seed, nb_tasks):
         if isinstance(seed, int):
             if nb_tasks is None:
-                raise ValueError("You must specify a number of tasks if a single seed is provided.")
+                raise ValueError(
+                    "You must specify a number of tasks if a single seed is provided."
+                )
             rng = np.random.RandomState(seed=seed)
-            seed = rng.permutation(100000)[:nb_tasks - 1]
+            seed = rng.permutation(100000)[: nb_tasks - 1]
         elif nb_tasks is not None and nb_tasks != len(seed) + 1:
             warnings.warn(
                 f"Because a list of seed was provided {seed}, "
@@ -52,7 +54,9 @@ class Permutations(TransformationIncremental):
                 f"len(number of seeds) + 1 = {len(seed) + 1}"
             )
 
-        return [PermutationTransform(seed=None)] + [PermutationTransform(seed=int(s)) for s in seed]
+        return [PermutationTransform(seed=None)] + [
+            PermutationTransform(seed=int(s)) for s in seed
+        ]
 
     def get_task_transformation(self, task_index):
         return transforms.Compose(self.trsf.transforms + [self.inc_trsf[task_index]])

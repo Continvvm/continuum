@@ -14,12 +14,8 @@ class Omniglot(_ContinuumDataset):
 
 
     """
-    def __init__(
-        self,
-        data_path: str = "",
-        train: bool = True,
-        download: bool = True
-    ):
+
+    def __init__(self, data_path: str = "", train: bool = True, download: bool = True):
         super().__init__(
             data_path,
             train=train,
@@ -48,7 +44,7 @@ class Omniglot(_ContinuumDataset):
                     self.data_path,
                     "omniglot-py/images_background",
                     char_name,
-                    image_name
+                    image_name,
                 )
             )
             y.append(char_index)

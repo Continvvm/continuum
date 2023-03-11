@@ -9,7 +9,7 @@ import requests
 # Fix error when downloading dataset from torchvision
 # https://github.com/pytorch/vision/issues/1938#issuecomment-790730080
 opener = urllib.request.build_opener()
-opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+opener.addheaders = [("User-agent", "Mozilla/5.0")]
 urllib.request.install_opener(opener)
 
 
@@ -29,32 +29,32 @@ def download(url, path):
 
 def unzip(path):
     directory_path = os.path.dirname(path)
-    with zipfile.ZipFile(path, 'r') as zip_file:
+    with zipfile.ZipFile(path, "r") as zip_file:
         zip_file.extractall(directory_path)
 
 
 def untar(path):
     directory_path = os.path.dirname(path)
     with tarfile.open(path) as tar_file:
+
         def is_within_directory(directory, target):
-            
+
             abs_directory = os.path.abspath(directory)
             abs_target = os.path.abspath(target)
-        
+
             prefix = os.path.commonprefix([abs_directory, abs_target])
-            
+
             return prefix == abs_directory
-        
+
         def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-        
+
             for member in tar.getmembers():
                 member_path = os.path.join(path, member.name)
                 if not is_within_directory(path, member_path):
                     raise Exception("Attempted Path Traversal in Tar File")
-        
-            tar.extractall(path, members, numeric_owner=numeric_owner) 
-            
-        
+
+            tar.extractall(path, members, numeric_owner=numeric_owner)
+
         safe_extract(tar_file, directory_path)
 
 
@@ -64,22 +64,22 @@ def download_file_from_google_drive(id, destination):
 
     session = requests.Session()
 
-    response = session.get(URL, params = { 'id' : id }, stream = True)
+    response = session.get(URL, params={"id": id}, stream=True)
     token = None
     for key, value in response.cookies.items():
-        if key.startswith('download_warning'):
+        if key.startswith("download_warning"):
             token = value
             break
 
     if token:
-        params = { 'id' : id, 'confirm' : token }
-        response = session.get(URL, params = params, stream = True)
+        params = {"id": id, "confirm": token}
+        response = session.get(URL, params=params, stream=True)
 
     CHUNK_SIZE = 32768
 
     with open(destination, "wb") as f:
         for chunk in response.iter_content(CHUNK_SIZE):
-            if chunk: # filter out keep-alive new chunks
+            if chunk:  # filter out keep-alive new chunks
                 f.write(chunk)
 
 
@@ -97,7 +97,7 @@ class ProgressBar:
 
         percent = f"{int(100 * self.count / total_size)}"
         filled_length = int(100 * self.count // total_size)
-        pbar = "#" * filled_length + '-' * (100 - filled_length)
+        pbar = "#" * filled_length + "-" * (100 - filled_length)
 
         print("\r|%s| %s%%" % (pbar, percent), end="\r")
         if self.count == total_size:

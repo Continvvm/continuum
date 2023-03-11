@@ -23,14 +23,16 @@ class H5TaskSet(PathTaskSet):
     """
 
     def __init__(
-            self,
-            x: str,
-            y: np.ndarray,
-            t: np.ndarray,
-            trsf: Union[transforms.Compose, List[transforms.Compose]] = None,
-            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
-            bounding_boxes: Optional[np.ndarray] = None,
-            data_indexes: np.ndarray = None
+        self,
+        x: str,
+        y: np.ndarray,
+        t: np.ndarray,
+        trsf: Union[transforms.Compose, List[transforms.Compose]] = None,
+        target_trsf: Optional[
+            Union[transforms.Compose, List[transforms.Compose]]
+        ] = None,
+        bounding_boxes: Optional[np.ndarray] = None,
+        data_indexes: np.ndarray = None,
     ):
 
         self.h5_filename = x
@@ -45,28 +47,36 @@ class H5TaskSet(PathTaskSet):
         else:
             self.data_indexes = np.arange(len(y))
 
-        super().__init__(self.h5_filename, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes)
+        super().__init__(
+            self.h5_filename, y, t, trsf, target_trsf, bounding_boxes=bounding_boxes
+        )
         self.data_type = TaskType.H5
 
     def get_sample(self, index):
         # We need to remap index because the h5 contain data from all tasks
         # and not only the current task.
         remapped_index = self.data_indexes[index]
-        with h5py.File(self.h5_filename, 'r') as hf:
-            x = hf['x'][remapped_index]
+        with h5py.File(self.h5_filename, "r") as hf:
+            x = hf["x"][remapped_index]
         return x
 
     def _prepare_data(self, x, y, t):
-        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(x.shape) == 1:
+        if (isinstance(x, torch.Tensor) or isinstance(x, np.ndarray)) and len(
+            x.shape
+        ) == 1:
             x = torch.Tensor(x)
         else:
             x, y, t = super()._prepare_data(x, y, t)
         return x, y, t
 
     def concat(self, *task_sets):
-        raise NotImplementedError("taskset concatenation is not yet available for h5 task_sets")
+        raise NotImplementedError(
+            "taskset concatenation is not yet available for h5 task_sets"
+        )
 
-    def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
+    def add_samples(
+        self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None
+    ):
         # TODO
 
         raise NotImplementedError("add samples is not yet available for h5 task_sets")
@@ -82,8 +92,8 @@ class H5TaskSet(PathTaskSet):
             indexes = np.arange(len(self))
         else:
             remapped_index = self.data_indexes[indexes]
-        with h5py.File(self.h5_filename, 'r') as hf:
-            x = hf['x'][remapped_index]
+        with h5py.File(self.h5_filename, "r") as hf:
+            x = hf["x"][remapped_index]
         # not remapped indexes for y and t
         y = self._y[indexes]
         t = self._t[indexes]

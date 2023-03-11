@@ -21,8 +21,15 @@ class PACS(ImageFolderDataset):
       Li et al.
       ICCV 2017
     """
-    def __init__(self, data_path, train: bool = True, download: bool = True,
-                 test_split: float = 0.2, random_seed: int = 1):
+
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed: int = 1,
+    ):
         self._attributes = None
         self.test_split = test_split
         self.random_seed = random_seed
@@ -42,9 +49,9 @@ class PACS(ImageFolderDataset):
                     " https://drive.google.com/file/d/0B6x7gtvErXgfbF9CSk53UkRxVzg/view"
                 )
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             unzip(zip_path)
-            print('Done!')
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         domains = ["art_painting", "cartoon", "photo", "sketch"]
@@ -52,12 +59,12 @@ class PACS(ImageFolderDataset):
         full_x, full_y, full_t = [], [], []
 
         for domain_id, domain_name in enumerate(domains):
-            dataset = torchdata.ImageFolder(os.path.join(self.data_path, "kfold", domain_name))
+            dataset = torchdata.ImageFolder(
+                os.path.join(self.data_path, "kfold", domain_name)
+            )
             x, y, _ = self._format(dataset.imgs)
             x_train, x_test, y_train, y_test = train_test_split(
-                x, y,
-                test_size=self.test_split,
-                random_state=1
+                x, y, test_size=self.test_split, random_state=1
             )
 
             if self.train:

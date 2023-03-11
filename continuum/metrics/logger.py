@@ -4,23 +4,34 @@ import numpy as np
 
 from continuum.metrics.base_logger import _BaseLogger
 from continuum.metrics.utils import require_subset, cache
-from continuum.metrics.metrics import accuracy, \
-    get_model_size_growth, \
-    _get_R_ij, \
-    forgetting, \
-    accuracy_A, \
-    remembering, \
-    positive_backward_transfer, \
-    forward_transfer, \
-    backward_transfer
+from continuum.metrics.metrics import (
+    accuracy,
+    get_model_size_growth,
+    _get_R_ij,
+    forgetting,
+    accuracy_A,
+    remembering,
+    positive_backward_transfer,
+    forward_transfer,
+    backward_transfer,
+)
 
 
 class Logger(_BaseLogger):
-    def __init__(self, list_keywords=["performance"], list_subsets=["train", "test"], root_log=None):
-        super().__init__(root_log=root_log, list_keywords=list_keywords, list_subsets=list_subsets)
+    def __init__(
+        self,
+        list_keywords=["performance"],
+        list_subsets=["train", "test"],
+        root_log=None,
+    ):
+        super().__init__(
+            root_log=root_log, list_keywords=list_keywords, list_subsets=list_subsets
+        )
 
     def log(self):
-        print(f"Task id={self.nb_tasks}, acc={self.accuracy}, avg-acc={self.average_incremental_accuracy}")
+        print(
+            f"Task id={self.nb_tasks}, acc={self.accuracy}, avg-acc={self.average_incremental_accuracy}"
+        )
 
     @property
     def nb_tasks(self):
@@ -40,7 +51,9 @@ class Logger(_BaseLogger):
         last_epoch_targets = []
         last_epoch_task_ids = []
         for task_id in range(len(self.logger_dict[subset]["performance"])):
-            predictions = self.logger_dict[subset]["performance"][task_id][-1]["predictions"]
+            predictions = self.logger_dict[subset]["performance"][task_id][-1][
+                "predictions"
+            ]
             targets = self.logger_dict[subset]["performance"][task_id][-1]["targets"]
             task_id = self.logger_dict[subset]["performance"][task_id][-1]["task_ids"]
 
@@ -51,7 +64,9 @@ class Logger(_BaseLogger):
         return last_epoch_pred, last_epoch_targets, last_epoch_task_ids
 
     def _get_best_epochs_data(self, keyword, subset):
-        assert keyword != "performance", f"this method is not mode for performance keyword use _get_best_epochs_perf"
+        assert (
+            keyword != "performance"
+        ), f"this method is not mode for performance keyword use _get_best_epochs_perf"
         list_values = []
         for task_id in range(self.current_task):
             list_values.append(self.logger_dict[subset][keyword][task_id][-1])
@@ -84,8 +99,7 @@ class Logger(_BaseLogger):
     @require_subset("test")
     def accuracy(self):
         return accuracy(
-            self._get_last_predictions("test"),
-            self._get_last_targets("test")
+            self._get_last_predictions("test"), self._get_last_targets("test")
         )
 
     @property
@@ -93,7 +107,11 @@ class Logger(_BaseLogger):
     def accuracy_per_task(self):
         """Returns all task accuracy individually."""
         all_preds, all_targets, all_tasks = self._get_best_epochs(subset="test")
-        last_preds, last_targets, last_tasks = all_preds[-1], all_targets[-1], all_tasks[-1]
+        last_preds, last_targets, last_tasks = (
+            all_preds[-1],
+            all_targets[-1],
+            all_tasks[-1],
+        )
         correct_pred = last_preds == last_targets
 
         acc_per_task = []
@@ -102,7 +120,6 @@ class Logger(_BaseLogger):
             acc_per_task.append(correct_pred[indexes].mean())
 
         return acc_per_task
-
 
     @property
     @require_subset("train")
@@ -114,10 +131,20 @@ class Logger(_BaseLogger):
           Caccia et al. NeurIPS 2020
         """
         preds = np.concatenate(
-            [dict_epoch['predictions'] for dict_epoch in self.logger_dict["train"]["performance"][self.current_task]]
+            [
+                dict_epoch["predictions"]
+                for dict_epoch in self.logger_dict["train"]["performance"][
+                    self.current_task
+                ]
+            ]
         )
         targets = np.concatenate(
-            [dict_epoch['targets'] for dict_epoch in self.logger_dict["train"]["performance"][self.current_task]]
+            [
+                dict_epoch["targets"]
+                for dict_epoch in self.logger_dict["train"]["performance"][
+                    self.current_task
+                ]
+            ]
         )
         return accuracy(preds, targets)
 
@@ -131,10 +158,9 @@ class Logger(_BaseLogger):
           Rebuffi et al. CVPR 2017
         """
         all_preds, all_targets, _ = self._get_best_epochs(subset="test")
-        return statistics.mean([
-            accuracy(all_preds[t], all_targets[t])
-            for t in range(len(all_preds))
-        ])
+        return statistics.mean(
+            [accuracy(all_preds[t], all_targets[t]) for t in range(len(all_preds))]
+        )
 
     @property
     @require_subset("test")

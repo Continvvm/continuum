@@ -28,12 +28,8 @@ class ColoredMNIST(MNIST):
                        paper used 0.1, 0.2, and 0.9.
     :param kargs: Named parameters given to the MNIST dataset.
     """
-    def __init__(
-        self,
-        *args,
-        flip_color: float = 0.9,
-        **kwargs
-    ):
+
+    def __init__(self, *args, flip_color: float = 0.9, **kwargs):
         super().__init__(*args, **kwargs)
         self.flip_color = flip_color
 
@@ -45,21 +41,18 @@ class ColoredMNIST(MNIST):
         labels = (y < 5).astype(np.float32)
 
         # Flip label with probability 0.25
-        labels = self._xor(labels,
-                           self._bernoulli(0.25, len(labels)))
+        labels = self._xor(labels, self._bernoulli(0.25, len(labels)))
 
         # Assign a color based on the label; flip the color with probability e
-        colors = self._xor(
-            labels,
-            self._bernoulli(self.flip_color, len(labels))
-        )
+        colors = self._xor(labels, self._bernoulli(self.flip_color, len(labels)))
         images = np.stack([images, images], axis=1)
         # Apply the color to the image by zeroing out the other color channel
-        images[np.arange(len(images)), (
-            1 - colors).astype(np.int64), :, :] *= 0
+        images[np.arange(len(images)), (1 - colors).astype(np.int64), :, :] *= 0
 
         images = np.concatenate(
-            [images, np.zeros((images.shape[0], 1, images.shape[2], images.shape[3]))], axis=1)
+            [images, np.zeros((images.shape[0], 1, images.shape[2], images.shape[3]))],
+            axis=1,
+        )
 
         images = images.transpose(0, 2, 3, 1)
         return images, labels.astype(np.int64), t

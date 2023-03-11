@@ -3,7 +3,11 @@ import warnings
 
 import numpy as np
 
-from continuum.rehearsal import herd_random, herd_closest_to_cluster, herd_closest_to_barycenter
+from continuum.rehearsal import (
+    herd_random,
+    herd_closest_to_cluster,
+    herd_closest_to_barycenter,
+)
 from continuum import utils
 
 
@@ -24,12 +28,13 @@ class RehearsalMemory:
     :param nb_total_classes: In case of fixed memory, precise the total amount of
                              classes that will be seen.
     """
+
     def __init__(
         self,
         memory_size: int,
         herding_method: Union[str, Callable],
         fixed_memory: bool = False,
-        nb_total_classes: Union[None, int] = None
+        nb_total_classes: Union[None, int] = None,
     ):
         if isinstance(herding_method, str):
             if herding_method == "random":
@@ -47,8 +52,8 @@ class RehearsalMemory:
             pass
         else:
             raise NotImplementedError(
-               f"Unknown rehearsal method {herding_method}, "
-               f"Either provide its string name or a callable."
+                f"Unknown rehearsal method {herding_method}, "
+                f"Either provide its string name or a callable."
             )
 
         if fixed_memory and nb_total_classes is None:
@@ -80,10 +85,7 @@ class RehearsalMemory:
 
     def save(self, path: str = "memory.npz"):
         """Save memory on disk in a single file."""
-        np.savez(
-            path,
-            x=self._x, y=self._y, t=self._t
-        )
+        np.savez(path, x=self._x, y=self._y, t=self._t)
 
     def load(self, path: str = "memory.npz"):
         """Load memory on disk from a single file.
@@ -108,7 +110,7 @@ class RehearsalMemory:
         keep_classes: Optional[List[int]] = None,
         discard_classes: Optional[List[int]] = None,
         keep_tasks: Optional[List[int]] = None,
-        discard_tasks: Optional[List[int]] = None
+        discard_tasks: Optional[List[int]] = None,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Slice memory to keep/discard some classes/task-ids.
 
@@ -126,9 +128,7 @@ class RehearsalMemory:
         x, y, t = self.get()
 
         indexes = utils._slice(
-            y, t,
-            keep_classes, discard_classes,
-            keep_tasks, discard_tasks
+            y, t, keep_classes, discard_classes, keep_tasks, discard_tasks
         )
 
         new_x, new_y, new_t = x[indexes], y[indexes], t[indexes]
@@ -151,21 +151,15 @@ class RehearsalMemory:
         x, y, t = [], [], []
         for class_id in np.unique(self._y):
             indexes = np.where(self._y == class_id)[0]
-            x.append(self._x[indexes[:self.memory_per_class]])
-            y.append(self._y[indexes[:self.memory_per_class]])
-            t.append(self._t[indexes[:self.memory_per_class]])
+            x.append(self._x[indexes[: self.memory_per_class]])
+            y.append(self._y[indexes[: self.memory_per_class]])
+            t.append(self._t[indexes[: self.memory_per_class]])
 
         self._x = np.concatenate(x)
         self._y = np.concatenate(y)
         self._t = np.concatenate(t)
 
-    def add(
-        self,
-        x: np.ndarray,
-        y: np.ndarray,
-        t: np.ndarray,
-        z: Any
-    ) -> None:
+    def add(self, x: np.ndarray, y: np.ndarray, t: np.ndarray, z: Any) -> None:
         """Add new classes to the memory.
 
         :param x: Input data (images, paths, etc.)
@@ -176,7 +170,9 @@ class RehearsalMemory:
         for c in np.unique(y):
             self.seen_classes.add(c)
 
-        mem_x, mem_y, mem_t = self.herding_method(x, y, t, z, nb_per_class=self.memory_per_class)
+        mem_x, mem_y, mem_t = self.herding_method(
+            x, y, t, z, nb_per_class=self.memory_per_class
+        )
 
         if self._x is None:
             self._x, self._y, self._t = mem_x, mem_y, mem_t

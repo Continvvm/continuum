@@ -12,7 +12,9 @@ from continuum.tasks.base import BaseTaskSet, TaskType
 from continuum.tasks.task_set import TaskSet
 
 
-def get_balanced_sampler(taskset, log=False, num_samples=None, replacement=True, generator=None):
+def get_balanced_sampler(
+    taskset, log=False, num_samples=None, replacement=True, generator=None
+):
     """Create a sampler that will balance the dataset.
 
     You should give the returned sampler to the dataloader with the argument `sampler`.
@@ -25,10 +27,13 @@ def get_balanced_sampler(taskset, log=False, num_samples=None, replacement=True,
     :param generator: Optional pytorch generator to control the pseudo-randomness.
     :return: A PyTorch sampler.
     """
-    if taskset.data_type in (TaskType.SEGMENTATION, TaskType.OBJ_DETECTION, TaskType.TEXT):
+    if taskset.data_type in (
+        TaskType.SEGMENTATION,
+        TaskType.OBJ_DETECTION,
+        TaskType.TEXT,
+    ):
         raise NotImplementedError(
-            "Samplers are not yet available for the "
-            f"{taskset.data_type} type."
+            "Samplers are not yet available for the " f"{taskset.data_type} type."
         )
 
     y = taskset.get_raw_samples()[1]
@@ -36,7 +41,9 @@ def get_balanced_sampler(taskset, log=False, num_samples=None, replacement=True,
     weights_per_class = 1 / nb_per_class
     if log:
         weights_per_class = np.log(weights_per_class)
-        weights_per_class = np.clip(1 - (weights_per_class / np.sum(weights_per_class)), a_min=0.1, a_max=None)
+        weights_per_class = np.clip(
+            1 - (weights_per_class / np.sum(weights_per_class)), a_min=0.1, a_max=None
+        )
 
     weights = weights_per_class[y]
 
@@ -44,11 +51,13 @@ def get_balanced_sampler(taskset, log=False, num_samples=None, replacement=True,
         weights,
         num_samples=num_samples or len(taskset),
         replacement=replacement,
-        generator=generator
+        generator=generator,
     )
 
 
-def split_train_val(dataset: BaseTaskSet, val_split: float = 0.1) -> Tuple[BaseTaskSet, BaseTaskSet]:
+def split_train_val(
+    dataset: BaseTaskSet, val_split: float = 0.1
+) -> Tuple[BaseTaskSet, BaseTaskSet]:
     """Split train dataset into two datasets, one for training and one for validation.
 
     :param dataset: A torch dataset, with .x and .y attributes.
@@ -59,8 +68,8 @@ def split_train_val(dataset: BaseTaskSet, val_split: float = 0.1) -> Tuple[BaseT
     indexes = np.arange(len(dataset))
     random_state.shuffle(indexes)
 
-    train_indexes = indexes[int(val_split * len(indexes)):]
-    val_indexes = indexes[:int(val_split * len(indexes))]
+    train_indexes = indexes[int(val_split * len(indexes)) :]
+    val_indexes = indexes[: int(val_split * len(indexes))]
 
     if dataset.data_type != TaskType.H5:
         x_train, y_train, t_train = dataset.get_raw_samples(train_indexes)
@@ -81,14 +90,22 @@ def split_train_val(dataset: BaseTaskSet, val_split: float = 0.1) -> Tuple[BaseT
         x_train = dataset.h5_filename
         x_val = dataset.h5_filename
 
-    train_dataset = TaskSet(x_train, y_train, t_train,
-                            trsf=dataset.trsf,
-                            data_type=dataset.data_type,
-                            data_indexes=idx_train)
-    val_dataset = TaskSet(x_val, y_val, t_val,
-                          trsf=dataset.trsf,
-                          data_type=dataset.data_type,
-                          data_indexes=idx_val)
+    train_dataset = TaskSet(
+        x_train,
+        y_train,
+        t_train,
+        trsf=dataset.trsf,
+        data_type=dataset.data_type,
+        data_indexes=idx_train,
+    )
+    val_dataset = TaskSet(
+        x_val,
+        y_val,
+        t_val,
+        trsf=dataset.trsf,
+        data_type=dataset.data_type,
+        data_indexes=idx_val,
+    )
 
     return train_dataset, val_dataset
 
@@ -107,9 +124,7 @@ def concat(task_sets: List[BaseTaskSet]) -> BaseTaskSet:
 
     for task_set in task_sets:
         if task_set.data_type != data_type:
-            raise Exception(
-                f"Invalid data type {task_set.data_type} != {data_type}"
-            )
+            raise Exception(f"Invalid data type {task_set.data_type} != {data_type}")
 
         x.append(task_set._x)
         y.append(task_set._y)
@@ -120,5 +135,5 @@ def concat(task_sets: List[BaseTaskSet]) -> BaseTaskSet:
         np.concatenate(y),
         np.concatenate(t),
         trsf=task_sets[0].trsf,
-        data_type=data_type
+        data_type=data_type,
     )

@@ -43,11 +43,17 @@ class FER2013(_ContinuumDataset):
             next(f)  # skip header
             for line in f:
                 emotion, pixels, training = line.strip().split(",")
-                if (self.train and training != "training") or (not self.train and training == "training"):
+                if (self.train and training != "training") or (
+                    not self.train and training == "training"
+                ):
                     continue
 
                 y.append(int(emotion))
-                pixels = np.array(list(map(int, pixels.split(" ")))).reshape(48, 48).astype(np.uint8)
+                pixels = (
+                    np.array(list(map(int, pixels.split(" "))))
+                    .reshape(48, 48)
+                    .astype(np.uint8)
+                )
                 x.append(pixels)
 
         x = np.stack(x)

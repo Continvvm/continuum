@@ -4,14 +4,13 @@ from typing import Optional, List
 import numpy as np
 
 
-
 def _slice(
     y: np.ndarray,
     t: Optional[np.ndarray],
     keep_classes: Optional[List[int]] = None,
     discard_classes: Optional[List[int]] = None,
     keep_tasks: Optional[List[int]] = None,
-    discard_tasks: Optional[List[int]] = None
+    discard_tasks: Optional[List[int]] = None,
 ):
     """Slice dataset to keep/discard some classes/task-ids.
 

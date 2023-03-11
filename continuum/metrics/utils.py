@@ -1,5 +1,3 @@
-
-
 def require_subset(subset):
     def wrapper1(func):
         def wrapper2(self):
@@ -9,7 +7,9 @@ def require_subset(subset):
                     f"{func.__name__} rely on!"
                 )
             return func(self)
+
         return wrapper2
+
     return wrapper1
 
 
@@ -21,4 +21,5 @@ def cache(func):
             v = func(self)
             self.__dict__[name] = v
         return v
+
     return wrapper

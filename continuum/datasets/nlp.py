@@ -33,7 +33,9 @@ class MultiNLI(_ContinuumDataset):
 
     data_url = "https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip"
 
-    def __init__(self, data_path: str = "", train: bool = True, download: bool = True) -> None:
+    def __init__(
+        self, data_path: str = "", train: bool = True, download: bool = True
+    ) -> None:
         super().__init__(data_path=data_path, train=train, download=download)
 
     def _download(self):
@@ -84,11 +86,13 @@ class MultiNLI(_ContinuumDataset):
             "letters",
             "nineeleven",
             "oup",
-            "verbatim"  # /test
+            "verbatim",  # /test
         ]
 
         if self.train:
-            json_path = os.path.join(self.data_path, "multinli_1.0", "multinli_1.0_train.jsonl")
+            json_path = os.path.join(
+                self.data_path, "multinli_1.0", "multinli_1.0_train.jsonl"
+            )
         else:
             json_path = os.path.join(
                 self.data_path, "multinli_1.0", "multinli_1.0_dev_mismatched.jsonl"

@@ -29,6 +29,7 @@ class CTRL(_ContinuumDataset):
     :param class_subsets: A subset of classes to sample from the i-th dataset.
     :param seed: A random seed for reproducibility.
     """
+
     def __init__(
         self,
         datasets: List[_ContinuumDataset],
@@ -37,7 +38,7 @@ class CTRL(_ContinuumDataset):
         proportions: Union[None, List[int], List[float]] = None,
         class_counter: Union[None, List[int]] = None,
         class_subsets: Union[None, List[int]] = None,
-        seed: int = 1
+        seed: int = 1,
     ):
         class_counter = class_counter or [0 for _ in range(len(datasets))]
         class_subsets = class_subsets or [None for _ in range(len(datasets))]
@@ -74,7 +75,9 @@ class CTRL(_ContinuumDataset):
                 indexes = np.where(np.isin(y, self.class_subsets[i]))[0]
                 x, y = x[indexes], y[indexes]
             if self.split in ("train", "val") and self.proportions[i]:
-                indexes = self.balanced_sampling(y, self.proportions[i], self.seed, self.split)
+                indexes = self.balanced_sampling(
+                    y, self.proportions[i], self.seed, self.split
+                )
                 x, y = x[indexes], y[indexes]
             if x.dtype == "S255":  # String paths
                 x = self.open_and_resize(x, self.target_size)
@@ -95,7 +98,7 @@ class CTRL(_ContinuumDataset):
     def open_and_resize(self, paths: np.ndarray, size: Tuple[int, int]):
         x = np.zeros((len(paths), *size, 3), dtype=np.uint8)
         for i, path in enumerate(paths):
-            img = Image.open(path).convert('RGB').resize(size)
+            img = Image.open(path).convert("RGB").resize(size)
             x[i] = np.array(img).astype(np.uint8)
         return x
 
@@ -105,7 +108,9 @@ class CTRL(_ContinuumDataset):
             new_arrays[i] = resize(arr, size, preserve_range=True).astype(np.uint8)
         return new_arrays
 
-    def balanced_sampling(self, y: np.ndarray, amount: Union[float, int], seed: int, split: str = "train"):
+    def balanced_sampling(
+        self, y: np.ndarray, amount: Union[float, int], seed: int, split: str = "train"
+    ):
         """Samples a certain amount of data equally per class."""
         if isinstance(amount, float):
             amount = int(len(y) * amount)
@@ -132,9 +137,14 @@ class CTRL(_ContinuumDataset):
         return np.concatenate(indexes)
 
 
-
 class CTRLminus(CTRL):  # S^-
-    def __init__(self, data_path: str = "", split: str = "train", download: bool = True, seed: int = 1):
+    def __init__(
+        self,
+        data_path: str = "",
+        split: str = "train",
+        download: bool = True,
+        seed: int = 1,
+    ):
         if split not in ("train", "val", "test"):
             raise ValueError(f"Split must be train, val, or test; not {split}.")
         train = split in ("train", "val")
@@ -145,7 +155,7 @@ class CTRLminus(CTRL):  # S^-
             DTD(data_path=data_path, train=train, download=download),
             FashionMNIST(data_path=data_path, train=train, download=download),
             SVHN(data_path=data_path, train=train, download=download),
-            CIFAR10(data_path=data_path, train=train, download=download)
+            CIFAR10(data_path=data_path, train=train, download=download),
         ]
 
         if split == "train":
@@ -160,12 +170,18 @@ class CTRLminus(CTRL):  # S^-
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 0],
             seed=seed,
-            split=split
+            split=split,
         )
 
 
 class CTRLplus(CTRL):  # S^+
-    def __init__(self, data_path: str = "", split: str = "train", download: bool = True, seed: int = 1):
+    def __init__(
+        self,
+        data_path: str = "",
+        split: str = "train",
+        download: bool = True,
+        seed: int = 1,
+    ):
         if split not in ("train", "val", "test"):
             raise ValueError(f"Split must be train, val, or test; not {split}.")
         train = split in ("train", "val")
@@ -176,7 +192,7 @@ class CTRLplus(CTRL):  # S^+
             DTD(data_path=data_path, train=train, download=download),
             FashionMNIST(data_path=data_path, train=train, download=download),
             SVHN(data_path=data_path, train=train, download=download),
-            CIFAR10(data_path=data_path, train=train, download=download)
+            CIFAR10(data_path=data_path, train=train, download=download),
         ]
 
         if split == "train":
@@ -191,24 +207,36 @@ class CTRLplus(CTRL):  # S^+
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 0],
             seed=seed,
-            split=split
+            split=split,
         )
 
 
 class CTRLin(CTRL):  # S^{in}
-    def __init__(self, data_path: str = "", split: str = "train", download: bool = True, seed: int = 1):
+    def __init__(
+        self,
+        data_path: str = "",
+        split: str = "train",
+        download: bool = True,
+        seed: int = 1,
+    ):
         if split not in ("train", "val", "test"):
             raise ValueError(f"Split must be train, val, or test; not {split}.")
         train = split in ("train", "val")
 
-        color1, color2 = np.random.RandomState(seed=seed).choice(["red", "blue", "green"], 2)
+        color1, color2 = np.random.RandomState(seed=seed).choice(
+            ["red", "blue", "green"], 2
+        )
         datasets = [
-            RainbowMNIST(data_path=data_path, train=train, download=download, color=color1),
+            RainbowMNIST(
+                data_path=data_path, train=train, download=download, color=color1
+            ),
             CIFAR10(data_path=data_path, train=train, download=download),
             DTD(data_path=data_path, train=train, download=download),
             FashionMNIST(data_path=data_path, train=train, download=download),
             SVHN(data_path=data_path, train=train, download=download),
-            RainbowMNIST(data_path=data_path, train=train, download=download, color=color2)
+            RainbowMNIST(
+                data_path=data_path, train=train, download=download, color=color2
+            ),
         ]
 
         if split == "train":
@@ -223,12 +251,18 @@ class CTRLin(CTRL):  # S^{in}
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 0],
             seed=seed,
-            split=split
+            split=split,
         )
 
 
 class CTRLout(CTRL):  # S^{out}
-    def __init__(self, data_path: str = "", split: str = "train", download: bool = True, seed: int = 1):
+    def __init__(
+        self,
+        data_path: str = "",
+        split: str = "train",
+        download: bool = True,
+        seed: int = 1,
+    ):
         if split not in ("train", "val", "test"):
             raise ValueError(f"Split must be train, val, or test; not {split}.")
         train = split in ("train", "val")
@@ -239,7 +273,7 @@ class CTRLout(CTRL):  # S^{out}
             DTD(data_path=data_path, train=train, download=download),
             FashionMNIST(data_path=data_path, train=train, download=download),
             SVHN(data_path=data_path, train=train, download=download),
-            CIFAR10(data_path=data_path, train=train, download=download)
+            CIFAR10(data_path=data_path, train=train, download=download),
         ]
 
         if split == "train":
@@ -254,12 +288,18 @@ class CTRLout(CTRL):  # S^{out}
             proportions=proportions,
             class_counter=[0, 10, 20, 67, 77, 87],
             seed=seed,
-            split=split
+            split=split,
         )
 
 
 class CTRLplastic(CTRL):  # S^{pl}
-    def __init__(self, data_path: str = "", split: str = "train", download: bool = True, seed: int = 1):
+    def __init__(
+        self,
+        data_path: str = "",
+        split: str = "train",
+        download: bool = True,
+        seed: int = 1,
+    ):
         if split not in ("train", "val", "test"):
             raise ValueError(f"Split must be train, val, or test; not {split}.")
         train = split in ("train", "val")
@@ -269,7 +309,7 @@ class CTRLplastic(CTRL):  # S^{pl}
             DTD(data_path=data_path, train=train, download=download),
             FashionMNIST(data_path=data_path, train=train, download=download),
             SVHN(data_path=data_path, train=train, download=download),
-            CIFAR10(data_path=data_path, train=train, download=download)
+            CIFAR10(data_path=data_path, train=train, download=download),
         ]
 
         if split == "train":
@@ -284,7 +324,7 @@ class CTRLplastic(CTRL):  # S^{pl}
             proportions=proportions,
             class_counter=[0, 10, 57, 67, 77],
             seed=seed,
-            split=split
+            split=split,
         )
 
 

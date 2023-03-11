@@ -10,6 +10,7 @@ from torchvision import transforms
 
 class TaskType(enum.Enum):
     """Enumeration to list all possible data types supported."""
+
     IMAGE_ARRAY = 1
     IMAGE_PATH = 2
     TEXT = 3
@@ -38,13 +39,15 @@ class BaseTaskSet(TorchDataset):
     """
 
     def __init__(
-            self,
-            x: np.ndarray,
-            y: np.ndarray,
-            t: np.ndarray,
-            trsf: Union[transforms.Compose, List[transforms.Compose]],
-            target_trsf: Optional[Union[transforms.Compose, List[transforms.Compose]]] = None,
-            bounding_boxes: Optional[np.ndarray] = None
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        t: np.ndarray,
+        trsf: Union[transforms.Compose, List[transforms.Compose]],
+        target_trsf: Optional[
+            Union[transforms.Compose, List[transforms.Compose]]
+        ] = None,
+        bounding_boxes: Optional[np.ndarray] = None,
     ):
         self._x, self._y, self._t = x, y, t
 
@@ -94,7 +97,9 @@ class BaseTaskSet(TorchDataset):
 
             self.add_samples(task_set._x, task_set._y, task_set._t)
 
-    def add_samples(self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None):
+    def add_samples(
+        self, x: np.ndarray, y: np.ndarray, t: Union[None, np.ndarray] = None
+    ):
         """Add memory for rehearsal.
 
         :param x: Sampled data chosen for rehearsal.
@@ -110,11 +115,11 @@ class BaseTaskSet(TorchDataset):
             self._t = np.concatenate((self._t, -1 * np.ones(len(x))))
 
     def plot(
-            self,
-            path: Union[str, None] = None,
-            title: str = "",
-            nb_samples: int = 100,
-            shape: Optional[Tuple[int, int]] = None,
+        self,
+        path: Union[str, None] = None,
+        title: str = "",
+        nb_samples: int = 100,
+        shape: Optional[Tuple[int, int]] = None,
     ) -> None:
         """Plot samples of the current task, useful to check if everything is ok.
 
@@ -144,7 +149,11 @@ class BaseTaskSet(TorchDataset):
             targets.append(y)
             tasks.append(t)
 
-        return _tensorize_list(samples), _tensorize_list(targets), _tensorize_list(tasks)
+        return (
+            _tensorize_list(samples),
+            _tensorize_list(targets),
+            _tensorize_list(tasks),
+        )
 
     def get_raw_samples(self, indexes=None):
         """Get samples without preprocessing, for split train/val for example."""

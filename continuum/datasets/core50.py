@@ -27,13 +27,13 @@ class Core50(_ContinuumDataset):
     train_ids_url = "https://vlomonaco.github.io/core50/data/core50_train.csv"
 
     def __init__(
-            self,
-            data_path: str,
-            train: bool = True,
-            train_image_ids: Union[str, Iterable[str], None] = None,
-            scenario: str = "classes",
-            download: bool = True,
-            classification: str = "object"
+        self,
+        data_path: str,
+        train: bool = True,
+        train_image_ids: Union[str, Iterable[str], None] = None,
+        scenario: str = "classes",
+        download: bool = True,
+        classification: str = "object",
     ):
         assert scenario in ["classes", "domains", "objects"]
         assert classification in ["object", "category"]
@@ -113,7 +113,9 @@ class Core50(_ContinuumDataset):
         domain_counter = 0
         for domain_id in range(11):
             # We walk through the 11 available domains.
-            domain_folder = os.path.join(self.data_path, "core50_128x128", f"s{domain_id + 1}")
+            domain_folder = os.path.join(
+                self.data_path, "core50_128x128", f"s{domain_id + 1}"
+            )
 
             has_images = False
             for object_id in range(50):
@@ -124,9 +126,10 @@ class Core50(_ContinuumDataset):
                     image_id = path.split(".")[0]
 
                     if (
-                            (self.train and image_id not in self.train_image_ids) or  # type: ignore
-                            (not self.train and image_id in self.train_image_ids)  # type: ignore
-                    ):
+                        self.train and image_id not in self.train_image_ids
+                    ) or (  # type: ignore
+                        not self.train and image_id in self.train_image_ids
+                    ):  # type: ignore
                         continue
 
                     x.append(os.path.join(object_folder, path))
@@ -169,7 +172,9 @@ class Core50v2_79(_ContinuumDataset):
     def data_type(self) -> TaskType:
         return TaskType.IMAGE_PATH
 
-    def __init__(self, data_path: str, train: bool = True, download: bool = True, run_id: int = 0):
+    def __init__(
+        self, data_path: str, train: bool = True, download: bool = True, run_id: int = 0
+    ):
         if run_id > 9 or run_id < 0:
             raise ValueError(
                 "CORe50 v2 only provides split for 10 runs (ids 0 to 9),"
@@ -201,7 +206,10 @@ class Core50v2_79(_ContinuumDataset):
 
     def _test_init(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         text_file = os.path.join(
-            self.data_path, f"NIC_v2_{self.nb_tasks}", f"run{self.run_id}", "test_filelist.txt"
+            self.data_path,
+            f"NIC_v2_{self.nb_tasks}",
+            f"run{self.run_id}",
+            "test_filelist.txt",
         )
         paths, targets = self._read_txt(text_file)
 
@@ -209,8 +217,10 @@ class Core50v2_79(_ContinuumDataset):
 
     def _train_init(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         template = os.path.join(
-            self.data_path, f"NIC_v2_{self.nb_tasks}", f"run{self.run_id}",
-            "train_batch_{}_filelist.txt"
+            self.data_path,
+            f"NIC_v2_{self.nb_tasks}",
+            f"run{self.run_id}",
+            "train_batch_{}_filelist.txt",
         )
 
         paths, targets, tasks = [], [], []

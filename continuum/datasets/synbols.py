@@ -12,19 +12,20 @@ import h5py
 from continuum.datasets.base import InMemoryDataset
 
 
-
 class Synbols(InMemoryDataset):
-    categorical_attributes = ['char', 'font', 'alphabet', 'is_bold', 'is_slant']
-    continuous_attributes = ['rotation', 'translation.x', 'translation.y', 'scale']
+    categorical_attributes = ["char", "font", "alphabet", "is_bold", "is_slant"]
+    continuous_attributes = ["rotation", "translation.x", "translation.y", "scale"]
+
     def __init__(
-            self,
-            data_path: str,
-            task_type: str = "char",
-            domain_incremental_task: str = None,
-            domain_increments: int = None,
-            train: bool = True,
-            dataset_name: str = "default_n=100000_2020-Oct-19.h5py",
-            download: bool = True):
+        self,
+        data_path: str,
+        task_type: str = "char",
+        domain_incremental_task: str = None,
+        domain_increments: int = None,
+        train: bool = True,
+        dataset_name: str = "default_n=100000_2020-Oct-19.h5py",
+        download: bool = True,
+    ):
         """Wraps Synbols in a Continuum dataset for compatibility with Sequoia
 
         Args:
@@ -36,22 +37,34 @@ class Synbols(InMemoryDataset):
             dataset_name (str): See https://github.com/ElementAI/synbols-resources/raw/master/datasets/generated/',
             download (bool): Whether to download the dataset
         """
-        assert(domain_incremental_task is None and domain_increments is None or \
-            domain_incremental_task is not None and domain_increments is not None)
+        assert (
+            domain_incremental_task is None
+            and domain_increments is None
+            or domain_incremental_task is not None
+            and domain_increments is not None
+        )
 
         if download:  # done here in order to pass x and y to super
-            full_path = get_data_path_or_download("default_n=100000_2020-Oct-19.h5py",
-                                                  data_root=data_path)
+            full_path = get_data_path_or_download(
+                "default_n=100000_2020-Oct-19.h5py", data_root=data_path
+            )
         else:
             full_path = os.path.join(data_path, dataset_name)
 
-        data = SynbolsHDF5(full_path,
-                           task_type,
-                           domain_incremental_task=domain_incremental_task,
-                           mask='random',
-                           trim_size=None,
-                           raw_labels=False)
-        data = SynbolsSplit(data, 'train' if train else 'val', domain_incremental_task, domain_increments)
+        data = SynbolsHDF5(
+            full_path,
+            task_type,
+            domain_incremental_task=domain_incremental_task,
+            mask="random",
+            trim_size=None,
+            raw_labels=False,
+        )
+        data = SynbolsSplit(
+            data,
+            "train" if train else "val",
+            domain_incremental_task,
+            domain_increments,
+        )
 
         super().__init__(data.x, data.y, data.task_id, train=train, download=download)
 
@@ -60,13 +73,14 @@ def _read_json_key(args):
     string, key = args
     return json.loads(string)[key]
 
+
 def process_task(task, fields):
     data = json.loads(task)
     ret = []
     for field in fields:
-        if '.x' in field:
+        if ".x" in field:
             ret.append(data[field[:-2]][0])
-        elif '.y' in field:
+        elif ".y" in field:
             ret.append(data[field[:-2]][1])
         else:
             ret.append(data[field])
@@ -76,7 +90,17 @@ def process_task(task, fields):
 class SynbolsHDF5:
     """HDF5 Backend Class"""
 
-    def __init__(self, path, task, domain_incremental_task=None, ratios=[0.6, 0.2, 0.2], mask=None, trim_size=None, raw_labels=False, reference_mask=None):
+    def __init__(
+        self,
+        path,
+        task,
+        domain_incremental_task=None,
+        ratios=[0.6, 0.2, 0.2],
+        mask=None,
+        trim_size=None,
+        raw_labels=False,
+        reference_mask=None,
+    ):
         """Constructor: loads data and parses labels.
 
         Args:
@@ -98,9 +122,9 @@ class SynbolsHDF5:
         self.domain_incremental_task = domain_incremental_task
         self.ratios = ratios
         print("Loading hdf5...")
-        with h5py.File(path, 'r') as data:
-            self.x = data['x'][...]
-            y = data['y'][...]
+        with h5py.File(path, "r") as data:
+            self.x = data["x"][...]
+            y = data["y"][...]
             print("Converting json strings to labels...")
             parse_fields = [self.task]
             if self.domain_incremental_task is not None:
@@ -128,7 +152,9 @@ class SynbolsHDF5:
 
 
 class SynbolsSplit(Dataset):
-    def __init__(self, dataset, split, domain_incremental_task, domain_increments, transform=None):
+    def __init__(
+        self, dataset, split, domain_incremental_task, domain_increments, transform=None
+    ):
         """Given a Backend (dataset), it splits the data in train, val, and test.
 
 
@@ -154,17 +180,19 @@ class SynbolsSplit(Dataset):
             self.transform = lambda x: x
         else:
             self.transform = transform
-        self.split_data(dataset.x, dataset.y, dataset.mask, dataset.ratios, dataset.domain_y)
+        self.split_data(
+            dataset.x, dataset.y, dataset.mask, dataset.ratios, dataset.domain_y
+        )
 
     def split_data(self, x, y, mask, ratios, domain_y, rng=np.random.RandomState(42)):
         if mask is None:
-            if self.split == 'train':
+            if self.split == "train":
                 start = 0
                 end = int(ratios[0] * len(x))
-            elif self.split == 'val':
+            elif self.split == "val":
                 start = int(ratios[0] * len(x))
                 end = int((ratios[0] + ratios[1]) * len(x))
-            elif self.split == 'test':
+            elif self.split == "test":
                 start = int((ratios[0] + ratios[1]) * len(x))
                 end = len(x)
             indices = rng.permutation(len(x))
@@ -185,23 +213,39 @@ class SynbolsSplit(Dataset):
             if self.domain_incremental_task in Synbols.categorical_attributes:
                 self.domains = list(sorted(set(domain_y)))
                 self.tasks_per_domain = len(self.domains) // self.domain_increments
-                self.domain_labels = list(range(self.domain_increments)) * self.tasks_per_domain + list(range(self.domain_increments))[:(len(self.domains) % self.domain_increments)]
+                self.domain_labels = (
+                    list(range(self.domain_increments)) * self.tasks_per_domain
+                    + list(range(self.domain_increments))[
+                        : (len(self.domains) % self.domain_increments)
+                    ]
+                )
                 self.task_id = domain_y[indices]
-                self.task_id = np.array([self.domain_labels[self.domains.index(d_y)] for d_y in self.task_id])
+                self.task_id = np.array(
+                    [
+                        self.domain_labels[self.domains.index(d_y)]
+                        for d_y in self.task_id
+                    ]
+                )
             elif self.domain_incremental_task in Synbols.continuous_attributes:
-                self.domains = np.linspace(domain_y.min(), domain_y.max() + 1e-4, self.domain_increments + 1)
+                self.domains = np.linspace(
+                    domain_y.min(), domain_y.max() + 1e-4, self.domain_increments + 1
+                )
                 domain_y = domain_y[indices]
                 self.task_id = np.zeros(len(domain_y), dtype=int)
                 for i in range(1, self.domain_increments):
-                    self.task_id[(domain_y >= self.domains[i - 1]) & (domain_y < self.domains[i])] = i
+                    self.task_id[
+                        (domain_y >= self.domains[i - 1]) & (domain_y < self.domains[i])
+                    ] = i
             else:
                 raise ValueError("Domain attribute not found")
 
             if len(set(self.task_id)) != self.domain_increments:
-                raise RuntimeError("""The number of tasks differs from the number of domain increments.
+                raise RuntimeError(
+                    """The number of tasks differs from the number of domain increments.
                                         This could happen if the number of domains in the dataset is less than
                                         the requested number of increments. For instance, requesting 2000
-                                        font increments for a dataset with 1500 fonts will result in failure""")
+                                        font increments for a dataset with 1500 fonts will result in failure"""
+                )
         else:
             self.task_id = None
 
@@ -229,7 +273,7 @@ def get_data_path_or_download(dataset, data_root):
     Returns:
         str: dataset final path
     """
-    url = 'https://zenodo.org/record/4701316/files/%s?download=1' % dataset
+    url = "https://zenodo.org/record/4701316/files/%s?download=1" % dataset
     if data_root == "":
         data_root = os.environ.get("TMPDIR", "/tmp")
     full_path = os.path.join(data_root, dataset)
@@ -263,21 +307,14 @@ def get_data_path_or_download(dataset, data_root):
         parts = [url]
 
     if not os.path.isfile(full_path):
-        with open(full_path, 'wb') as file:
+        with open(full_path, "wb") as file:
             for i, part in enumerate(parts):
                 print("Downloading part %d/%d" % (i + 1, len(parts)))
 
                 # Streaming, so we can iterate over the response.
                 response = requests.get(part, stream=True)
-                total_size_in_bytes = int(
-                    response.headers.get('content-length', 0))
                 block_size = 1024  # 1 Kilobyte
-                # progress_bar = tqdm(total=total_size_in_bytes,
-                                    # unit='iB', unit_scale=True)
                 for data in response.iter_content(block_size):
                     # progress_bar.update(len(data))
                     file.write(data)
-                # progress_bar.close()
-                # if total_size_in_bytes != 0:# and progress_bar.n != total_size_in_bytes:
-                    # print("ERROR, something went wrong downloading %s" % url)
     return full_path

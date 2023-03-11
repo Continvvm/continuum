@@ -17,11 +17,12 @@ class HuggingFaceFellowship(_BaseScenario):
     :param lazy: Load datasets on-the-fly when needed.
     :param train: Train split vs test split.
     """
+
     def __init__(
         self,
         hf_datasets: Union[List[HFDataset], List[str], List[Tuple]],
         lazy: bool = False,
-        train: bool = True
+        train: bool = True,
     ):
         self.hf_datasets = hf_datasets
         self.lazy = lazy
@@ -39,7 +40,9 @@ class HuggingFaceFellowship(_BaseScenario):
     def nb_samples(self) -> int:
         """Total number of samples in the whole continual setting."""
         if self.lazy:
-            raise Exception("Cannot tell the number of samples if datasets are lazyly loaded.")
+            raise Exception(
+                "Cannot tell the number of samples if datasets are lazyly loaded."
+            )
         return sum(len(dataset) for dataset in self.hf_datasets)
 
     @property

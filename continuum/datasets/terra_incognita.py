@@ -20,22 +20,21 @@ _DATA = None
 _IMAGE_FOLDER = None
 
 
-
 def _func(image):
     global _INCLUDE_LOCATIONS, _INCLUDE_CATEGORIES, _CATEGORY_DICT, _DATA, _IMAGE_FOLDER
 
-    image_location = image['location']
+    image_location = image["location"]
 
     if image_location not in _INCLUDE_LOCATIONS:
         return None
 
-    image_id = image['id']
-    image_fname = image['file_name']
+    image_id = image["id"]
+    image_fname = image["file_name"]
 
     x, y, t = [], [], []
-    for annotation in _DATA['annotations']:
-        if annotation['image_id'] == image_id:
-            category = _CATEGORY_DICT[annotation['category_id']]
+    for annotation in _DATA["annotations"]:
+        if annotation["image_id"] == image_id:
+            category = _CATEGORY_DICT[annotation["category_id"]]
 
             if category not in _INCLUDE_CATEGORIES:
                 return None
@@ -45,7 +44,6 @@ def _func(image):
             t.append(_INCLUDE_LOCATIONS.index(image_location))
 
     return x, y, t
-
 
 
 class TerraIncognita(ImageFolderDataset):
@@ -61,11 +59,18 @@ class TerraIncognita(ImageFolderDataset):
       Beery et al.
       ECCV 2018
     """
+
     images_url = "https://lilablobssc.blob.core.windows.net/caltechcameratraps/eccv_18_all_images_sm.tar.gz"
     json_url = "https://lilablobssc.blob.core.windows.net/caltechcameratraps/labels/caltech_camera_traps.json.zip"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True,
-                 test_split: float = 0.2, random_seed: int = 1):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed: int = 1,
+    ):
         self._attributes = None
         self.test_split = test_split
         self.random_seed = random_seed
@@ -82,19 +87,21 @@ class TerraIncognita(ImageFolderDataset):
                 print("Downloading images archive...", end=" ")
                 download(self.images_url, self.data_path)
                 print("Done!")
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             untar(tar_path)
-            print('Done!')
+            print("Done!")
 
-        if not os.path.exists(os.path.join(self.data_path, "caltech_images_20210113.json")):
+        if not os.path.exists(
+            os.path.join(self.data_path, "caltech_images_20210113.json")
+        ):
             zip_path = os.path.join(self.data_path, "caltech_camera_traps.json.zip")
             if not os.path.exists(zip_path):
                 print("Downloading json archive...", end=" ")
                 download(self.json_url, self.data_path)
                 print("Done!")
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             unzip(zip_path)
-            print('Done!')
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         path_x = os.path.join(self.data_path, "continuum_terrainc_x.npy")
@@ -102,7 +109,9 @@ class TerraIncognita(ImageFolderDataset):
         path_t = os.path.join(self.data_path, "continuum_terrainc_t.npy")
 
         if not all(os.path.exists(p) for p in [path_x, path_y, path_t]):
-            print("Long (~1min) preprocessing starting! It will be cached for next time.")
+            print(
+                "Long (~1min) preprocessing starting! It will be cached for next time."
+            )
             x, y, t = self._preprocess_data()
             np.save(path_x, x)
             np.save(path_y, y)
@@ -125,8 +134,16 @@ class TerraIncognita(ImageFolderDataset):
         """
         include_locations = ["38", "46", "100", "43"]
         include_categories = [
-            "bird", "bobcat", "cat", "coyote", "dog", "empty", "opossum", "rabbit",
-            "raccoon", "squirrel"
+            "bird",
+            "bobcat",
+            "cat",
+            "coyote",
+            "dog",
+            "empty",
+            "opossum",
+            "rabbit",
+            "raccoon",
+            "squirrel",
         ]
 
         images_folder = os.path.join(self.data_path, "eccv_18_all_images_sm/")
@@ -137,9 +154,8 @@ class TerraIncognita(ImageFolderDataset):
             data = json.load(f)
 
         category_dict = {}
-        for item in data['categories']:
-            category_dict[item['id']] = item['name']
-
+        for item in data["categories"]:
+            category_dict[item["id"]] = item["name"]
 
         global _INCLUDE_LOCATIONS, _INCLUDE_CATEGORIES, _CATEGORY_DICT, _DATA, _IMAGE_FOLDER
         _INCLUDE_LOCATIONS = include_locations
@@ -151,9 +167,9 @@ class TerraIncognita(ImageFolderDataset):
         x, y, t = [], [], []
 
         with mp.Pool(min(8, mp.cpu_count())) as pool:
-            for tup in pool.imap(_func, data['images']):
-        #for image in data['images']:
-        #    tup = _func(image)
+            for tup in pool.imap(_func, data["images"]):
+                # for image in data['images']:
+                #    tup = _func(image)
                 if tup is None:
                     continue
                 x.extend(tup[0])

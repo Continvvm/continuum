@@ -17,11 +17,18 @@ class AwA2(ImageFolderDataset):
       Y. Xian, C. H. Lampert, B. Schiele, Z. Akata
       TPAMI 2018
     """
+
     images_url = "https://cvml.ist.ac.at/AwA2/AwA2-data.zip"
     split_v2_url = "http://datasets.d2.mpi-inf.mpg.de/xian/xlsa17.zip"
 
-    def __init__(self, data_path, train: bool = True, download: bool = True, test_split: float = 0.2,
-                 random_seed=1):
+    def __init__(
+        self,
+        data_path,
+        train: bool = True,
+        download: bool = True,
+        test_split: float = 0.2,
+        random_seed=1,
+    ):
         self._attributes = None
         self.test_split = test_split
         self.random_seed = random_seed
@@ -32,8 +39,9 @@ class AwA2(ImageFolderDataset):
         if self._attributes is None:
             att = np.loadtxt(
                 os.path.join(
-                    self.data_path, "Animals_with_Attributes2",
-                    "predicate-matrix-continuous.txt"
+                    self.data_path,
+                    "Animals_with_Attributes2",
+                    "predicate-matrix-continuous.txt",
                 )
             )
             self._attributes = att / np.linalg.norm(att, axis=-1, keepdims=True)
@@ -49,34 +57,34 @@ class AwA2(ImageFolderDataset):
             zip_path = os.path.join(self.data_path, "AwA2-data.zip")
 
             if not os.path.exists(zip_path):
-                print("Downloading zip images archive...", end=' ')
+                print("Downloading zip images archive...", end=" ")
                 download(self.images_url, self.data_path)
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             unzip(zip_path)
-            print('Done!')
+            print("Done!")
 
         if not os.path.exists(os.path.join(self.data_path, "xlsa17")):
             zip_path = os.path.join(self.data_path, "xlsa17.zip")
 
             if not os.path.exists(zip_path):
-                print("Downloading zip split archive...", end=' ')
+                print("Downloading zip split archive...", end=" ")
                 download(self.split_v2_url, self.data_path)
-                print('Done!')
+                print("Done!")
 
-            print('Extracting archive...', end=' ')
+            print("Extracting archive...", end=" ")
             unzip(zip_path)
-            print('Done!')
+            print("Done!")
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        dataset = torchdata.ImageFolder(os.path.join(self.data_path, "Animals_with_Attributes2", "JPEGImages"))
+        dataset = torchdata.ImageFolder(
+            os.path.join(self.data_path, "Animals_with_Attributes2", "JPEGImages")
+        )
         x, y, _ = self._format(dataset.imgs)
 
         x_train, x_test, y_train, y_test = train_test_split(
-            x, y,
-            test_size=self.test_split,
-            random_state=self.random_seed
+            x, y, test_size=self.test_split, random_state=self.random_seed
         )
 
         if self.train:

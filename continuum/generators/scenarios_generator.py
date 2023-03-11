@@ -4,7 +4,12 @@ import torch
 import numpy as np
 
 from continuum.datasets import _ContinuumDataset
-from continuum.scenarios import _BaseScenario, create_subscenario, ClassIncremental, HashedScenario
+from continuum.scenarios import (
+    _BaseScenario,
+    create_subscenario,
+    ClassIncremental,
+    HashedScenario,
+)
 
 
 class _BaseGenerator(abc.ABC):
@@ -15,29 +20,23 @@ class _BaseGenerator(abc.ABC):
     :param scenario: A Continuum scenarios
     """
 
-    def __init__(
-            self,
-            scenario: _BaseScenario
-    ) -> None:
+    def __init__(self, scenario: _BaseScenario) -> None:
         self.base_scenario = scenario
         self.nb_generator = torch.Generator()
 
     @abc.abstractmethod
     def sample(self, seed: int = None, nb_tasks: int = None) -> int:
-        """"method to sample a scenario from the generator."""
+        """ "method to sample a scenario from the generator."""
         raise NotImplementedError
 
 
 class TaskOrderGenerator(_BaseGenerator):
     """Task Order Generator, generate sub-scenario from a base scenario simply by changing task order.
 
-        :param scenario: the base scenario to use to generate sub-scenarios
-        """
+    :param scenario: the base scenario to use to generate sub-scenarios
+    """
 
-    def __init__(
-            self,
-            scenario: _BaseScenario
-    ) -> None:
+    def __init__(self, scenario: _BaseScenario) -> None:
         super().__init__(scenario)
 
         self.base_scenario = scenario
@@ -48,7 +47,9 @@ class TaskOrderGenerator(_BaseGenerator):
         self.nb_generator.manual_seed(seed)
 
         # generate a random task order
-        task_order = torch.randperm(self.base_scenario.nb_tasks, generator=self.nb_generator)
+        task_order = torch.randperm(
+            self.base_scenario.nb_tasks, generator=self.nb_generator
+        )
         if nb_tasks is None:
             nb_tasks = self.base_scenario.nb_tasks
         return task_order[:nb_tasks]
@@ -72,12 +73,9 @@ class ClassOrderGenerator(_BaseGenerator):
     This class is only compatible with ClassIncremental scenarios.
 
         :param scenario: the base scenario to use to generate sub-scenarios
-        """
+    """
 
-    def __init__(
-            self,
-            scenario: ClassIncremental
-    ) -> None:
+    def __init__(self, scenario: ClassIncremental) -> None:
         super().__init__(scenario)
 
         self.base_scenario = scenario
@@ -88,7 +86,9 @@ class ClassOrderGenerator(_BaseGenerator):
     def get_class_order(self, seed):
         self.nb_generator.manual_seed(seed)
         # generate a random task order
-        class_order = torch.randperm(len(self.list_classes), generator=self.nb_generator)
+        class_order = torch.randperm(
+            len(self.list_classes), generator=self.nb_generator
+        )
         return class_order
 
     def sample(self, seed: int = None, nb_tasks: int = None) -> _BaseScenario:
@@ -114,12 +114,14 @@ class ClassOrderGenerator(_BaseGenerator):
         cl_dataset = self.base_scenario.cl_dataset
         transformations = self.base_scenario.transformations
 
-        scenario = ClassIncremental(cl_dataset=cl_dataset,
-                                    nb_tasks=nb_tasks,
-                                    increment=increment,
-                                    initial_increment=initial_increment,
-                                    transformations=transformations,
-                                    class_order=new_list_class)
+        scenario = ClassIncremental(
+            cl_dataset=cl_dataset,
+            nb_tasks=nb_tasks,
+            increment=increment,
+            initial_increment=initial_increment,
+            transformations=transformations,
+            class_order=new_list_class,
+        )
 
         return scenario
 
@@ -139,13 +141,13 @@ class HashGenerator(_BaseGenerator):
     """
 
     def __init__(
-            self,
-            cl_dataset: _ContinuumDataset,
-            list_hash=None,
-            nb_tasks=None,
-            transformations=None,
-            filename_hash_indexes=None,
-            split_task="auto"
+        self,
+        cl_dataset: _ContinuumDataset,
+        list_hash=None,
+        nb_tasks=None,
+        transformations=None,
+        filename_hash_indexes=None,
+        split_task="auto",
     ) -> None:
         self.cl_dataset = cl_dataset
         self.nb_tasks = nb_tasks
@@ -154,16 +156,25 @@ class HashGenerator(_BaseGenerator):
         self.split_task = split_task
         self._hash_name = None
 
-        self.all_hashs = ["AverageHash", "Phash", "PhashSimple", "DhashH", "DhashV", "Whash", "ColorHash"
-                          ] # , "CropResistantHash"
+        self.all_hashs = [
+            "AverageHash",
+            "Phash",
+            "PhashSimple",
+            "DhashH",
+            "DhashV",
+            "Whash",
+            "ColorHash",
+        ]  # , "CropResistantHash"
 
         # create default scenario to test parameters
-        self.base_scenario = HashedScenario(cl_dataset=self.cl_dataset,
-                                            hash_name="AverageHash",
-                                            nb_tasks=nb_tasks,
-                                            transformations=transformations,
-                                            filename_hash_indexes=f"{filename_hash_indexes}_AverageHash",
-                                            split_task=self.split_task)
+        self.base_scenario = HashedScenario(
+            cl_dataset=self.cl_dataset,
+            hash_name="AverageHash",
+            nb_tasks=nb_tasks,
+            transformations=transformations,
+            filename_hash_indexes=f"{filename_hash_indexes}_AverageHash",
+            split_task=self.split_task,
+        )
         if list_hash is None:
             self.list_hash = self.all_hashs
         else:
@@ -181,7 +192,7 @@ class HashGenerator(_BaseGenerator):
         return self.list_hash[hash_id]
 
     def sample(self, seed: int = None, nb_tasks: int = None) -> _BaseScenario:
-        ''''create one scenario with a ramdomly sampled hash_name from self.list_hash'''
+        """'create one scenario with a ramdomly sampled hash_name from self.list_hash"""
 
         if nb_tasks is None and self.nb_tasks is not None:
             nb_tasks = self.nb_tasks
@@ -194,16 +205,18 @@ class HashGenerator(_BaseGenerator):
         self._hash_name = self.get_rand_hash_name(seed)
 
         # We create a scenario from base_scenario
-        scenario = HashedScenario(cl_dataset=self.cl_dataset,
-                                  hash_name=self._hash_name,
-                                  nb_tasks=nb_tasks,
-                                  transformations=self.transformations,
-                                  filename_hash_indexes=f"{self.filename_hash_indexes}_{self._hash_name}",
-                                  split_task=self.split_task)
+        scenario = HashedScenario(
+            cl_dataset=self.cl_dataset,
+            hash_name=self._hash_name,
+            nb_tasks=nb_tasks,
+            transformations=self.transformations,
+            filename_hash_indexes=f"{self.filename_hash_indexes}_{self._hash_name}",
+            split_task=self.split_task,
+        )
 
         return scenario
 
     @property
     def hash_name(self):
-        ''''Hash name of the previous sampled scenario'''
+        """'Hash name of the previous sampled scenario"""
         return self._hash_name

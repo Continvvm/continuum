@@ -34,7 +34,7 @@ class ClassIncremental(_BaseScenario):
         increment: Union[List[int], int] = 0,
         initial_increment: int = 0,
         transformations: Union[List[Callable], List[List[Callable]]] = None,
-        class_order: Union[List[int], None]=None
+        class_order: Union[List[int], None] = None,
     ) -> None:
 
         self.cl_dataset = cl_dataset
@@ -43,7 +43,11 @@ class ClassIncremental(_BaseScenario):
         self.class_order = class_order
 
         self._nb_tasks = self._setup(nb_tasks)
-        super().__init__(cl_dataset=cl_dataset, nb_tasks=self._nb_tasks, transformations=transformations)
+        super().__init__(
+            cl_dataset=cl_dataset,
+            nb_tasks=self._nb_tasks,
+            transformations=transformations,
+        )
 
     def _setup(self, nb_tasks: int) -> int:
         x, y, _ = self.cl_dataset.get_data()
@@ -63,7 +67,9 @@ class ClassIncremental(_BaseScenario):
         self.class_order = list(self.class_order)
 
         if len(np.unique(self.class_order)) != len(self.class_order):
-            raise ValueError(f"Invalid class order, duplicates found: {self.class_order}.")
+            raise ValueError(
+                f"Invalid class order, duplicates found: {self.class_order}."
+            )
 
         if len(self.class_order) > len(unique_classes):
             missing_classes = set(self.class_order) - set(unique_classes)
@@ -121,11 +127,13 @@ class ClassIncremental(_BaseScenario):
         t = np.zeros(len(y))
 
         for task_index, _ in enumerate(self.increments):
-            max_class = sum(self.increments[:task_index + 1])
+            max_class = sum(self.increments[: task_index + 1])
             min_class = sum(self.increments[:task_index])  # 0 when task_index == 0.
 
             if len(y.shape) > 1:
-                indexes = np.where(np.logical_and(y[:, 0] >= min_class, y[:, 0] < max_class))[0]
+                indexes = np.where(
+                    np.logical_and(y[:, 0] >= min_class, y[:, 0] < max_class)
+                )[0]
             else:
                 indexes = np.where(np.logical_and(y >= min_class, y < max_class))[0]
             t[indexes] = task_index
@@ -133,7 +141,10 @@ class ClassIncremental(_BaseScenario):
         return t
 
     def _define_increments(
-        self, increment: Union[List[int], int], initial_increment: int, unique_classes: List[int]
+        self,
+        increment: Union[List[int], int],
+        initial_increment: int,
+        unique_classes: List[int],
     ) -> List[int]:
 
         if isinstance(increment, list):
