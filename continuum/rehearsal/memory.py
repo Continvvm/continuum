@@ -1,14 +1,14 @@
-from typing import Union, Callable, Tuple, Any, Tuple, Optional, List
 import warnings
+from typing import Union, Callable, Any, Tuple, Optional, List
 
 import numpy as np
 
+from continuum import utils
 from continuum.rehearsal import (
     herd_random,
     herd_closest_to_cluster,
     herd_closest_to_barycenter,
 )
-from continuum import utils
 
 
 class RehearsalMemory:
