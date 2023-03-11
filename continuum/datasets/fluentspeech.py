@@ -1,6 +1,4 @@
 import os
-import collections
-import itertools
 from typing import Tuple, Union, Optional
 
 import numpy as np

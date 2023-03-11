@@ -1,11 +1,10 @@
 import os
-from typing import Iterable, Set, Tuple, Union
+from typing import Tuple
 
 import numpy as np
 
 from continuum import download
 from continuum.datasets.base import _ContinuumDataset
-from continuum.transforms.segmentation import ToTensor
 from continuum.tasks import TaskType
 
 

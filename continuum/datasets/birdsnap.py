@@ -1,9 +1,8 @@
-from datetime import date
+import hashlib
 import os
 import warnings
 from multiprocessing.pool import ThreadPool
 from typing import Optional, Tuple
-import hashlib
 
 import numpy as np
 import requests

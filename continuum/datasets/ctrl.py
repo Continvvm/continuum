@@ -1,8 +1,8 @@
 from typing import List, Tuple, Union
 
+import numpy as np
 from PIL import Image
 from skimage.transform import resize
-import numpy as np
 
 from continuum.datasets import CIFAR10, SVHN, FashionMNIST, MNIST, DTD, RainbowMNIST
 from continuum.datasets import _ContinuumDataset

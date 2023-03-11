@@ -4,8 +4,8 @@ from typing import Tuple
 import numpy as np
 
 from continuum.datasets import _ContinuumDataset
-from continuum.tasks import TaskType
 from continuum.download import untar
+from continuum.tasks import TaskType
 
 
 class FER2013(_ContinuumDataset):

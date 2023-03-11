@@ -1,5 +1,5 @@
 import os
-from typing import Iterable, Set, Tuple, Union, List
+from typing import Iterable, Set, Tuple, Union
 
 import numpy as np
 

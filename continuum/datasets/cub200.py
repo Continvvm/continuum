@@ -1,9 +1,9 @@
 import os
-from typing import Tuple
 import tarfile
+from typing import Tuple
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from continuum.datasets.base import _ContinuumDataset
 from continuum.download import download_file_from_google_drive, untar

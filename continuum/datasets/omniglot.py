@@ -1,7 +1,7 @@
 import os
 
-import torchvision
 import numpy as np
+import torchvision
 
 from continuum.datasets import _ContinuumDataset
 from continuum.tasks import TaskType

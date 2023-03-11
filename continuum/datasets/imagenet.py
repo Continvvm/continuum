@@ -1,12 +1,12 @@
 import os
 from typing import Tuple, Union, Optional
 
-from torchvision import transforms
 import numpy as np
-from continuum.tasks import TaskType
+from torchvision import transforms
 
 from continuum.datasets import ImageFolderDataset, _ContinuumDataset
 from continuum.download import download, unzip
+from continuum.tasks import TaskType
 
 
 class ImageNet1000(ImageFolderDataset):

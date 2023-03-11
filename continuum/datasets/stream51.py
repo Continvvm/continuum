@@ -1,6 +1,6 @@
-import os
 import json
-from typing import Tuple, Optional
+import os
+from typing import Tuple
 
 import numpy as np
 

@@ -6,7 +6,6 @@ from torchvision import transforms
 
 from continuum.datasets import PyTorchDataset
 
-
 cifar100_coarse_labels = np.array(
     [
         4,

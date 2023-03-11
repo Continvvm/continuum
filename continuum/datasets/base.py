@@ -3,14 +3,14 @@ import os
 import warnings
 from typing import Callable, List, Optional, Tuple, Union
 
-import numpy as np
 import h5py
+import numpy as np
 from torchvision import datasets as torchdata
 from torchvision import transforms
 
+from continuum import utils
 from continuum.tasks import TaskSet, TaskType
 from continuum.transforms import segmentation as transforms_seg
-from continuum import utils
 
 
 class _ContinuumDataset(abc.ABC):

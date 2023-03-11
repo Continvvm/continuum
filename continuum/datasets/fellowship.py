@@ -3,8 +3,8 @@ from typing import List, Tuple
 import numpy as np
 
 from continuum.datasets.base import _ContinuumDataset
-from continuum.datasets.pytorch import CIFAR10, KMNIST, MNIST, FashionMNIST
 from continuum.datasets.cifar100 import CIFAR100
+from continuum.datasets.pytorch import CIFAR10, KMNIST, MNIST, FashionMNIST
 
 
 class Fellowship(_ContinuumDataset):

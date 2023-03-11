@@ -1,11 +1,10 @@
 import os
-from typing import List
 
 import numpy as np
 from torchvision import datasets as torchdata
 
-from continuum.datasets import ImageFolderDataset
 from continuum import download
+from continuum.datasets import ImageFolderDataset
 from continuum.tasks import TaskType
 
 

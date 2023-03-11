@@ -1,13 +1,13 @@
 import json
-import os
 import multiprocessing
+import os
 import sys
 from functools import partial
 
-import numpy as np
-from torch.utils.data import Dataset
-import requests
 import h5py
+import numpy as np
+import requests
+from torch.utils.data import Dataset
 
 from continuum.datasets.base import InMemoryDataset
 

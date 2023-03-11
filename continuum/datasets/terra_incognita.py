@@ -1,6 +1,6 @@
-import os
 import json
 import multiprocessing as mp
+import os
 from typing import Tuple
 
 import numpy as np
@@ -8,7 +8,6 @@ import numpy as np
 from continuum.datasets import ImageFolderDataset
 from continuum.download import download, untar, unzip
 from continuum.tasks import TaskType
-
 
 # Used for multiprocessing in the preprocessing step.
 # Python's multiprocessing needs functions to be pickable and thus I cannot make

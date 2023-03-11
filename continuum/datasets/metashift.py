@@ -1,12 +1,14 @@
-import pickle as pkl
 import os
+import pickle as pkl
+import zipfile
 from typing import Iterable, Tuple, Union
+from warnings import warn
+
 import numpy as np
+
 from continuum import download
 from continuum.datasets.base import _ContinuumDataset
 from continuum.tasks import TaskType
-from warnings import warn
-import zipfile
 
 
 class MetaShift(_ContinuumDataset):

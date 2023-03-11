@@ -1,9 +1,10 @@
-from typing import List, Tuple, Union
+from typing import Tuple, Union
 
 import numpy as np
+from torchvision import datasets as torchdata
+
 from continuum.datasets import _ContinuumDataset
 from continuum.tasks import TaskType
-from torchvision import datasets as torchdata
 
 
 class STL10(_ContinuumDataset):
