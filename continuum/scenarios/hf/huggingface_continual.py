@@ -1,7 +1,7 @@
 from typing import List, Union, Tuple
 
-import numpy as np
 import datasets
+import numpy as np
 from datasets.arrow_dataset import Dataset as HFDataset
 
 from continuum.scenarios import _BaseScenario

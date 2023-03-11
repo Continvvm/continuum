@@ -23,7 +23,7 @@ def plot_samples(
         shape = batch[0].shape
 
     if data_type == "segmentation":
-        visualize_segmentation_batch(batch, y, nb_samples, shape, filename)
+        visualize_segmentation_batch(batch, y, nb_samples, filename)
     else:
         visualize_batch(batch, nb_samples, shape, filename)
 
@@ -52,7 +52,7 @@ def visualize_batch(batch, number, shape, path):
         )
 
 
-def visualize_segmentation_batch(images, segmaps, number, shape, path):
+def visualize_segmentation_batch(images, segmaps, number, path):
     images, segmaps = images.numpy(), segmaps.numpy()
     images = img_stretch(images)
     make_samples_segmentation_batch(images[:number], segmaps[:number], number, path)
@@ -144,9 +144,9 @@ def make_samples_segmentation_batch(images, labels, batch_size, path):
     axes[0].set_yticks([])
 
     # TODO: Add color map for other dataset than VOC
-    nclasses = 21
-    row_size = images.shape[-1]
-    col_size = images.shape[-2]
+    #nclasses = 21
+    #row_size = images.shape[-1]
+    #col_size = images.shape[-2]
     cmap = color_map()[:, np.newaxis, :]
     labels = labels[:, :, np.newaxis]
     new_im = np.dot(labels == 0, cmap[0])

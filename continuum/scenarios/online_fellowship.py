@@ -1,10 +1,10 @@
-from typing import Callable, List, Union
 import warnings
+from typing import Callable, List, Union
 
-from torchvision import transforms
 import numpy as np
+from torchvision import transforms
 
-from continuum.datasets import _ContinuumDataset, InMemoryDataset
+from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import _BaseScenario
 from continuum.tasks import BaseTaskSet, TaskSet, TaskType
 from continuum.transforms.segmentation import Compose as SegmentationCompose

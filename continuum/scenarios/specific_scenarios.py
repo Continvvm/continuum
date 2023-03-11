@@ -1,10 +1,10 @@
 import warnings
 from typing import Callable, List, Optional, Union
 
+import numpy as np
+
 from continuum.datasets import _ContinuumDataset
 from continuum.scenarios import InstanceIncremental
-
-import numpy as np
 
 
 class ALMA(InstanceIncremental):

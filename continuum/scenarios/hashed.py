@@ -5,10 +5,8 @@ from typing import Callable, List, Union, Optional
 import imagehash
 import numpy as np
 from PIL import Image
-from sklearn.metrics import pairwise_distances
 from sklearn.cluster import KMeans, MeanShift
 from sklearn.decomposition import PCA
-from scipy.spatial.distance import hamming
 
 from continuum.datasets import InMemoryDataset
 from continuum.datasets import _ContinuumDataset

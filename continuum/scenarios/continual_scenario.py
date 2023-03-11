@@ -1,5 +1,3 @@
-import warnings
-from copy import copy
 from typing import Callable, List, Union
 
 import numpy as np

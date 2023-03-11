@@ -1,17 +1,15 @@
-import warnings
-from copy import copy
-from typing import Callable, List, Union, Optional
-import os
 import multiprocessing
+import os
+from typing import Callable, List, Union, Optional
 
 import numpy as np
-from PIL import Image
 import torchvision
+from PIL import Image
 
 from continuum.datasets import _ContinuumDataset
+from continuum.download import ProgressBar
 from continuum.scenarios import ClassIncremental
 from continuum.tasks import TaskSet, TaskType
-from continuum.download import ProgressBar
 
 
 class SegmentationClassIncremental(ClassIncremental):
