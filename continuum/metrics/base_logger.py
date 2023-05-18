@@ -235,7 +235,7 @@ class _BaseLogger(abc.ABC):
             print(f"**********************")
             print(f"Task: {task}")
             for epoch in range(self.current_epoch + 1):
-                print(f"Epoch: {task}")
+                print(f"Epoch: {epoch}")
                 print(self.logger_dict[subset][keyword][task][epoch])
 
     def end_epoch(self):
