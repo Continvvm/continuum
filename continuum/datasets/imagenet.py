@@ -3,9 +3,9 @@ from typing import Tuple, Union, Optional
 
 import numpy as np
 from torchvision import transforms
-
+import yaml
 from continuum.datasets import ImageFolderDataset, _ContinuumDataset
-from continuum.download import download, unzip
+from continuum.download import download, unzip, untar
 from continuum.tasks import TaskType
 
 
@@ -125,6 +125,89 @@ class ImageNet100(_ContinuumDataset):
         return subset  # type: ignore
 
 
+class ImageNet_R(_ContinuumDataset):
+    """
+    Imagenet_R dataset.
+    - 200 classes
+    - 500 images per class
+    - size 224x224
+    """
+    
+    url = "https://people.eecs.berkeley.edu/~hendrycks/imagenet-r.tar"
+    num_classes = 200
+    
+    def _download(self):
+        path = os.path.join(self.data_path, "imagenet-r")
+        if not os.path.exists(path):
+            if not os.path.exists(f"{path}.tar"):
+                download(self.url, self.data_path)
+                untar(f"{path}.tar")
+            # import tarfile
+            # tar_ref = tarfile.open(os.path.join(self.data_path, 'imagenet-r.tar'), 'r')
+            # tar_ref.extractall(self.data_path)
+            # tar_ref.close()
+        """ Download the yaml files with train and test splits from the CODA-Prompt repository"""
+        if not os.path.exists(os.path.join(path, 'imagenet-r_train.yaml')):
+            download('https://raw.githubusercontent.com/GT-RIPL/CODA-Prompt/main/dataloaders/splits/imagenet-r_train.yaml', path)
+        
+        if not os.path.exists(os.path.join(path, 'imagenet-r_test.yaml')):
+            download('https://raw.githubusercontent.com/GT-RIPL/CODA-Prompt/main/dataloaders/splits/imagenet-r_test.yaml', path)
+        
+        if not os.path.exists(os.path.join(path, 'class_mapping.txt')):
+            download('https://gist.githubusercontent.com/ranarag/6620c8fa7da24e1f56f7cdba88d6343a/raw/1d22f7b4902efa22b77c88879579057ac88feb4d/class_mapping.txt', path)
+    @property
+    def data_type(self) -> TaskType:
+        return TaskType.IMAGE_PATH
+    
+    def get_data(self) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:        
+        path = os.path.join(self.data_path, "imagenet-r")
+        class_mapping = open(os.path.join(path, 'class_mapping.txt'), 'r').read().split('\n')
+        class_mapping = {x.split(' ')[0]: x.split(' ')[1] for x in class_mapping}
+        if self.train:
+            data_config = yaml.load(open(os.path.join(path,'imagenet-r_train.yaml'), 'r'), Loader=yaml.Loader)
+        else:
+            data_config = yaml.load(open(os.path.join(path,'imagenet-r_test.yaml'), 'r'), Loader=yaml.Loader)
+
+        x = []
+        y = []
+        self.classes = [" "] * 200
+        for idx, fname in enumerate(data_config['data']):
+            data_fname = '/'.join(fname.split('/')[2:])
+            if self.classes[int(data_config['targets'][idx])] == " ":
+                self.classes[int(data_config['targets'][idx])] = class_mapping[data_fname.split('/')[0]]
+            x.append(os.path.join(path, data_fname))
+            y.append(int(data_config['targets'][idx]))
+
+        x = np.array(x)
+        y = np.array(y)
+        for i in range(200):
+            assert self.classes[i] != " ", "Class not found"
+        return x, y, None
+
+
+    @property
+    def transformations(self):
+        """Default transformations if nothing is provided to the scenario."""
+        return [
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        ]
+    
+    def jpg_image_to_array(self, image_path):
+        """
+        Loads JPEG image into 3D Numpy array of shape 
+        (width, height, channels)
+        taken from: https://github.com/GT-RIPL/CODA-Prompt/blob/main/dataloaders/dataloader.py
+        """
+        with Image.open(image_path) as image:      
+            image = image.convert('RGB')
+            im_arr = np.fromstring(image.tobytes(), dtype=np.uint8)
+            im_arr = im_arr.reshape((image.size[1], image.size[0], 3))                                   
+        return im_arr
+
+
+    
 class TinyImageNet200(_ContinuumDataset):
     """Smaller version of ImageNet.
 
