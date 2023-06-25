@@ -13,3 +13,4 @@ h5py>=3.1.0
 requests>=2.24.0
 ImageHash>=4.2.1
 datasets>=1.6.0
+pyaml
